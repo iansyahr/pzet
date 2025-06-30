@@ -1,13 +1,167 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
+<html lang="id">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="src/style.css">
-  </head>
-  <body>
-    
-    <h1>Hi friend, try edit me!</h1>
+    <title>PZ</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome CDN for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f8f8; /* Slightly off-white for a soft feel */
+            color: #333; /* Main text color */
+        }
+        /* No specific emoji-icon class needed anymore, Font Awesome handles sizing */
+    </style>
+</head>
+<body class="antialiased">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header Section -->
+        <header class="bg-white shadow-sm py-6 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center">
+                <div class="text-center sm:text-left mb-4 sm:mb-0">
+                    <h1 class="text-5xl font-extrabold text-gray-900 tracking-tight">PZ</h1>
+                    <p class="mt-2 text-lg text-gray-600">"If you're not having fun, you're not learning. There's a pleasure in finding things out" - Richard Feynman</p>
+                </div>
+                <!-- Navigation (Removed as per request) -->
+                <!-- <nav class="flex space-x-6 text-lg font-medium">
+                    <a href="#" class="text-gray-700 hover:text-gray-900 transition duration-300 ease-in-out">Beranda</a>
+                    <a href="#" class="text-gray-700 hover:text-gray-900 transition duration-300 ease-in-out">Tentang</a>
+                    <a href="#" class="text-gray-700 hover:text-gray-900 transition duration-300 ease-in-out">Kontak</a>
+                </nav> -->
+            </div>
+        </header>
 
-  </body>
+        <!-- Main Content Section -->
+        <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="max-w-4xl mx-auto">
+                <!-- Subbab Fisika Section -->
+                <section class="bg-white p-8 rounded-lg shadow-md mb-12">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-8 border-b-2 border-gray-200 pb-2">Subbab Fisika</h2>
+                    <!-- This div will be populated by JavaScript -->
+                    <div id="subbab-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Subbab boxes will be dynamically inserted here -->
+                    </div>
+                </section>
+
+                <!-- Call to Action / More Posts (Removed as per request) -->
+                <!-- <div class="text-center">
+                    <a href="#" class="inline-block bg-gray-800 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-700 transition duration-300 ease-in-out shadow-lg">Lihat Semua Postingan</a>
+                </div> -->
+            </div>
+        </main>
+
+        <!-- Footer Section -->
+        <footer class="bg-gray-100 py-8 px-4 sm:px-6 lg:px-8 mt-12">
+            <div class="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center text-center sm:text-left">
+                <p class="text-gray-600 text-sm mb-4 sm:mb-0">&copy; 2025 PZ. Konten dapat disebarluaskan dengan atribusi.</p>
+                <!-- Social Media Links -->
+                <div class="flex space-x-4 text-gray-600">
+                    <a href="#" class="hover:text-gray-800 transition duration-300 ease-in-out" aria-label="X.com (Twitter)">
+                        <i class="fab fa-x-twitter fa-lg"></i> <!-- Font Awesome X.com icon -->
+                    </a>
+                    <a href="#" class="hover:text-gray-800 transition duration-300 ease-in-out" aria-label="Instagram">
+                        <i class="fab fa-instagram fa-lg"></i> <!-- Font Awesome Instagram icon -->
+                    </a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Data subbab fisika dalam format JSON
+        const physicsSubtopics = [
+            {
+                title: "Kinematika",
+                description: "Mempelajari gerak benda tanpa mempertimbangkan penyebabnya, termasuk posisi, kecepatan, dan percepatan.",
+                link: "#kinematika" // Placeholder link
+            },
+            {
+                title: "Dinamika",
+                description: "Menganalisis gerak benda dengan mempertimbangkan gaya-gaya yang bekerja padanya, seperti Hukum Newton.",
+                link: "#dinamika" // Placeholder link
+            },
+            {
+                title: "Usaha & Energi",
+                description: "Konsep usaha, energi kinetik, energi potensial, dan hukum kekekalan energi.",
+                link: "#usaha-energi" // Placeholder link
+            },
+            {
+                title: "Fluida",
+                description: "Mempelajari sifat-sifat zat cair dan gas, termasuk fluida statis dan dinamis.",
+                link: "#fluida" // Placeholder link
+            },
+            {
+                title: "Gelombang",
+                description: "Fenomena gelombang, jenis-jenis gelombang, dan karakteristiknya seperti frekuensi dan panjang gelombang.",
+                link: "#gelombang" // Placeholder link
+            },
+            {
+                title: "Listrik Statis",
+                description: "Interaksi muatan listrik diam, medan listrik, dan potensial listrik.",
+                link: "#listrik-statis" // Placeholder link
+            },
+            {
+                title: "Listrik Dinamis",
+                description: "Mempelajari arus listrik, tegangan, hambatan, dan rangkaian listrik.",
+                link: "#listrik-dinamis" // Placeholder link
+            },
+            {
+                title: "Magnet",
+                description: "Konsep medan magnet, gaya Lorentz, dan induksi elektromagnetik.",
+                link: "#magnet" // Placeholder link
+            },
+            {
+                title: "Termodinamika",
+                description: "Hukum-hukum termodinamika, konsep suhu, kalor, dan entropi.",
+                link: "#termodinamika" // Placeholder link
+            }
+            // Anda bisa menambahkan lebih banyak subbab di sini
+        ];
+
+        // Fungsi untuk merender subbab secara dinamis
+        function renderSubtopics() {
+            const container = document.getElementById('subbab-container');
+            if (!container) {
+                console.error("Container with ID 'subbab-container' not found.");
+                return;
+            }
+
+            // Clear existing content in case of re-rendering
+            container.innerHTML = '';
+
+            physicsSubtopics.forEach(subtopic => {
+                // Create the anchor element (the box itself)
+                const anchor = document.createElement('a');
+                anchor.href = subtopic.link;
+                anchor.className = "block bg-gray-50 p-6 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 ease-in-out";
+
+                // Create the title element
+                const title = document.createElement('h3');
+                title.className = "text-2xl font-semibold text-gray-800 mb-2";
+                title.textContent = subtopic.title;
+
+                // Create the description element
+                const description = document.createElement('p');
+                description.className = "text-gray-600";
+                description.textContent = subtopic.description;
+
+                // Append title and description to the anchor
+                anchor.appendChild(title);
+                anchor.appendChild(description);
+
+                // Append the complete box to the container
+                container.appendChild(anchor);
+            });
+        }
+
+        // Panggil fungsi renderSubtopics saat DOM selesai dimuat
+        document.addEventListener('DOMContentLoaded', renderSubtopics);
+    </script>
+</body>
 </html>
