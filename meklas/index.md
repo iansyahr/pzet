@@ -1,7 +1,4 @@
 # Mekanika Klasik
-gua gak tau ini harus isi apa
-
----
 
 **Bab 1: Dasar-Dasar Fisika dan Pengukuran**
 *   Besaran dan Satuan (Standar Internasional)
