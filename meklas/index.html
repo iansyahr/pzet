@@ -5,32 +5,56 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Konten dari Markdown</title>
 
-  <!-- 1. Menambahkan Font 'Inter' dari Google Fonts -->
+  <!-- Menambahkan Font 'Inter' dari Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 
-  <!-- 2. Menambahkan Library Marked.js dari CDN -->
-  <!-- Library ini berfungsi untuk mengubah Markdown menjadi HTML -->
+  <!-- Menambahkan Library Marked.js dari CDN -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <style>
-    /* 3. Style CSS yang Anda minta */
+    /* Style CSS dasar */
     body {
       font-family: 'Inter', sans-serif;
       background-color: #FFFBF5;
       color: #333;
-      line-height: 1.6; /* Menambah spasi antar baris agar lebih mudah dibaca */
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+    
+    /* Container untuk memusatkan layout */
+    .container {
+      max-width: 800px;
+      margin: 40px auto; /* Posisikan konten di tengah */
+      padding: 0 20px; /* Beri sedikit padding di sisi kiri-kanan */
     }
 
-    /* Style tambahan agar konten terlihat lebih rapi */
+    /* === BARU: Style untuk Tombol Kembali === */
+    .back-button {
+      display: inline-block;
+      margin-bottom: 25px; /* Jarak antara tombol dan konten */
+      padding: 10px 18px;
+      background-color: #333;
+      color: #FFFBF5;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+
+    .back-button:hover {
+      background-color: #555;
+    }
+    /* ======================================= */
+
+    /* Style untuk area konten */
     #content {
-      max-width: 800px; /* Batasi lebar konten agar tidak terlalu melebar di layar besar */
-      margin: 40px auto; /* Posisikan konten di tengah */
-      padding: 20px;
-      background-color: #FFFFFF; /* Beri latar belakang putih pada konten */
-      border-radius: 8px; /* Sudut sedikit melengkung */
-      box-shadow: 0 4px 8px rgba(0,0,0,0.05); /* Beri sedikit bayangan */
+      padding: 25px 30px;
+      background-color: #FFFFFF;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
     }
 
     /* Style untuk elemen-elemen yang dihasilkan dari Markdown */
@@ -60,55 +84,56 @@
       color: #f8f8f2;
       padding: 1em;
       border-radius: 5px;
-      overflow-x: auto; /* Agar blok kode bisa di-scroll horizontal */
+      overflow-x: auto;
     }
     
     #content blockquote {
-        border-left: 4px solid #ccc;
-        padding-left: 1em;
-        color: #666;
-        margin-left: 0;
+      border-left: 4px solid #ccc;
+      padding-left: 1em;
+      color: #666;
+      margin-left: 0;
     }
     
     #content img {
-        max-width: 100%;
-        height: auto;
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px; /* Tambahan agar gambar terlihat lebih modern */
     }
   </style>
 </head>
 <body>
 
-  <!-- Di sinilah konten yang sudah diubah dari Markdown akan ditampilkan -->
-  <div id="content">
-    <p>Memuat konten, harap tunggu...</p>
+  <!-- Container utama untuk layout -->
+  <div class="container">
+    
+    <!-- === BARU: Tombol Kembali ke Home === -->
+    <!-- Ganti href="/" dengan link halaman utama Anda -->
+    <a href="/" class="back-button">← Kembali ke Home</a>
+    
+    <!-- Di sinilah konten yang sudah diubah dari Markdown akan ditampilkan -->
+    <div id="content">
+      <p>Memuat konten, harap tunggu...</p>
+    </div>
+
   </div>
 
   <script>
-    // 4. JavaScript untuk Fetch, Konversi, dan Menampilkan Konten
     document.addEventListener('DOMContentLoaded', function() {
       const markdownUrl = 'https://pzet.pages.dev/meklas/index.md';
       const contentElement = document.getElementById('content');
 
-      // Mengambil file markdown dari URL menggunakan fetch API
       fetch(markdownUrl)
         .then(response => {
-          // Periksa apakah request berhasil (status code 200-299)
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
-          // Mengembalikan konten sebagai teks
           return response.text();
         })
         .then(markdownText => {
-          // Mengubah teks markdown menjadi HTML menggunakan library marked.js
-          // marked.parse() adalah fungsi utama dari library ini
           const htmlContent = marked.parse(markdownText);
-
-          // Memasukkan hasil HTML ke dalam div #content
           contentElement.innerHTML = htmlContent;
         })
         .catch(error => {
-          // Menampilkan pesan error jika terjadi masalah saat fetch
           console.error('Gagal mengambil atau memproses markdown:', error);
           contentElement.innerHTML = `<p style="color: red;"><strong>Error:</strong> Gagal memuat konten. Silakan cek konsol untuk detailnya.</p>`;
         });
