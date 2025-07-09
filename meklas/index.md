@@ -6,7 +6,7 @@
 *   Angka Penting dan Notasi Ilmiah
 *   Besaran Vektor dan Skalar (Pengenalan, Penjumlahan, Penguraian Vektor)
 
-**Bab 2: Kinematika Gerak Lurus (Gerak 1D)**
+**[Bab 2: Kinematika Gerak Lurus (Gerak 1D)](https://pzet.pages.dev/meklas/kinematika-gl)**
 *   Definisi
 *   Besaran pada Gerak
     *  Jarak dan Perpindahan
