@@ -5,11 +5,15 @@
 *   Besaran Vektor dan Skalar (Pengenalan, Penjumlahan, Penguraian Vektor)
 
 **Bab 2: Kinematika Gerak Lurus (Gerak 1D)**
-*   Jarak dan Perpindahan
-*   Kelajuan dan Kecepatan (Rata-rata dan Sesaat)
-*   Percepatan
-*   Gerak Lurus Beraturan (GLB)
-*   Gerak Lurus Berubah Beraturan (GLBB)
+*   Definisi
+*   Besaran pada Gerak
+    *  Jarak dan Perpindahan
+    *  Kelajuan dan Kecepatan (Rata-rata dan Sesaat)
+    *  Percepatan
+*   Jenis Gerak Lurus
+    *  Gerak Lurus Beraturan (GLB)
+    *  Gerak Lurus Berubah Beraturan (GLBB)
+    *  Gerak Lurus Berubah Tidak Beraturan
 *   Aplikasi: Gerak Vertikal dan Gerak Jatuh Bebas
 
 **Bab 3: Kinematika Gerak Bidang (Gerak 2D)**
