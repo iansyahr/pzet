@@ -3,190 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alat Crop Gambar Minimalis</title>
+    <title>Advanced Image Cropper</title>
 
     <!-- 1. Sertakan CSS Cropper.js dari CDN -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
 
-    <!-- 2. CSS untuk Tampilan Halaman Minimalis & Responsif -->
+    <!-- 2. CSS untuk Tampilan Adaptif -->
     <style>
         :root {
-            --bg-color: #f4f4f9;
-            --container-bg: #ffffff;
-            --text-color: #333333;
-            --subtle-text-color: #777777;
-            --accent-color: #4a90e2;
-            --accent-hover-color: #357abd;
-            --border-color: #e0e0e0;
+            --bg-color: #f0f2f5;
+            --sidebar-bg: #ffffff;
+            --content-bg: #ffffff;
+            --text-color: #1c1e21;
+            --subtle-text-color: #65676b;
+            --accent-color: #1877f2;
+            --accent-hover-color: #166fe5;
+            --border-color: #dddfe2;
             --border-radius: 8px;
+            --sidebar-width: 320px;
         }
 
-        /* Reset dasar dan font modern */
         *, *::before, *::after {
             box-sizing: border-box;
         }
 
         body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
+            min-height: 100vh;
+        }
+        
+        /* Tata Letak Utama */
+        .main-layout {
+            display: flex;
+            flex-direction: column; /* Default: Vertikal (Mobile First) */
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background-color: var(--sidebar-bg);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .content {
+            flex-grow: 1;
+            padding: 2rem;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            padding: 20px;
+            background-color: var(--bg-color);
         }
-
-        .container {
+        
+        .content-inner {
             width: 100%;
-            max-width: 700px;
-            background-color: var(--container-bg);
-            padding: 2rem;
+            height: 100%;
+            max-width: 900px;
+            background-color: var(--content-bg);
             border-radius: var(--border-radius);
             border: 1px solid var(--border-color);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            text-align: center;
-            transition: all 0.3s ease;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px; /* Tinggi minimum untuk area konten */
+        }
+        
+        /* === MEDIA QUERY UNTUK LAYAR LEBAR (DESKTOP) === */
+        @media (min-width: 992px) {
+            .main-layout {
+                flex-direction: row; /* Ubah ke Horizontal */
+            }
+            .sidebar {
+                width: var(--sidebar-width);
+                flex-shrink: 0;
+                border-right: 1px solid var(--border-color);
+                justify-content: flex-start;
+                text-align: left;
+            }
+            .content {
+                padding: 2rem;
+            }
         }
 
+        /* Elemen UI di Sidebar */
         h1 {
+            font-size: 1.75rem;
             margin-top: 0;
             margin-bottom: 0.5rem;
-            font-size: 1.75rem;
         }
-
         .instructions {
             color: var(--subtle-text-color);
             margin-bottom: 2rem;
-            line-height: 1.6;
+            line-height: 1.5;
         }
 
-        /* Area upload yang bersih */
-        .upload-placeholder {
-            border: 2px dashed var(--border-color);
-            border-radius: var(--border-radius);
-            padding: 2rem;
-            margin-bottom: 2rem;
-            transition: border-color 0.3s ease;
-        }
-        .upload-placeholder:hover {
-            border-color: var(--accent-color);
-        }
-        
-        #imageInput {
-            display: none;
-        }
-
-        /* Tombol yang bersih dan modern */
+        /* Tombol */
         .btn {
-            display: inline-block;
-            padding: 10px 20px;
+            display: block;
+            width: 100%;
+            padding: 12px 20px;
             font-size: 1rem;
+            font-weight: 600;
             text-align: center;
             text-decoration: none;
             cursor: pointer;
             border: 1px solid transparent;
             border-radius: var(--border-radius);
-            transition: background-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
+            transition: all 0.2s ease;
         }
+        .btn:active { transform: scale(0.98); }
+        .btn + .btn { margin-top: 1rem; }
+
+        .btn-primary { background-color: var(--accent-color); color: white; }
+        .btn-primary:hover { background-color: var(--accent-hover-color); }
         
-        .btn:active {
-            transform: scale(0.97);
+        .btn-secondary { background-color: #e4e6eb; color: var(--text-color); }
+        .btn-secondary:hover { background-color: #d8dbdf; }
+        
+        /* Area Upload */
+        #imageInput { display: none; }
+
+        /* Kontrol Aksi (Download, Copy, dll.) */
+        .action-controls {
+            margin-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 2rem;
         }
 
-        .btn-primary {
-            background-color: var(--accent-color);
-            color: white;
+        /* Area Konten (Gambar) */
+        .placeholder {
+            text-align: center;
+            color: var(--subtle-text-color);
         }
-        .btn-primary:hover {
-            background-color: var(--accent-hover-color);
-        }
-        
-        .btn-secondary {
-            background-color: var(--container-bg);
-            color: var(--accent-color);
-            border-color: var(--border-color);
-        }
-        .btn-secondary:hover {
-            background-color: #f8f8f8;
-            border-color: #ccc;
+        .placeholder-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
         }
         
-        /* Area Cropper */
         .cropper-container {
-            margin-top: 1rem;
-            max-height: 65vh; /* Batasi tinggi agar pas di layar */
+            width: 100%;
+            height: 100%;
         }
         #imageToCrop {
             display: block;
             max-width: 100%;
+            max-height: calc(100vh - 4rem); /* Batasi tinggi maks gambar */
         }
 
-        /* Kontrol (Tombol Aksi) */
-        .controls {
-            margin-top: 1.5rem;
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            flex-wrap: wrap; /* Tombol akan turun ke bawah jika tidak muat */
-        }
-
-        .hidden {
-            display: none;
-        }
+        /* --- Manajemen Status UI dengan Class 'is-cropping' --- */
+        /* Sembunyikan elemen yang tidak diperlukan secara default */
+        .action-controls, .cropper-container { display: none; }
         
-        /* Media Query untuk layar kecil (Mobile) */
-        @media (max-width: 600px) {
-            body {
-                padding: 10px;
-            }
-            .container {
-                padding: 1.5rem;
-            }
-            h1 {
-                font-size: 1.5rem;
-            }
-            .instructions {
-                font-size: 0.9rem;
-            }
-            .btn {
-                width: 100%; /* Tombol memenuhi lebar di mobile */
-                padding: 12px;
-            }
-            .controls {
-                flex-direction: column; /* Tombol aksi tersusun vertikal */
-            }
-        }
+        /* Saat gambar dimuat (body.is-cropping) */
+        body.is-cropping .upload-box { display: none; }
+        body.is-cropping .action-controls { display: block; }
+
+        body.is-cropping .placeholder { display: none; }
+        body.is-cropping .cropper-container { display: block; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <!-- Konten akan muncul di sini -->
-        <div id="upload-section">
-            <h1>Crop Gambar Anda</h1>
-            <p class="instructions">Klik area di bawah untuk memilih file, atau cukup paste (Ctrl+V) gambar ke halaman ini.</p>
-            <label for="imageInput" class="upload-placeholder" style="cursor: pointer;">
-                <span class="btn btn-primary">Pilih Gambar</span>
-            </label>
-            <input type="file" id="imageInput" accept="image/*">
-        </div>
-
-        <div id="cropper-section" class="hidden">
-            <h1>Sesuaikan Area Crop</h1>
-            <p class="instructions">Geser dan ubah ukuran kotak untuk memilih bagian gambar yang Anda inginkan.</p>
+    <div class="main-layout">
+        <!-- KOLOM KIRI: KONTROL -->
+        <aside class="sidebar">
+            <h1>Image Cropper</h1>
             
-            <div class="cropper-container">
-                <img id="imageToCrop" alt="Gambar untuk di-crop">
+            <div class="upload-box">
+                <p class="instructions">Pilih file atau paste gambar (Ctrl+V) untuk memulai.</p>
+                <label for="imageInput" class="btn btn-primary">Pilih Gambar dari File</label>
+                <input type="file" id="imageInput" accept="image/*">
             </div>
-    
-            <div id="controls" class="controls">
+
+            <div class="action-controls">
+                <p class="instructions">Sesuaikan area crop, lalu simpan hasilnya.</p>
                 <button id="downloadBtn" class="btn btn-primary">Download Hasil Crop</button>
                 <button id="copyBtn" class="btn btn-secondary">Copy ke Clipboard</button>
                 <button id="resetBtn" class="btn btn-secondary">Pilih Gambar Lain</button>
             </div>
-        </div>
+        </aside>
+
+        <!-- KOLOM KANAN: PREVIEW GAMBAR -->
+        <main class="content">
+            <div class="content-inner">
+                <div class="placeholder">
+                    <div class="placeholder-icon">🖼️</div>
+                    <p>Preview gambar akan muncul di sini</p>
+                </div>
+                <div class="cropper-container">
+                    <img id="imageToCrop" alt="Gambar untuk di-crop">
+                </div>
+            </div>
+        </main>
     </div>
 
     <!-- 3. Sertakan JavaScript Cropper.js dari CDN -->
@@ -195,55 +210,47 @@
     <!-- 4. Kode JavaScript untuk Logika Aplikasi -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Ambil elemen-elemen dari DOM
             const imageInput = document.getElementById('imageInput');
             const imageToCrop = document.getElementById('imageToCrop');
-            const uploadSection = document.getElementById('upload-section');
-            const cropperSection = document.getElementById('cropper-section');
-            
             const downloadBtn = document.getElementById('downloadBtn');
             const copyBtn = document.getElementById('copyBtn');
             const resetBtn = document.getElementById('resetBtn');
 
             let cropper = null;
 
-            // Fungsi untuk menampilkan/menyembunyikan section
-            function showCropperUI(show) {
-                uploadSection.classList.toggle('hidden', show);
-                cropperSection.classList.toggle('hidden', !show);
+            // Fungsi untuk mengatur status UI
+            function setUIState(isCropping) {
+                document.body.classList.toggle('is-cropping', isCropping);
             }
 
-            // Fungsi untuk menginisialisasi Cropper
             function initCropper(imageSrc) {
-                showCropperUI(true);
-                imageToCrop.src = imageSrc;
-
                 if (cropper) {
                     cropper.destroy();
                 }
-
+                
+                imageToCrop.src = imageSrc;
                 cropper = new Cropper(imageToCrop, {
-                    // === PERUBAHAN UTAMA: aspectRatio diatur ke NaN untuk mode bebas ===
-                    aspectRatio: NaN, 
+                    aspectRatio: NaN, // Mode crop bebas
                     viewMode: 1,
                     background: false,
                     autoCropArea: 0.8,
                     responsive: true,
+                    checkCrossOrigin: true,
                 });
+                
+                setUIState(true);
             }
 
-            // Event listener untuk input file
             imageInput.addEventListener('change', (e) => {
                 const file = e.target.files[0];
-                if (file && file.type.startsWith('image/')) {
+                if (file?.type.startsWith('image/')) {
                     const reader = new FileReader();
                     reader.onload = (event) => initCropper(event.target.result);
                     reader.readAsDataURL(file);
                 }
-                e.target.value = ''; // Reset input
+                e.target.value = '';
             });
 
-            // Event listener untuk paste dari clipboard
             document.addEventListener('paste', (e) => {
                 const items = e.clipboardData?.items;
                 if (!items) return;
@@ -260,19 +267,16 @@
                 }
             });
 
-            // Fungsi utilitas untuk mendapatkan canvas
             function getCroppedCanvas(options = {}) {
                 if (!cropper) return null;
-                // Opsi default, hanya menentukan lebar agar tinggi disesuaikan otomatis
-                const defaultOptions = {
+                return cropper.getCroppedCanvas({
                     maxWidth: 4096,
                     maxHeight: 4096,
                     imageSmoothingQuality: 'high',
-                };
-                return cropper.getCroppedCanvas({ ...defaultOptions, ...options });
+                    ...options,
+                });
             }
 
-            // Event listener untuk tombol Download
             downloadBtn.addEventListener('click', () => {
                 const canvas = getCroppedCanvas();
                 if (!canvas) return;
@@ -283,33 +287,32 @@
                 link.click();
             });
 
-            // Event listener untuk tombol Copy to Clipboard
             copyBtn.addEventListener('click', () => {
-                const canvas = getCroppedCanvas({ maxWidth: 1024, maxHeight: 1024 }); // Ukuran lebih kecil untuk clipboard
+                const canvas = getCroppedCanvas();
                 if (!canvas) return;
 
                 canvas.toBlob(async (blob) => {
                     try {
-                        await navigator.clipboard.write([
-                            new ClipboardItem({ 'image/png': blob })
-                        ]);
+                        await navigator.clipboard.write([ new ClipboardItem({ [blob.type]: blob }) ]);
                         alert('Gambar berhasil disalin ke clipboard!');
                     } catch (err) {
                         console.error('Gagal menyalin:', err);
-                        alert('Maaf, browser Anda tidak mendukung penyalinan gambar ke clipboard.');
+                        alert('Gagal menyalin gambar. Browser Anda mungkin tidak mendukung fitur ini.');
                     }
-                });
+                }, 'image/png');
             });
 
-            // Event listener untuk tombol Reset/Pilih Gambar Lain
             resetBtn.addEventListener('click', () => {
                 if (cropper) {
                     cropper.destroy();
                     cropper = null;
                 }
                 imageToCrop.src = '';
-                showCropperUI(false);
+                setUIState(false);
             });
+
+            // Inisialisasi status UI awal
+            setUIState(false);
         });
     </script>
 
