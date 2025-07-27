@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alat Crop Gambar Online</title>
+
+    <!-- 1. Sertakan CSS Cropper.js dari CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
+
+    <!-- 2. CSS untuk Tampilan Halaman -->
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --success-color: #28a745;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--dark-color);
+            margin-bottom: 10px;
+        }
+
+        .instructions {
+            color: var(--secondary-color);
+            margin-bottom: 25px;
+        }
+
+        .upload-area {
+            margin-bottom: 20px;
+        }
+        
+        /* Sembunyikan input file asli */
+        #imageInput {
+            display: none;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            border-radius: var(--border-radius);
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .cropper-container {
+            margin-top: 20px;
+            max-height: 60vh; /* Batasi tinggi area crop agar tidak terlalu besar */
+        }
+        
+        /* Cropper.js akan menempatkan gambar di sini */
+        #imageToCrop {
+            display: block;
+            max-width: 100%;
+        }
+
+        .controls {
+            margin-top: 25px;
+            display: flex;
+            justify-content: center;
+            gap: 15px; /* Jarak antar tombol */
+            flex-wrap: wrap; /* Agar tombol turun jika tidak muat */
+        }
+
+        .hidden {
+            display: none;
+        }
+        
+        footer {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #aaa;
+        }
+        
+        footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Alat Crop Gambar Online</h1>
+        <p class="instructions">Pilih gambar dari perangkat Anda atau cukup paste gambar dari clipboard (Ctrl+V).</p>
+
+        <div class="upload-area">
+            <!-- Label ini berfungsi sebagai tombol custom untuk input file -->
+            <label for="imageInput" class="btn btn-primary">Pilih Gambar dari File</label>
+            <input type="file" id="imageInput" accept="image/*">
+        </div>
+
+        <!-- Area untuk Cropper.js -->
+        <div id="cropper-wrapper" class="hidden">
+            <div class="cropper-container">
+                <img id="imageToCrop" alt="Gambar untuk di-crop">
+            </div>
+    
+            <!-- Tombol Aksi -->
+            <div id="controls" class="controls">
+                <button id="downloadBtn" class="btn btn-success">Download Hasil Crop</button>
+                <button id="copyBtn" class="btn btn-secondary">Copy Hasil Crop ke Clipboard</button>
+            </div>
+        </div>
+        
+        <footer>
+            Dibuat dengan bantuan library <a href="https://github.com/fengyuanchen/cropperjs" target="_blank">Cropper.js</a>
+        </footer>
+    </div>
+
+    <!-- 3. Sertakan JavaScript Cropper.js dari CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+
+    <!-- 4. Kode JavaScript untuk Logika Aplikasi -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Ambil elemen-elemen dari DOM
+            const imageInput = document.getElementById('imageInput');
+            const imageToCrop = document.getElementById('imageToCrop');
+            const cropperWrapper = document.getElementById('cropper-wrapper');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const copyBtn = document.getElementById('copyBtn');
+
+            let cropper = null; // Variabel untuk menyimpan instance Cropper
+
+            // Fungsi untuk menginisialisasi atau mengganti gambar di Cropper
+            function initCropper(imageSrc) {
+                // Tampilkan area cropper
+                cropperWrapper.classList.remove('hidden');
+                
+                // Set sumber gambar
+                imageToCrop.src = imageSrc;
+
+                // Hancurkan instance cropper sebelumnya jika ada
+                if (cropper) {
+                    cropper.destroy();
+                }
+
+                // Inisialisasi Cropper.js
+                cropper = new Cropper(imageToCrop, {
+                    aspectRatio: 1 / 1, // Rasio 1:1 (persegi). Ubah ke 16/9, 4/3, atau NaN untuk bebas.
+                    viewMode: 1,      // Batasi area crop agar tidak keluar dari gambar
+                    background: false,  // Hilangkan background grid
+                    responsive: true,
+                    restore: true,
+                    checkCrossOrigin: true,
+                    checkOrientation: true,
+                    modal: true,
+                    guides: true,
+                    highlight: true,
+                    autoCrop: true,
+                    autoCropArea: 0.8, // Area crop awal 80% dari gambar
+                    movable: true,
+                    scalable: true,
+                    zoomable: true,
+                    zoomOnWheel: true,
+                    cropBoxMovable: true,
+                    cropBoxResizable: true,
+                });
+            }
+
+            // Event listener untuk input file
+            imageInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        initCropper(event.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    alert('Silakan pilih file gambar yang valid.');
+                }
+                // Reset input agar bisa memilih file yang sama lagi
+                e.target.value = '';
+            });
+
+            // Event listener untuk paste dari clipboard
+            document.addEventListener('paste', (e) => {
+                const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+                for (const item of items) {
+                    if (item.kind === 'file' && item.type.startsWith('image/')) {
+                        const blob = item.getAsFile();
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            initCropper(event.target.result);
+                        };
+                        reader.readAsDataURL(blob);
+                        e.preventDefault(); // Hentikan aksi paste default browser
+                        break; // Hentikan loop setelah menemukan gambar pertama
+                    }
+                }
+            });
+
+            // Event listener untuk tombol Download
+            downloadBtn.addEventListener('click', () => {
+                if (!cropper) {
+                    return;
+                }
+                
+                // Dapatkan canvas hasil crop
+                const canvas = cropper.getCroppedCanvas({
+                    width: 1024, // Tentukan resolusi output
+                    height: 1024,
+                    imageSmoothingQuality: 'high',
+                });
+
+                // Buat link sementara untuk download
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = 'cropped-image.png';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+
+            // Event listener untuk tombol Copy to Clipboard
+            copyBtn.addEventListener('click', () => {
+                if (!cropper) {
+                    return;
+                }
+
+                // Dapatkan canvas hasil crop
+                const canvas = cropper.getCroppedCanvas({
+                    width: 1024,
+                    height: 1024,
+                    imageSmoothingQuality: 'high',
+                });
+
+                // Ubah canvas menjadi Blob untuk disalin
+                canvas.toBlob(async (blob) => {
+                    try {
+                        // Gunakan Clipboard API modern
+                        await navigator.clipboard.write([
+                            new ClipboardItem({
+                                [blob.type]: blob
+                            })
+                        ]);
+                        alert('Gambar berhasil disalin ke clipboard!');
+                    } catch (err) {
+                        console.error('Gagal menyalin gambar: ', err);
+                        alert('Gagal menyalin gambar ke clipboard. Browser Anda mungkin tidak mendukung fitur ini.');
+                    }
+                }, 'image/png');
+            });
+        });
+    </script>
+
+</body>
+</html>
