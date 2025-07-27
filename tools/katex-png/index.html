@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaTeX to PNG Converter</title>
+
+    <!-- 1. Pustaka KaTeX (untuk render LaTeX) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3NU" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
+
+    <!-- 2. Pustaka html2canvas (untuk konversi HTML ke PNG) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoVBL5gI9kDXrdEMJqzZHWGbWdvyjw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <!-- 3. CSS Internal untuk Styling Halaman -->
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --light-gray: #f8f9fa;
+            --dark-gray: #343a40;
+            --border-color: #dee2e6;
+            --shadow-color: rgba(0,0,0,0.1);
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: white;
+            padding: 25px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px var(--shadow-color);
+        }
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 25px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+            font-family: "Courier New", Courier, monospace;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        fieldset {
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            padding: 10px 15px;
+        }
+        legend {
+            font-weight: 600;
+            padding: 0 10px;
+        }
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .btn-generate {
+            display: block;
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 18px;
+            font-weight: 700;
+            color: white;
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+        .btn-generate:hover {
+            background-color: #0056b3;
+        }
+        .btn-generate:active {
+            transform: scale(0.98);
+        }
+        .output-section {
+            margin-top: 30px;
+            border-top: 2px solid var(--border-color);
+            padding-top: 20px;
+        }
+        h2 {
+            color: var(--dark-gray);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        #png-preview {
+            background-color: var(--light-gray);
+            border: 1px dashed var(--border-color);
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 15px;
+            overflow-x: auto;
+            min-height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #png-output {
+            max-width: 100%;
+            display: none; /* Sembunyikan sampai ada gambar */
+        }
+        .action-buttons {
+            display: none; /* Sembunyikan kontainer sampai ada gambar */
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .action-btn {
+            padding: 10px 20px;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+        .action-btn:active {
+            transform: scale(0.96);
+        }
+        #download-link {
+            background-color: var(--success-color);
+        }
+        #download-link:hover {
+            background-color: #218838;
+        }
+        #copy-btn {
+            background-color: var(--secondary-color);
+        }
+        #copy-btn:hover {
+            background-color: #5a6268;
+        }
+        #copy-btn.copied {
+            background-color: #17a2b8; /* Warna info untuk feedback */
+        }
+        #katex-container {
+            position: absolute;
+            left: -9999px;
+            top: -9999px;
+            padding: 10px;
+            color: black;
+            background-color: transparent;
+        }
+        .error-message {
+            color: #dc3545;
+            font-weight: bold;
+            margin-top: 10px;
+            min-height: 1.2em;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>LaTeX to PNG Converter</h1>
+        <p>Render LaTeX, ubah ke PNG, lalu unduh atau salin ke clipboard.</p>
+
+        <div class="form-group">
+            <label for="latex-input">Masukkan Kode LaTeX Anda:</label>
+            <textarea id="latex-input" placeholder="Contoh: f(x) = \int_{-\infty}^\infty \hat f(\xi)\,e^{2 \pi i \xi x} \,d\xi">c = \pm\sqrt{a^2 + b^2}</textarea>
+        </div>
+
+        <div class="options-grid">
+            <fieldset>
+                <legend>Mode Persamaan</legend>
+                <div class="radio-group">
+                    <label><input type="radio" name="mode" value="inline"> Inline (\(...\))</label>
+                    <label><input type="radio" name="mode" value="display" checked> Display (\[...\])</label>
+                </div>
+            </fieldset>
+            <div class="form-group">
+                <label for="scale-select">Skala Output</label>
+                <select id="scale-select">
+                    <option value="1">100%</option>
+                    <option value="2" selected>200% (Direkomendasikan)</option>
+                    <option value="3">300%</option>
+                    <option value="4">400%</option>
+                    <option value="5">500%</option>
+                    <option value="10">1000%</option>
+                </select>
+            </div>
+        </div>
+
+        <button id="generate-btn" class="btn-generate">Buat PNG</button>
+        <div id="error-display" class="error-message"></div>
+
+        <div class="output-section">
+            <h2>Hasil PNG</h2>
+            <div id="png-preview">
+                <img id="png-output" alt="Hasil render LaTeX">
+            </div>
+            <div class="action-buttons" id="action-buttons">
+                <button id="copy-btn" class="action-btn">Salin ke Clipboard</button>
+                <a href="#" id="download-link" class="action-btn" download="latex_equation.png">Unduh Gambar</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="katex-container"></div>
+
+    <!-- 4. JavaScript Utama Aplikasi -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const latexInput = document.getElementById('latex-input');
+            const generateBtn = document.getElementById('generate-btn');
+            const katexContainer = document.getElementById('katex-container');
+            const pngOutput = document.getElementById('png-output');
+            const downloadLink = document.getElementById('download-link');
+            const copyBtn = document.getElementById('copy-btn');
+            const actionButtons = document.getElementById('action-buttons');
+            const scaleSelect = document.getElementById('scale-select');
+            const errorDisplay = document.getElementById('error-display');
+
+            // Fungsi untuk menyembunyikan hasil output
+            const hideOutput = () => {
+                pngOutput.style.display = 'none';
+                actionButtons.style.display = 'none';
+            };
+
+            // Fungsi untuk mengubah Data URL menjadi Blob
+            const dataURLtoBlob = (dataurl) => {
+                const arr = dataurl.split(',');
+                const mime = arr[0].match(/:(.*?);/)[1];
+                const bstr = atob(arr[1]);
+                let n = bstr.length;
+                const u8arr = new Uint8Array(n);
+                while (n--) {
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+                return new Blob([u8arr], { type: mime });
+            };
+
+            // Event listener untuk tombol utama
+            generateBtn.addEventListener('click', () => {
+                errorDisplay.textContent = '';
+                const latexString = latexInput.value.trim();
+                const mode = document.querySelector('input[name="mode"]:checked').value;
+                const scale = parseFloat(scaleSelect.value);
+
+                if (!latexString) {
+                    errorDisplay.textContent = 'Error: Input LaTeX tidak boleh kosong.';
+                    hideOutput();
+                    return;
+                }
+
+                try {
+                    katex.render(latexString, katexContainer, {
+                        displayMode: mode === 'display',
+                        throwOnError: true,
+                        output: 'html'
+                    });
+                } catch (e) {
+                    errorDisplay.textContent = `Error KaTeX: ${e.message.replace(/KaTeX parse error: /g, '')}`;
+                    hideOutput();
+                    return;
+                }
+
+                setTimeout(() => {
+                    html2canvas(katexContainer, {
+                        backgroundColor: null,
+                        scale: scale
+                    }).then(canvas => {
+                        const pngUrl = canvas.toDataURL('image/png');
+                        
+                        pngOutput.src = pngUrl;
+                        pngOutput.style.display = 'block';
+
+                        downloadLink.href = pngUrl;
+                        actionButtons.style.display = 'flex'; // Tampilkan kontainer tombol
+
+                    }).catch(err => {
+                        errorDisplay.textContent = `Error html2canvas: ${err.message}`;
+                        console.error('Error saat membuat canvas:', err);
+                        hideOutput();
+                    });
+                }, 50);
+            });
+
+            // Event listener untuk tombol Salin
+            copyBtn.addEventListener('click', async () => {
+                if (!pngOutput.src) {
+                    alert('Buat gambar terlebih dahulu!');
+                    return;
+                }
+                if (!navigator.clipboard || !navigator.clipboard.write) {
+                    alert('Maaf, browser Anda tidak mendukung penyalinan gambar ke clipboard.');
+                    return;
+                }
+
+                try {
+                    const blob = dataURLtoBlob(pngOutput.src);
+                    await navigator.clipboard.write([
+                        new ClipboardItem({ 'image/png': blob })
+                    ]);
+                    
+                    // Beri feedback visual
+                    const originalText = copyBtn.textContent;
+                    copyBtn.textContent = 'Tersalin!';
+                    copyBtn.classList.add('copied');
+                    
+                    setTimeout(() => {
+                        copyBtn.textContent = originalText;
+                        copyBtn.classList.remove('copied');
+                    }, 2000);
+
+                } catch (err) {
+                    console.error('Gagal menyalin gambar:', err);
+                    alert('Gagal menyalin gambar ke clipboard.');
+                }
+            });
+
+            // Jalankan fungsi generate saat pertama kali halaman dimuat
+            generateBtn.click();
+        });
+    </script>
+</body>
+</html>
