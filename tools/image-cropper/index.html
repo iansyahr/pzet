@@ -195,7 +195,7 @@
 
                 // Inisialisasi Cropper.js
                 cropper = new Cropper(imageToCrop, {
-                    aspectRatio: 1 / 1, // Rasio 1:1 (persegi). Ubah ke 16/9, 4/3, atau NaN untuk bebas.
+                    aspectRatio: NaN, // Rasio 1:1 (persegi). Ubah ke 16/9, 4/3, atau NaN untuk bebas.
                     viewMode: 1,      // Batasi area crop agar tidak keluar dari gambar
                     background: false,  // Hilangkan background grid
                     responsive: true,
