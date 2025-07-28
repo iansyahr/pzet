@@ -283,8 +283,8 @@
                 if (!canvas) return;
 
                 const link = document.createElement('a');
-                link.href = canvas.toDataURL('image/png');
-                link.download = 'cropped-image.png';
+                link.href = canvas.toDataURL('image/avif');
+                link.download = 'cropped-image.avif';
                 link.click();
             });
 
