@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Potong Tabel - FINAL FIX (Super Cepat)</title>
+    <title>Potong Tabel - FINAL FIX (Super Cepat v2)</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; max-width: 900px; margin: 20px auto; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px; }
         h1, h2 { text-align: center; color: #444; }
@@ -44,7 +44,7 @@
 </head>
 <body>
 
-    <h1>Potong Tabel - FINAL FIX (Super Cepat)</h1>
+    <h1>Potong Tabel - FINAL FIX (Super Cepat v2)</h1>
     <p>Unggah gambar Anda, lalu perhatikan log proses di bawah untuk melihat setiap langkah yang dilakukan skrip secara detail.</p>
 
     <div id="controls">
@@ -152,6 +152,10 @@
                 logToUI('Langkah 3A: Quick Scan untuk Lokasi Baris Target', 'step');
                 
                 singleWorker = await Tesseract.createWorker('eng');
+                await singleWorker.setParameters({
+                    tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK,
+                });
+
                 const tempCanvas = document.createElement('canvas');
                 cv.imshow(tempCanvas, binary);
 
