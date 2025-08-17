@@ -45,7 +45,7 @@
 </head>
 <body>
 
-    <h1>Potong Tabel - Template Matching (Robust)</h1>
+    <h1>Potong Tabel - Template Matching (Robust v3)</h1>
     <p>Metode ini mencari semua kemungkinan lokasi template, lalu menemukan pasangan yang berada di baris yang sama untuk menghindari hasil positif palsu.</p>
 
     <div id="controls">
@@ -183,7 +183,7 @@
                 // =======================================================
                 // === PERUBAHAN UTAMA DI SINI: MENURUNKAN THRESHOLD ===
                 // =======================================================
-                const threshold = 0.7; // Coba dengan nilai yang lebih rendah
+                const threshold = 0.45; // Coba dengan nilai yang lebih rendah
                 
                 logToUI(`  > Mencari semua kandidat "ITA" dengan skor > ${threshold}...`, 'info');
                 const itaCandidates = findAllMatches(binary, templateITA, threshold);
