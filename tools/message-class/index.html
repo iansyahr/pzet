@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Potong Tabel dengan OpenCV.js + Tesseract.js (FIXED)</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; max-width: 900px; margin: 20px auto; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px; }
+        h1, h2 { text-align: center; color: #444; }
+        #controls { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; padding: 20px; background-color: #fff; border: 1px dashed #ccc; border-radius: 8px; }
+        input[type="file"] { padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        button { padding: 12px 20px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; transition: background-color 0.3s; }
+        button:hover { background-color: #218838; }
+        button:disabled { background-color: #cccccc; cursor: not-allowed; }
+        #status { margin-top: 15px; padding: 10px; border-radius: 4px; font-style: italic; color: #555; text-align: center; }
+        .error-message { background-color: #ffebee; color: #c62828; font-style: normal; font-weight: bold; }
+        .processing-steps { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+        .processing-steps canvas { max-width: 45%; border: 1px solid #ccc; }
+        #result-container { text-align: center; }
+        #result-container img { max-width: 100%; margin-top: 10px; border: 2px solid #17a2b8; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <h1>Potong Tabel dengan OpenCV.js + Tesseract.js (FIXED)</h1>
+    <p>Pendekatan ini menggunakan OpenCV.js untuk mendeteksi sel-sel tabel, lalu Tesseract.js untuk membaca teks di setiap sel demi akurasi yang lebih tinggi.</p>
+
+    <div id="controls">
+        <label for="imageUpload">Pilih gambar tabel:</label>
+        <input type="file" id="imageUpload" accept="image/*">
+        <button id="processButton">Mulai Proses Canggih</button>
+    </div>
+
+    <div id="status">Memuat library, harap tunggu...</div>
+    
+    <div class="processing-steps">
+        <canvas id="canvasPreview" style="display:none;"></canvas>
+    </div>
+
+    <div id="result-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script async src="https://docs.opencv.org/4.9.0/opencv.js" onload="onOpenCvReady();"></script>
+
+    <script>
+        const imageUpload = document.getElementById('imageUpload');
+        const processButton = document.getElementById('processButton');
+        const statusDiv = document.getElementById('status');
+        const resultContainer = document.getElementById('result-container');
+        const canvasPreview = document.getElementById('canvasPreview');
+        
+        // --- PERBAIKAN UTAMA ADA DI SINI ---
+        processButton.disabled = true; // Nonaktifkan tombol secara default
+
+        function onOpenCvReady() {
+            // Fungsi ini dipanggil saat file opencv.js SELESAI DIUNDUH.
+            // Sekarang, kita harus menunggu sampai RUNTIME-nya siap.
+            cv.onRuntimeInitialized = () => {
+                console.log('OpenCV runtime is now ready.');
+                processButton.disabled = false; // Aktifkan tombol HANYA setelah runtime siap
+                updateStatus('Sistem siap. Silakan pilih gambar dan mulai proses.');
+            };
+        }
+
+        processButton.addEventListener('click', () => {
+            const file = imageUpload.files[0];
+            if (!file) {
+                updateStatus('Silakan pilih file gambar terlebih dahulu!', true);
+                return;
+            }
+
+            processButton.disabled = true;
+            processButton.textContent = 'Memproses...';
+            resultContainer.innerHTML = '';
+            canvasPreview.style.display = 'none';
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => startAdvancedProcessing(img);
+                img.src = e.target.result;
+            };
+            reader.readDataURL(file);
+        });
+
+        async function startAdvancedProcessing(img) {
+            try {
+                updateStatus('Langkah 1/5: Memproses gambar dengan OpenCV...');
+                let src = cv.imread(img);
+                let gray = new cv.Mat();
+                cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
+                
+                let binary = new cv.Mat();
+                cv.adaptiveThreshold(gray, binary, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY_INV, 11, 2);
+
+                canvasPreview.style.display = 'block';
+                cv.imshow(canvasPreview, binary);
+                
+                updateStatus('Langkah 2/5: Mendeteksi sel tabel...');
+                let contours = new cv.MatVector();
+                let hierarchy = new cv.Mat();
+                cv.findContours(binary, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
+
+                const cellRects = [];
+                for (let i = 0; i < contours.size(); ++i) {
+                    let cnt = contours.get(i);
+                    let area = cv.contourArea(cnt);
+                    // Sesuaikan nilai filter area ini jika sel tidak terdeteksi
+                    if (area > 500 && area < 50000) { 
+                        let rect = cv.boundingRect(cnt);
+                        cellRects.push(rect);
+                    }
+                    cnt.delete();
+                }
+                
+                if (cellRects.length === 0) {
+                    throw new Error("Tidak ada sel tabel yang terdeteksi. Coba gambar dengan kontras lebih baik.");
+                }
+
+                updateStatus(`Langkah 3/5: Menjalankan OCR pada ${cellRects.length} sel yang terdeteksi...`);
+                const ocrResults = [];
+                const tempCanvas = document.createElement('canvas');
+
+                for (let i = 0; i < cellRects.length; i++) {
+                    const rect = cellRects[i];
+                    let cellMat = binary.roi(rect);
+                    cv.imshow(tempCanvas, cellMat);
+                    
+                    const { data: { text } } = await Tesseract.recognize(tempCanvas, 'eng');
+                    if (text.trim()) {
+                        ocrResults.push({ text: text.trim().replace(/\n/g, ' '), rect }); // Ganti newline dengan spasi
+                    }
+                    cellMat.delete();
+                    updateStatus(`Langkah 3/5: OCR sel ${i + 1} dari ${cellRects.length}...`);
+                }
+                
+                console.log("Hasil OCR Mentah:", ocrResults);
+
+                updateStatus('Langkah 4/5: Mencari baris target "ITA 3550"...');
+                let targetRow = null;
+                const itaCells = ocrResults.filter(r => r.text.toUpperCase().includes('ITA'));
+                const numCells = ocrResults.filter(r => r.text.includes('3550'));
+
+                for (const itaCell of itaCells) {
+                    for (const numCell of numCells) {
+                        const isSameRow = (itaCell.rect.y < numCell.rect.y + numCell.rect.height && 
+                                           itaCell.rect.y + itaCell.rect.height > numCell.rect.y);
+                        if (isSameRow) {
+                            const rowCenterY = (itaCell.rect.y + itaCell.rect.height / 2);
+                            // Cari semua sel yang pusat vertikalnya dekat dengan pusat sel ITA
+                            targetRow = ocrResults.filter(r => Math.abs((r.rect.y + r.rect.height / 2) - rowCenterY) < itaCell.rect.height / 2);
+                            break;
+                        }
+                    }
+                    if (targetRow) break;
+                }
+
+                if (!targetRow || targetRow.length === 0) {
+                    throw new Error('Gagal menemukan baris yang mengandung "ITA" dan "3550" secara bersamaan.');
+                }
+
+                updateStatus('Langkah 5/5: Memotong gambar asli...');
+                const padding = 5;
+                const minX = Math.min(...targetRow.map(r => r.rect.x)) - padding;
+                const minY = Math.min(...targetRow.map(r => r.rect.y)) - padding;
+                const maxX = Math.max(...targetRow.map(r => r.rect.x + r.rect.width)) + padding;
+                const maxY = Math.max(...targetRow.map(r => r.rect.y + r.rect.height)) + padding;
+                
+                // Pastikan koordinat tidak negatif
+                const finalRect = new cv.Rect(Math.max(0, minX), Math.max(0, minY), maxX - minX, maxY - minY);
+                let finalCrop = src.roi(finalRect);
+
+                const resultCanvas = document.createElement('canvas');
+                cv.imshow(resultCanvas, finalCrop);
+                
+                resultContainer.innerHTML = '<h2>Hasil Potongan Final:</h2>';
+                const resultImage = new Image();
+                resultImage.src = resultCanvas.toDataURL('image/png');
+                resultContainer.appendChild(resultImage);
+
+                updateStatus('Proses selesai!', false);
+                src.delete(); gray.delete(); binary.delete(); contours.delete(); hierarchy.delete(); finalCrop.delete();
+
+            } catch (error) {
+                console.error("Terjadi kesalahan:", error);
+                updateStatus(`Error: ${error.message}`, true);
+            } finally {
+                processButton.disabled = false;
+                processButton.textContent = 'Mulai Proses Canggih';
+            }
+        }
+
+        function updateStatus(message, isError = false) {
+            statusDiv.textContent = message;
+            if (isError) {
+                statusDiv.classList.add('error-message');
+            } else {
+                statusDiv.classList.remove('error-message');
+            }
+        }
+    </script>
+
+</body>
+</html>
