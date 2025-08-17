@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Potong Tabel - Performa Dioptimalkan</title>
+    <title>Potong Tabel - Performa Dioptimalkan (FIXED)</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; max-width: 900px; margin: 20px auto; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px; }
         h1, h2 { text-align: center; color: #444; }
@@ -44,7 +44,7 @@
 </head>
 <body>
 
-    <h1>Potong Tabel - Performa Dioptimalkan</h1>
+    <h1>Potong Tabel - Performa Dioptimalkan (FIXED)</h1>
     <p>Versi ini menggunakan pemrosesan paralel dan melewatkan sel kosong untuk meningkatkan kecepatan secara signifikan.</p>
 
     <div id="controls">
@@ -112,18 +112,16 @@
             };
             reader.readAsDataURL(file);
         });
-
-        // --- OPTIMISASI 1: FUNGSI UNTUK MENGECEK SEL KOSONG ---
+        
         function isCellEmpty(cellMat) {
             const totalPixels = cellMat.rows * cellMat.cols;
             const nonZeroPixels = cv.countNonZero(cellMat);
             const pixelRatio = nonZeroPixels / totalPixels;
-            // Jika kurang dari 0.5% piksel adalah hitam, anggap kosong
             return pixelRatio < 0.005;
         }
 
         async function startAdvancedProcessing(img) {
-            let scheduler = null; // Ganti worker dengan scheduler
+            let scheduler = null;
             try {
                 logToUI('Langkah 1: Pra-pemrosesan Gambar', 'step');
                 let src = cv.imread(img);
@@ -157,10 +155,9 @@
 
                 logToUI('Langkah 3: Menjalankan OCR Paralel', 'step');
                 
-                // --- OPTIMISASI 2: BUAT SCHEDULER DENGAN BEBERAPA WORKER ---
                 logToUI('  > Membuat scheduler Tesseract...', 'info');
                 scheduler = Tesseract.createScheduler();
-                const workerCount = navigator.hardwareConcurrency || 4; // Gunakan jumlah core CPU atau default 4
+                const workerCount = navigator.hardwareConcurrency || 4;
                 const workers = Array(workerCount).fill(null).map(() => Tesseract.createWorker('eng'));
                 await Promise.all(workers.map(worker => scheduler.addWorker(worker)));
                 logToUI(`  > Scheduler siap dengan ${workerCount} worker.`, 'success');
@@ -174,15 +171,15 @@
                     if (isCellEmpty(cellMat)) {
                         skippedCells++;
                         cellMat.delete();
-                        continue; // Lewati sel kosong
+                        continue;
                     }
-                    // Kita perlu mengkloning Mat karena akan digunakan di dalam promise
                     cv.imshow(tempCanvas, cellMat);
                     const imageData = tempCanvas.getContext('2d').getImageData(0, 0, tempCanvas.width, tempCanvas.height);
                     
-                    // Tambahkan tugas ke scheduler, jangan langsung `await`
+                    // --- PERBAIKAN KRUSIAL DI SINI ---
+                    // Bungkus imageData di dalam sebuah array: [imageData]
                     ocrPromises.push(
-                        scheduler.addJob('recognize', imageData).then(result => ({
+                        scheduler.addJob('recognize', [imageData]).then(result => ({
                             text: result.data.text.trim().replace(/\n/g, ' '),
                             rect: rect
                         }))
@@ -193,7 +190,6 @@
                 logToUI(`  > Melewatkan ${skippedCells} sel kosong.`, 'warning');
                 logToUI(`  > Memproses ${ocrPromises.length} sel berisi teks secara paralel...`, 'info');
 
-                // Tunggu semua pekerjaan selesai
                 const ocrResults = (await Promise.all(ocrPromises)).filter(r => r.text);
                 
                 logToUI(`  > OCR paralel selesai.`, 'success');
@@ -201,7 +197,6 @@
                 logToUI('  > Data OCR Mentah:\n' + JSON.stringify(ocrSummary, null, 2), 'info');
 
                 logToUI('Langkah 4: Mencari Baris Target', 'step');
-                // ... Sisa kode sama persis ...
                 const itaCells = ocrResults.filter(r => r.text.toUpperCase().includes('ITA'));
                 const numCells = ocrResults.filter(r => r.text.includes('3550'));
                 logToUI(`  > Ditemukan ${itaCells.length} sel mengandung 'ITA' dan ${numCells.length} sel mengandung '3550'.`, 'info');
