@@ -1,0 +1,469 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimized Table OCR</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    <script src="https://docs.opencv.org/4.5.0/opencv.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .image-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        canvas, img {
+            max-width: 500px;
+            border: 1px solid #ddd;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .results {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .progress-container {
+            width: 100%;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            height: 20px;
+            background-color: #007bff;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        .status {
+            margin: 10px 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Optimized Table OCR with OpenCV.js and Tesseract.js</h1>
+        
+        <div class="controls">
+            <input type="file" id="imageInput" accept="image/*">
+            <button id="processBtn" onclick="processImage()" disabled>Process Image</button>
+            <button id="stopBtn" onclick="stopProcessing()" disabled>Stop Processing</button>
+        </div>
+        
+        <div class="status" id="status">Ready to process image...</div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+        </div>
+        
+        <div class="image-container">
+            <div>
+                <h3>Original Image</h3>
+                <img id="originalImage" style="display: none;">
+            </div>
+            <div>
+                <h3>Processed Image</h3>
+                <canvas id="outputCanvas" style="display: none;"></canvas>
+            </div>
+        </div>
+        
+        <div class="results">
+            <h3>OCR Results</h3>
+            <div class="log" id="log"></div>
+        </div>
+    </div>
+
+    <script>
+        let imageInput = document.getElementById('imageInput');
+        let processBtn = document.getElementById('processBtn');
+        let stopBtn = document.getElementById('stopBtn');
+        let originalImage = document.getElementById('originalImage');
+        let outputCanvas = document.getElementById('outputCanvas');
+        let logDiv = document.getElementById('log');
+        let statusDiv = document.getElementById('status');
+        let progressBar = document.getElementById('progressBar');
+        
+        let opencvWorker = null;
+        let isProcessing = false;
+        let abortController = null;
+
+        // Inisialisasi Web Worker untuk OpenCV
+        function initOpenCVWorker() {
+            opencvWorker = new Worker(URL.createObjectURL(new Blob([`
+                self.Module = {};
+                importScripts('https://docs.opencv.org/4.5.0/opencv.js');
+                
+                self.onmessage = function(e) {
+                    if (!self.Module || !self.Module.ready) {
+                        setTimeout(() => self.onmessage(e), 100);
+                        return;
+                    }
+                    
+                    const { imageData, targetText } = e.data;
+                    const src = self.Module.matFromImageData(imageData);
+                    const gray = new self.Module.Mat();
+                    const binary = new self.Module.Mat();
+                    const contours = new self.Module.MatVector();
+                    const hierarchy = new self.Module.Mat();
+                    
+                    try {
+                        // Konversi ke grayscale
+                        self.Module.cvtColor(src, gray, self.Module.COLOR_RGBA2GRAY);
+                        
+                        // Threshold adaptif
+                        self.Module.adaptiveThreshold(gray, binary, 255, self.Module.ADAPTIVE_THRESH_GAUSSIAN_C, 
+                                                   self.Module.THRESH_BINARY, 11, 2);
+                        
+                        // Cari kontur
+                        self.Module.findContours(binary, contours, hierarchy, self.Module.RETR_EXTERNAL, 
+                                               self.Module.CHAIN_APPROX_SIMPLE);
+                        
+                        let cellRects = [];
+                        for (let i = 0; i < contours.size(); i++) {
+                            const cnt = contours.get(i);
+                            const area = self.Module.contourArea(cnt);
+                            
+                            if (area > 1000 && area < 50000) {
+                                const rect = self.Module.boundingRect(cnt);
+                                const aspectRatio = rect.width / rect.height;
+                                
+                                // Filter berdasarkan aspect ratio
+                                if (aspectRatio > 0.3 && aspectRatio < 5) {
+                                    cellRects.push({
+                                        x: rect.x,
+                                        y: rect.y,
+                                        width: rect.width,
+                                        height: rect.height
+                                    });
+                                }
+                            }
+                        }
+                        
+                        // Sort kontur berdasarkan posisi
+                        cellRects.sort((a, b) => {
+                            if (Math.abs(a.y - b.y) < 10) {
+                                return a.x - b.x;
+                            }
+                            return a.y - b.y;
+                        });
+                        
+                        // Gambar hasil deteksi
+                        const dest = new self.Module.Mat();
+                        src.copyTo(dest);
+                        const color = new self.Module.Scalar(0, 255, 0, 255);
+                        
+                        cellRects.forEach(rect => {
+                            const point1 = new self.Module.Point(rect.x, rect.y);
+                            const point2 = new self.Module.Point(rect.x + rect.width, rect.y + rect.height);
+                            self.Module.rectangle(dest, point1, point2, color, 2);
+                        });
+                        
+                        // Convert ke ImageData
+                        const outputImageData = new ImageData(
+                            new Uint8ClampedArray(dest.data), 
+                            dest.cols, 
+                            dest.rows
+                        );
+                        
+                        self.postMessage({
+                            type: 'opencv_result',
+                            cellRects: cellRects,
+                            outputImageData: outputImageData
+                        });
+                        
+                    } catch (error) {
+                        self.postMessage({
+                            type: 'error',
+                            message: error.message
+                        });
+                    } finally {
+                        src.delete();
+                        gray.delete();
+                        binary.delete();
+                        contours.delete();
+                        hierarchy.delete();
+                    }
+                };
+            `], { type: 'application/javascript' })));
+        }
+
+        // Load image
+        imageInput.addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(event) {
+                    originalImage.src = event.target.result;
+                    originalImage.onload = function() {
+                        processBtn.disabled = false;
+                        outputCanvas.width = originalImage.width;
+                        outputCanvas.height = originalImage.height;
+                    };
+                };
+                
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Proses gambar
+        async function processImage() {
+            if (isProcessing) return;
+            
+            isProcessing = true;
+            processBtn.disabled = true;
+            stopBtn.disabled = false;
+            logDiv.innerHTML = '';
+            statusDiv.textContent = 'Initializing OCR workers...';
+            progressBar.style.width = '0%';
+
+            try {
+                abortController = new AbortController();
+                const signal = abortController.signal;
+
+                // Buat worker Tesseract
+                const worker = await Tesseract.createWorker('eng', 1, {
+                    logger: m => {
+                        if (m.status === 'recognizing text') {
+                            const progress = Math.round(m.progress * 100);
+                            progressBar.style.width = progress + '%';
+                            statusDiv.textContent = `OCR Progress: ${progress}%`;
+                        }
+                    },
+                    tessedit_pageseg_mode: 6,
+                    tessedit_ocr_engine_mode: 1
+                });
+
+                // Load image ke canvas
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = originalImage.width;
+                canvas.height = originalImage.height;
+                ctx.drawImage(originalImage, 0, 0);
+
+                // Kirim ke OpenCV worker
+                statusDiv.textContent = 'Detecting table cells...';
+                
+                opencvWorker.postMessage({
+                    imageData: ctx.getImageData(0, 0, canvas.width, canvas.height),
+                    targetText: 'ITA'
+                });
+
+                // Tunggu hasil dari OpenCV worker
+                const opencvResult = await new Promise((resolve, reject) => {
+                    opencvWorker.onmessage = function(e) {
+                        if (e.data.type === 'opencv_result') {
+                            resolve(e.data);
+                        } else if (e.data.type === 'error') {
+                            reject(new Error(e.data.message));
+                        }
+                    };
+                });
+
+                // Tampilkan hasil deteksi
+                const outputCtx = outputCanvas.getContext('2d');
+                outputCtx.putImageData(opencvResult.outputImageData, 0, 0);
+                originalImage.style.display = 'block';
+                outputCanvas.style.display = 'block';
+
+                // Proses OCR paralel
+                statusDiv.textContent = 'Processing OCR on detected cells...';
+                const results = await processOCROnCells(canvas, opencvResult.cellRects, worker, signal);
+                
+                displayResults(results);
+                statusDiv.textContent = 'Processing complete!';
+                progressBar.style.width = '100%';
+
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    logMessage(`Error: ${error.message}`, 'error');
+                    statusDiv.textContent = `Error: ${error.message}`;
+                } else {
+                    statusDiv.textContent = 'Processing stopped by user';
+                }
+            } finally {
+                isProcessing = false;
+                processBtn.disabled = false;
+                stopBtn.disabled = true;
+                if (abortController) {
+                    abortController = null;
+                }
+            }
+        }
+
+        // Proses OCR pada sel-sel
+        async function processOCROnCells(canvas, cellRects, worker, signal) {
+            const ctx = canvas.getContext('2d');
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            const results = [];
+            const promises = [];
+
+            for (let i = 0; i < cellRects.length; i++) {
+                if (signal.aborted) {
+                    throw new Error('Processing aborted');
+                }
+
+                const rect = cellRects[i];
+                const padding = Math.max(5, Math.min(rect.width, rect.height) * 0.05);
+                
+                const x = Math.max(0, rect.x - padding);
+                const y = Math.max(0, rect.y - padding);
+                const width = Math.min(canvas.width - x, rect.width + 2 * padding);
+                const height = Math.min(canvas.height - y, rect.height + 2 * padding);
+
+                tempCanvas.width = width;
+                tempCanvas.height = height;
+                tempCtx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
+
+                // Gunakan Blob URL untuk performa lebih baik
+                const promise = new Promise((resolve) => {
+                    tempCanvas.toBlob(async (blob) => {
+                        if (signal.aborted) {
+                            resolve(null);
+                            return;
+                        }
+
+                        try {
+                            const url = URL.createObjectURL(blob);
+                            const result = await worker.recognize(url);
+                            URL.revokeObjectURL(url);
+                            
+                            resolve({
+                                text: result.data.text.trim(),
+                                rect: rect,
+                                confidence: result.data.confidence
+                            });
+                        } catch (error) {
+                            resolve(null);
+                        }
+                    }, 'image/png');
+                });
+
+                promises.push(promise);
+            }
+
+            const ocrResults = await Promise.all(promises);
+            return ocrResults.filter(result => result !== null);
+        }
+
+        // Tampilkan hasil
+        function displayResults(results) {
+            logDiv.innerHTML = '';
+            
+            // Cari baris yang mengandung "ITA"
+            const targetRows = results.filter(result => 
+                result.text.includes('ITA')
+            );
+            
+            if (targetRows.length > 0) {
+                logMessage('🎯 Target rows found containing "ITA":', 'success');
+                targetRows.forEach((row, index) => {
+                    logMessage(`Row ${index + 1}: "${row.text}" (Confidence: ${row.confidence.toFixed(2)}%)`, 'info');
+                });
+                
+                // Cari angka 3550 di baris target
+                const targetRow = targetRows.find(row => row.text.includes('3550'));
+                if (targetRow) {
+                    logMessage('✅ Found target row with "3550"!', 'success');
+                    logMessage(`Text: ${targetRow.text}`, 'info');
+                } else {
+                    logMessage('❌ "3550" not found in target rows', 'warning');
+                }
+            } else {
+                logMessage('❌ No rows containing "ITA" found', 'warning');
+            }
+            
+            // Tampilkan semua hasil untuk debugging
+            logMessage('\n📋 All OCR Results:', 'debug');
+            results.forEach((result, index) => {
+                logMessage(`Cell ${index + 1}: "${result.text}"`, 'debug');
+            });
+        }
+
+        // Log message
+        function logMessage(message, type = 'info') {
+            const messageDiv = document.createElement('div');
+            messageDiv.textContent = message;
+            
+            switch (type) {
+                case 'error':
+                    messageDiv.style.color = '#dc3545';
+                    break;
+                case 'success':
+                    messageDiv.style.color = '#28a745';
+                    break;
+                case 'warning':
+                    messageDiv.style.color = '#ffc107';
+                    break;
+                case 'debug':
+                    messageDiv.style.color = '#6c757d';
+                    messageDiv.style.fontSize = '12px';
+                    break;
+                default:
+                    messageDiv.style.color = '#000';
+            }
+            
+            logDiv.appendChild(messageDiv);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        // Stop processing
+        function stopProcessing() {
+            if (abortController) {
+                abortController.abort();
+            }
+            if (opencvWorker) {
+                opencvWorker.terminate();
+                initOpenCVWorker(); // Re-inisialisasi worker
+            }
+            statusDiv.textContent = 'Processing stopped by user';
+        }
+
+        // Inisialisasi
+        window.onload = function() {
+            initOpenCVWorker();
+        };
+    </script>
+</body>
+  </html>
