@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Potong Tabel - Performa Dioptimalkan</title>
+    <title>Potong Tabel - FINAL FIX</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; max-width: 900px; margin: 20px auto; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px; }
         h1, h2 { text-align: center; color: #444; }
@@ -44,7 +44,7 @@
 </head>
 <body>
 
-    <h1>Potong Tabel - Performa Dioptimalkan</h1>
+    <h1>Potong Tabel - FINAL FIX</h1>
     <p>Unggah gambar Anda, lalu perhatikan log proses di bawah untuk melihat setiap langkah yang dilakukan skrip secara detail.</p>
 
     <div id="controls">
@@ -114,7 +114,6 @@
         });
 
         async function startAdvancedProcessing(img) {
-            // --- VARIABEL WORKER DIDEKLARASIKAN DI SINI ---
             let worker = null;
             try {
                 logToUI('Langkah 1: Pra-pemrosesan Gambar', 'step');
@@ -151,20 +150,19 @@
                 logToUI(`  > Ditemukan ${cellRects.length} kandidat sel.`, 'success');
 
                 logToUI('Langkah 3: Menjalankan OCR per Sel', 'step');
-                // --- BUAT WORKER SATU KALI DI SINI ---
-                logToUI('  > Membuat & menginisialisasi Tesseract worker... (mungkin perlu beberapa saat)', 'info');
+                logToUI('  > Membuat & menginisialisasi Tesseract worker...', 'info');
                 worker = await Tesseract.createWorker('eng');
                 logToUI('  > Worker berhasil dibuat.', 'success');
                 
                 const ocrResults = [];
                 const tempCanvas = document.createElement('canvas');
 
-                for (let i = 0; i < ocrResults.length; i++) {
+                // --- INILAH PERBAIKAN UTAMA ---
+                for (let i = 0; i < cellRects.length; i++) {
                     const rect = cellRects[i];
                     let cellMat = binary.roi(rect);
                     cv.imshow(tempCanvas, cellMat);
                     
-                    // --- GUNAKAN WORKER YANG SAMA BERULANG KALI ---
                     const { data: { text } } = await worker.recognize(tempCanvas);
 
                     if (text.trim()) {
@@ -172,8 +170,7 @@
                         ocrResults.push({ text: cleanedText, rect });
                     }
                     cellMat.delete();
-                    // Log progres yang lebih baik
-                    logToUI(`  > OCR Sel ${i + 1}/${cellRects.length}: "${text.trim()}"`, 'info');
+                    logToUI(`  > OCR Sel ${i + 1}/${cellRects.length}`, 'info');
                 }
                 logToUI(`  > OCR selesai untuk semua sel.`, 'success');
                 
@@ -186,7 +183,6 @@
                 logToUI(`  > Ditemukan ${itaCells.length} sel mengandung 'ITA' dan ${numCells.length} sel mengandung '3550'.`, 'info');
 
                 let targetRow = null;
-                // ... (sisa logika pencarian sama) ...
                 for (const itaCell of itaCells) {
                     for (const numCell of numCells) {
                         const isSameRow = (itaCell.rect.y < numCell.rect.y + numCell.rect.height && 
@@ -232,7 +228,6 @@
                 console.error("Terjadi kesalahan:", error);
                 logToUI(`Error: ${error.message}`, 'error');
             } finally {
-                // --- PASTIKAN WORKER SELALU DIMATIKAN ---
                 if (worker) {
                     logToUI('Mematikan Tesseract worker...', 'info');
                     await worker.terminate();
