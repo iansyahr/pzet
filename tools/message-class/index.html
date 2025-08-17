@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Potong Tabel - Performa Dioptimalkan (FIXED)</title>
+    <title>Potong Tabel - FINAL RACE CONDITION FIX</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; max-width: 900px; margin: 20px auto; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px; }
         h1, h2 { text-align: center; color: #444; }
@@ -44,8 +44,8 @@
 </head>
 <body>
 
-    <h1>Potong Tabel - Performa Dioptimalkan (FIXED)</h1>
-    <p>Versi ini menggunakan pemrosesan paralel dan melewatkan sel kosong untuk meningkatkan kecepatan secara signifikan.</p>
+    <h1>Potong Tabel - FINAL RACE CONDITION FIX</h1>
+    <p>Versi ini menggunakan "fotokopi" gambar (Data URL) untuk setiap sel untuk mencegah race condition saat pemrosesan paralel.</p>
 
     <div id="controls">
         <label for="imageUpload">Pilih gambar tabel:</label>
@@ -174,12 +174,14 @@
                         continue;
                     }
                     cv.imshow(tempCanvas, cellMat);
-                    const imageData = tempCanvas.getContext('2d').getImageData(0, 0, tempCanvas.width, tempCanvas.height);
                     
-                    // --- PERBAIKAN KRUSIAL DI SINI ---
-                    // Bungkus imageData di dalam sebuah array: [imageData]
+                    // --- PERBAIKAN UTAMA: GUNAKAN DATA URL (FOTOKOPI) ---
+                    const dataUrl = tempCanvas.toDataURL();
+                    
+                    // Panggil `recognize` dengan Data URL yang unik. API `addJob` tidak dibutuhkan di sini
+                    // dan `recognize` langsung dengan scheduler lebih sederhana & aman.
                     ocrPromises.push(
-                        scheduler.addJob('recognize', [imageData]).then(result => ({
+                        scheduler.addJob('recognize', dataUrl).then(result => ({
                             text: result.data.text.trim().replace(/\n/g, ' '),
                             rect: rect
                         }))
