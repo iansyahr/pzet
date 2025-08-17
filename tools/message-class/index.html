@@ -122,9 +122,9 @@
                 logToUI('  > Gambar asli berhasil dimuat.', 'info');
 
                 logToUI('Langkah 2: ROI Cerdas & Pra-pemrosesan', 'step');
-                // ROI ini secara spesifik menargetkan kolom "KELAS" berdasarkan analisis gambar Anda
-                const roiStartX = src.cols * 0.30; // Mulai dari 30% lebar gambar (melewati kolom LOKASI)
-                const roiWidth = src.cols * 0.25;  // Ambil lebar 25% (mencakup kolom RUANG, W.KLS, KELAS)
+                // ROI digeser ke kiri untuk mencakup lebih banyak area
+                const roiStartX = src.cols * 0.20; // Digeser ke kiri, mulai dari 20% lebar gambar
+                const roiWidth = src.cols * 0.30;  // Lebar diperluas sedikit menjadi 30%
                 let roiRect = new cv.Rect(roiStartX, 0, roiWidth, src.rows);
                 
                 let targetColumnMat = src.roi(roiRect);
@@ -171,7 +171,6 @@
                 
                 logToUI('Langkah 5: Menentukan Batas Baris & Memotong Gambar Asli', 'step');
                 const padding = 8; // Tambahkan padding agar lebih rapi
-                // Koordinat Y dari BBox relatif terhadap gambar ROI, jadi tidak perlu diubah
                 const rowTop = Math.min(itaWord.bbox.y0, numWord.bbox.y0) - padding;
                 const rowBottom = Math.max(itaWord.bbox.y1, numWord.bbox.y1) + padding;
                 const rowHeight = rowBottom - rowTop;
