@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Potong Tabel - Template Matching (Robust)</title>
+    <title>Potong Tabel - Template Matching (Robust v2)</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; max-width: 900px; margin: 20px auto; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px; }
         h1, h2 { text-align: center; color: #444; }
@@ -153,12 +153,16 @@
                     return templateGray;
                 };
 
-                // --- FUNGSI BARU UNTUK MENCARI SEMUA KECOCOKAN ---
                 const findAllMatches = (source, template, threshold) => {
                     let result = new cv.Mat();
                     let mask = new cv.Mat();
                     cv.matchTemplate(source, template, result, cv.TM_CCOEFF_NORMED, mask);
-                    
+
+                    // --- [OPSIONAL] Baris debug untuk melihat skor maksimum ---
+                    let maxScore = cv.minMaxLoc(result, mask).maxVal;
+                    logToUI(`  > [DEBUG] Skor kecocokan maksimum yang ditemukan: ${maxScore.toFixed(4)}`, 'warning');
+                    // --- Akhir baris debug ---
+
                     const locations = [];
                     for (let y = 0; y < result.rows; y++) {
                         for (let x = 0; x < result.cols; x++) {
@@ -176,7 +180,11 @@
                 const templateITA = createTemplateMat('ITA');
                 const template3550 = createTemplateMat('3550');
                 
-                const threshold = 0.8; // Ambang batas kecocokan (0.0 - 1.0)
+                // =======================================================
+                // === PERUBAHAN UTAMA DI SINI: MENURUNKAN THRESHOLD ===
+                // =======================================================
+                const threshold = 0.7; // Coba dengan nilai yang lebih rendah
+                
                 logToUI(`  > Mencari semua kandidat "ITA" dengan skor > ${threshold}...`, 'info');
                 const itaCandidates = findAllMatches(binary, templateITA, threshold);
                 logToUI(`  > Mencari semua kandidat "3550" dengan skor > ${threshold}...`, 'info');
@@ -189,25 +197,24 @@
                 logToUI(`  > Ditemukan ${numCandidates.length} kandidat untuk "3550".`, 'success');
 
                 if (itaCandidates.length === 0 || numCandidates.length === 0) {
-                    throw new Error('Salah satu atau kedua template tidak ditemukan di gambar.');
+                    throw new Error('Salah satu atau kedua template tidak ditemukan di gambar. Coba turunkan nilai "threshold" di dalam kode.');
                 }
 
-                // --- LOGIKA BARU UNTUK MENCARI PASANGAN YANG BENAR ---
                 logToUI('Langkah 3: Mencari Pasangan Kandidat di Baris yang Sama', 'step');
                 let targetItaLoc = null;
                 let targetNumLoc = null;
-                const yTolerance = 20; // Toleransi perbedaan Y dalam piksel
+                const yTolerance = 20;
 
                 for (const itaCand of itaCandidates) {
                     for (const numCand of numCandidates) {
                         if (Math.abs(itaCand.y - numCand.y) < yTolerance) {
                             targetItaLoc = itaCand;
                             targetNumLoc = numCand;
-                            break; // Keluar dari loop dalam
+                            break;
                         }
                     }
                     if (targetItaLoc) {
-                        break; // Keluar dari loop luar
+                        break;
                     }
                 }
 
