@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Potong Tabel - Metode Template Matching</title>
+    <title>Potong Tabel - Template Matching (Robust)</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; max-width: 900px; margin: 20px auto; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px; }
         h1, h2 { text-align: center; color: #444; }
@@ -45,8 +45,8 @@
 </head>
 <body>
 
-    <h1>Potong Tabel - Metode Template Matching</h1>
-    <p>Metode ini menggunakan pencocokan template visual (OpenCV) yang sangat cepat untuk menemukan baris target tanpa perlu OCR massal, sehingga prosesnya jauh lebih efisien.</p>
+    <h1>Potong Tabel - Template Matching (Robust)</h1>
+    <p>Metode ini mencari semua kemungkinan lokasi template, lalu menemukan pasangan yang berada di baris yang sama untuk menghindari hasil positif palsu.</p>
 
     <div id="controls">
         <label for="imageUpload">Pilih gambar tabel:</label>
@@ -65,8 +65,6 @@
 
     <div id="result-container"></div>
 
-    <!-- Tesseract tidak lagi diperlukan untuk menemukan baris, jadi bisa dihapus jika tidak ada keperluan lain -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script> --> 
     <script async src="https://docs.opencv.org/4.9.0/opencv.js" onload="onOpenCvReady();"></script>
 
     <script>
@@ -116,7 +114,6 @@
         });
 
         async function startAdvancedProcessing(img) {
-            // Deklarasikan semua variabel Mat di awal agar bisa di-cleanup di blok finally
             let src = null, gray = null, binary = null, invertedBinary = null;
             let contours = null, hierarchy = null, finalCrop = null;
 
@@ -128,20 +125,18 @@
                 logToUI('  > Gambar diubah ke grayscale.', 'info');
                 
                 binary = new cv.Mat();
-                // Gunakan THRESH_BINARY (teks hitam, background putih) yang baik untuk template matching
                 cv.adaptiveThreshold(gray, binary, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2);
                 logToUI('  > Threshold adaptif diterapkan.', 'info');
                 
                 canvasPreview.style.display = 'block';
                 cv.imshow(canvasPreview, binary);
                 
-                logToUI('Langkah 2: Pencarian Cepat dengan Template Matching', 'step');
+                logToUI('Langkah 2: Pencarian Semua Kandidat Template', 'step');
                 
-                // Fungsi helper untuk membuat gambar template dari teks secara dinamis
                 const createTemplateMat = (text) => {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    const fontSize = 20; // Sesuaikan ukuran font agar mirip dengan di gambar sumber
+                    const fontSize = 20;
                     ctx.font = `bold ${fontSize}px Arial`;
                     const textMetrics = ctx.measureText(text);
                     canvas.width = textMetrics.width + 10;
@@ -151,57 +146,83 @@
                     ctx.fillStyle = 'black';
                     ctx.font = `bold ${fontSize}px Arial`;
                     ctx.fillText(text, 5, fontSize);
-                    
                     let templateRgba = cv.imread(canvas);
                     let templateGray = new cv.Mat();
                     cv.cvtColor(templateRgba, templateGray, cv.COLOR_RGBA2GRAY);
-                    templateRgba.delete(); // Hapus Mat RGBA yang tidak perlu
+                    templateRgba.delete();
                     return templateGray;
+                };
+
+                // --- FUNGSI BARU UNTUK MENCARI SEMUA KECOCOKAN ---
+                const findAllMatches = (source, template, threshold) => {
+                    let result = new cv.Mat();
+                    let mask = new cv.Mat();
+                    cv.matchTemplate(source, template, result, cv.TM_CCOEFF_NORMED, mask);
+                    
+                    const locations = [];
+                    for (let y = 0; y < result.rows; y++) {
+                        for (let x = 0; x < result.cols; x++) {
+                            const score = result.floatAt(y, x);
+                            if (score >= threshold) {
+                                locations.push({ x, y, score });
+                            }
+                        }
+                    }
+                    result.delete();
+                    mask.delete();
+                    return locations;
                 };
 
                 const templateITA = createTemplateMat('ITA');
                 const template3550 = createTemplateMat('3550');
                 
-                // Fungsi helper untuk menemukan lokasi terbaik dari template
-                const findBestMatch = (source, template) => {
-                    let result = new cv.Mat();
-                    let mask = new cv.Mat(); // Mask bisa kosong
-                    cv.matchTemplate(source, template, result, cv.TM_CCOEFF_NORMED, mask);
-                    let location = cv.minMaxLoc(result, mask);
-                    result.delete();
-                    mask.delete();
-                    return location.maxLoc;
-                };
-
-                logToUI('  > Mencari lokasi visual "ITA"...', 'info');
-                const itaLoc = findBestMatch(binary, templateITA);
-                logToUI('  > Mencari lokasi visual "3550"...', 'info');
-                const numLoc = findBestMatch(binary, template3550);
+                const threshold = 0.8; // Ambang batas kecocokan (0.0 - 1.0)
+                logToUI(`  > Mencari semua kandidat "ITA" dengan skor > ${threshold}...`, 'info');
+                const itaCandidates = findAllMatches(binary, templateITA, threshold);
+                logToUI(`  > Mencari semua kandidat "3550" dengan skor > ${threshold}...`, 'info');
+                const numCandidates = findAllMatches(binary, template3550, threshold);
                 
-                // Hapus template Mat setelah tidak digunakan
                 templateITA.delete();
                 template3550.delete();
+                
+                logToUI(`  > Ditemukan ${itaCandidates.length} kandidat untuk "ITA".`, 'success');
+                logToUI(`  > Ditemukan ${numCandidates.length} kandidat untuk "3550".`, 'success');
 
-                logToUI(`  > Kandidat "ITA" ditemukan di [x:${itaLoc.x}, y:${itaLoc.y}]`, 'success');
-                logToUI(`  > Kandidat "3550" ditemukan di [x:${numLoc.x}, y:${numLoc.y}]`, 'success');
-
-                // Verifikasi Kritis: Pastikan keduanya berada di baris horizontal yang sama
-                const yTolerance = 20; // Toleransi perbedaan Y dalam piksel
-                if (Math.abs(itaLoc.y - numLoc.y) > yTolerance) {
-                    throw new Error(`Template "ITA" dan "3550" tidak ditemukan pada baris yang sama. (ITA y=${itaLoc.y}, 3550 y=${numLoc.y})`);
+                if (itaCandidates.length === 0 || numCandidates.length === 0) {
+                    throw new Error('Salah satu atau kedua template tidak ditemukan di gambar.');
                 }
-                logToUI('  > Verifikasi berhasil: kedua template berada di baris yang sama.', 'success');
 
-                logToUI('Langkah 3: Isolasi Baris Target & Deteksi Sel Presisi', 'step');
+                // --- LOGIKA BARU UNTUK MENCARI PASANGAN YANG BENAR ---
+                logToUI('Langkah 3: Mencari Pasangan Kandidat di Baris yang Sama', 'step');
+                let targetItaLoc = null;
+                let targetNumLoc = null;
+                const yTolerance = 20; // Toleransi perbedaan Y dalam piksel
+
+                for (const itaCand of itaCandidates) {
+                    for (const numCand of numCandidates) {
+                        if (Math.abs(itaCand.y - numCand.y) < yTolerance) {
+                            targetItaLoc = itaCand;
+                            targetNumLoc = numCand;
+                            break; // Keluar dari loop dalam
+                        }
+                    }
+                    if (targetItaLoc) {
+                        break; // Keluar dari loop luar
+                    }
+                }
+
+                if (!targetItaLoc || !targetNumLoc) {
+                    throw new Error('Gagal menemukan pasangan "ITA" dan "3550" di baris yang sama.');
+                }
+                logToUI(`  > Pasangan ditemukan! "ITA" di y=${targetItaLoc.y}, "3550" di y=${targetNumLoc.y}`, 'success');
+
+                logToUI('Langkah 4: Isolasi Baris Target & Deteksi Sel Presisi', 'step');
                 
-                // Tentukan area vertikal dari baris target untuk memfilter kontur
-                const rowY = Math.min(itaLoc.y, numLoc.y);
-                const rowHeight = 40; // Perkirakan tinggi baris, sesuaikan jika perlu
+                const rowY = Math.min(targetItaLoc.y, targetNumLoc.y);
+                const rowHeight = 40;
                 
-                // findContours memerlukan objek putih di background hitam, jadi kita balikkan gambar biner
                 invertedBinary = new cv.Mat();
                 cv.bitwise_not(binary, invertedBinary);
-
                 contours = new cv.MatVector();
                 hierarchy = new cv.Mat();
                 cv.findContours(invertedBinary, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
@@ -210,11 +231,10 @@
                 for (let i = 0; i < contours.size(); ++i) {
                     let cnt = contours.get(i);
                     let rect = cv.boundingRect(cnt);
-                    // Filter hanya kontur yang berada di dalam area Y baris target kita
                     if (rect.y > rowY - yTolerance && rect.y < rowY + rowHeight && rect.width > 10 && rect.height > 10) {
                          targetRowRects.push(rect);
                     }
-                    cnt.delete(); // Hapus kontur setelah digunakan
+                    cnt.delete();
                 }
 
                 if (targetRowRects.length === 0) {
@@ -222,14 +242,13 @@
                 }
                 logToUI(`  > Ditemukan ${targetRowRects.length} sel presisi di dalam baris target.`, 'success');
 
-                logToUI('Langkah 4: Memotong Gambar Asli', 'step');
+                logToUI('Langkah 5: Memotong Gambar Asli', 'step');
                 const padding = 5;
                 const minX = Math.min(...targetRowRects.map(r => r.x)) - padding;
                 const minY = Math.min(...targetRowRects.map(r => r.y)) - padding;
                 const maxX = Math.max(...targetRowRects.map(r => r.x + r.width)) + padding;
                 const maxY = Math.max(...targetRowRects.map(r => r.y + r.height)) + padding;
                 
-                // Pastikan koordinat potong tidak keluar dari batas gambar asli
                 const finalRect = new cv.Rect(
                     Math.max(0, minX),
                     Math.max(0, minY),
@@ -253,7 +272,6 @@
                 console.error("Terjadi kesalahan:", error);
                 logToUI(`Error: ${error.message}`, 'error');
             } finally {
-                // Blok cleanup untuk membebaskan memori OpenCV (WASM)
                 if (src) src.delete();
                 if (gray) gray.delete();
                 if (binary) binary.delete();
