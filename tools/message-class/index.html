@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Potong Tabel - FINAL FIX (Kiri Saja)</title>
+    <title>Potong Tabel - FINAL FIX (Paralel)</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; max-width: 900px; margin: 20px auto; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px; }
         h1, h2 { text-align: center; color: #444; }
@@ -44,7 +44,7 @@
 </head>
 <body>
 
-    <h1>Potong Tabel - FINAL FIX (Kiri Saja)</h1>
+    <h1>Potong Tabel - FINAL FIX (Paralel)</h1>
     <p>Unggah gambar Anda, lalu perhatikan log proses di bawah untuk melihat setiap langkah yang dilakukan skrip secara detail.</p>
 
     <div id="controls">
@@ -114,7 +114,7 @@
         });
 
         async function startAdvancedProcessing(img) {
-            let worker = null;
+            let scheduler = null; 
             try {
                 logToUI('Langkah 1: Pra-pemrosesan Gambar', 'step');
                 let src = cv.imread(img);
@@ -135,50 +135,63 @@
                 cv.findContours(binary, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
 
                 const cellRects = [];
-                const imageWidth = src.cols; // Dapatkan lebar total gambar
-                logToUI(`  > Lebar gambar: ${imageWidth}px. Deteksi dibatasi pada setengah kiri (x < ${imageWidth / 2}px).`, 'warning');
-
                 for (let i = 0; i < contours.size(); ++i) {
                     let cnt = contours.get(i);
                     let area = cv.contourArea(cnt);
-                    let rect = cv.boundingRect(cnt);
-
-                    // Kondisi ditambahkan di sini: rect.x < imageWidth / 2
-                    if (area > 500 && area < 50000 && rect.x < imageWidth / 2) {
-                        cellRects.push(rect);
+                    if (area > 500 && area < 50000) {
+                        cellRects.push(cv.boundingRect(cnt));
                     }
                     cnt.delete();
                 }
                 
                 if (cellRects.length === 0) {
-                    throw new Error("OpenCV tidak menemukan kontur sel di sisi kiri gambar.");
+                    throw new Error("OpenCV tidak menemukan kontur sel.");
                 }
-                logToUI(`  > Ditemukan ${cellRects.length} kandidat sel di sisi kiri gambar.`, 'success');
+                logToUI(`  > Ditemukan ${cellRects.length} kandidat sel.`, 'success');
 
-                logToUI('Langkah 3: Menjalankan OCR per Sel', 'step');
-                logToUI('  > Membuat & menginisialisasi Tesseract worker...', 'info');
-                worker = await Tesseract.createWorker('eng');
-                logToUI('  > Worker berhasil dibuat.', 'success');
+                logToUI('Langkah 3: Menjalankan OCR per Sel (SECARA PARALEL)', 'step');
                 
-                const ocrResults = [];
+                logToUI('  > Membuat Tesseract scheduler...', 'info');
+                scheduler = Tesseract.createScheduler();
+                
+                const numWorkers = navigator.hardwareConcurrency || 4; 
+                logToUI(`  > Membuat dan menginisialisasi ${numWorkers} Tesseract workers...`, 'info');
+                
+                for (let i = 0; i < numWorkers; i++) {
+                    const worker = await Tesseract.createWorker('eng');
+                    scheduler.addWorker(worker);
+                }
+                logToUI(`  > ${numWorkers} workers berhasil dibuat dan ditambahkan ke scheduler.`, 'success');
+                
                 const tempCanvas = document.createElement('canvas');
+                let completedCount = 0;
 
-                for (let i = 0; i < cellRects.length; i++) {
-                    const rect = cellRects[i];
+                const ocrPromises = cellRects.map(rect => {
                     let cellMat = binary.roi(rect);
                     cv.imshow(tempCanvas, cellMat);
+                    const imageDataUrl = tempCanvas.toDataURL('image/png');
+                    cellMat.delete(); // Penting untuk membebaskan memori
                     
-                    const { data: { text } } = await worker.recognize(tempCanvas);
+                    return scheduler.addJob('recognize', imageDataUrl)
+                        .then(result => {
+                            completedCount++;
+                            logToUI(`  > OCR Selesai ${completedCount}/${cellRects.length}`, 'info');
+                            return { result, rect };
+                        });
+                });
 
-                    if (text.trim()) {
-                        const cleanedText = text.trim().replace(/\n/g, ' ');
-                        ocrResults.push({ text: cleanedText, rect });
-                    }
-                    cellMat.delete();
-                    logToUI(`  > OCR Sel ${i + 1}/${cellRects.length}`, 'info');
-                }
-                logToUI(`  > OCR selesai untuk semua sel yang relevan.`, 'success');
+                logToUI(`  > ${cellRects.length} pekerjaan OCR dikirim ke scheduler. Menunggu semua selesai...`, 'info');
                 
+                const resultsWithRects = await Promise.all(ocrPromises);
+                logToUI(`  > OCR paralel selesai untuk semua sel.`, 'success');
+                
+                const ocrResults = resultsWithRects
+                    .filter(({ result }) => result.data.text.trim())
+                    .map(({ result, rect }) => ({
+                        text: result.data.text.trim().replace(/\n/g, ' '),
+                        rect: rect
+                    }));
+                    
                 const ocrSummary = ocrResults.map(r => `"${r.text}" di [x:${r.rect.x}, y:${r.rect.y}]`);
                 logToUI('  > Data OCR Mentah:\n' + JSON.stringify(ocrSummary, null, 2), 'info');
 
@@ -233,10 +246,10 @@
                 console.error("Terjadi kesalahan:", error);
                 logToUI(`Error: ${error.message}`, 'error');
             } finally {
-                if (worker) {
-                    logToUI('Mematikan Tesseract worker...', 'info');
-                    await worker.terminate();
-                    logToUI('Worker berhasil dimatikan.', 'success');
+                if (scheduler) {
+                    logToUI('Mematikan Tesseract scheduler dan semua workers...', 'info');
+                    await scheduler.terminate();
+                    logToUI('Scheduler berhasil dimatikan.', 'success');
                 }
                 processButton.disabled = false;
                 processButton.textContent = 'Mulai Proses Canggih';
