@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Potong Tabel - Versi Cepat</title>
+    <title>Potong Tabel - Versi Akurat</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; max-width: 900px; margin: 20px auto; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px; }
         h1, h2 { text-align: center; color: #444; }
@@ -44,13 +44,13 @@
 </head>
 <body>
 
-    <h1>Potong Tabel - Versi Cepat & Efisien</h1>
-    <p>Unggah gambar Anda, lalu perhatikan log proses di bawah untuk melihat setiap langkah yang dilakukan skrip secara detail.</p>
+    <h1>Potong Tabel - Versi Akurat & Cepat</h1>
+    <p>Unggah gambar Anda. Kode ini menyertakan pra-pemrosesan gambar untuk meningkatkan akurasi OCR.</p>
 
     <div id="controls">
         <label for="imageUpload">Pilih gambar tabel:</label>
         <input type="file" id="imageUpload" accept="image/*">
-        <button id="processButton">Mulai Proses Cepat</button>
+        <button id="processButton">Mulai Proses</button>
     </div>
 
     <h2>Log Proses</h2>
@@ -115,54 +115,57 @@
 
         async function startOptimizedProcessing(img) {
             let worker = null;
-            let src = null;
-            let leftColumnMat = null;
-            let finalCrop = null;
+            let src = null, leftColumnMat = null, gray = null, binary = null, finalCrop = null;
             try {
-                logToUI('Langkah 1: Memuat dan Mempersiapkan Gambar', 'step');
+                logToUI('Langkah 1: Memuat Gambar', 'step');
                 src = cv.imread(img);
                 logToUI('  > Gambar asli berhasil dimuat.', 'info');
 
-                logToUI('Langkah 2: Mengisolasi Kolom Kiri untuk OCR', 'step');
-                const roiWidth = src.cols * 0.45;
+                logToUI('Langkah 2: Mengisolasi & Memproses Kolom Kiri', 'step');
+                const roiWidth = src.cols * 0.5;
                 let roiRect = new cv.Rect(0, 0, roiWidth, src.rows);
                 leftColumnMat = src.roi(roiRect);
-                logToUI(`  > Memotong area [lebar: ${Math.round(roiWidth)}, tinggi: ${src.rows}] untuk dianalisis.`, 'info');
-                
-                canvasPreview.style.display = 'block';
-                cv.imshow(canvasPreview, leftColumnMat);
+                logToUI(`  > Memotong area [lebar: ${Math.round(roiWidth)}, tinggi: ${src.rows}].`, 'info');
 
-                logToUI('Langkah 3: Menjalankan OCR (Satu Kali)', 'step');
-                logToUI('  > Membuat & menginisialisasi Tesseract worker...', 'info');
+                gray = new cv.Mat();
+                cv.cvtColor(leftColumnMat, gray, cv.COLOR_RGBA2GRAY, 0);
+                logToUI('  > Area diubah ke grayscale.', 'info');
+                
+                binary = new cv.Mat();
+                cv.threshold(gray, binary, 0, 255, cv.THRESH_BINARY | cv.THRESH_OTSU);
+                logToUI('  > Threshold adaptif diterapkan (gambar biner).', 'info');
+
+                canvasPreview.style.display = 'block';
+                cv.imshow(canvasPreview, binary);
+
+                logToUI('Langkah 3: Menjalankan OCR', 'step');
                 worker = await Tesseract.createWorker('eng');
-                logToUI('  > Worker berhasil dibuat. Memulai pengenalan teks...', 'success');
+                
+                await worker.setParameters({
+                    tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-',
+                });
+                logToUI('  > Tesseract dikonfigurasi (whitelist karakter).', 'info');
                 
                 const tempCanvas = document.createElement('canvas');
-                cv.imshow(tempCanvas, leftColumnMat);
+                cv.imshow(tempCanvas, binary);
 
                 const { data } = await worker.recognize(tempCanvas);
                 logToUI(`  > OCR selesai. Ditemukan ${data.words.length} kata.`, 'success');
+
+                const allWords = data.words.map(w => w.text).join(', ');
+                logToUI(`  > DEBUG: Kata terdeteksi: [${allWords}]`, 'warning');
 
                 logToUI('Langkah 4: Mencari Kata Kunci "ITA" & "3550"', 'step');
                 const itaWord = data.words.find(w => w.text.toUpperCase().includes('ITA'));
                 const numWord = data.words.find(w => w.text.includes('3550'));
 
-                if (!itaWord) {
-                    throw new Error('Kata kunci "ITA" tidak ditemukan di kolom kiri gambar.');
-                }
-                if (!numWord) {
-                    throw new Error('Kata kunci "3550" tidak ditemukan di kolom kiri gambar.');
-                }
+                if (!itaWord) throw new Error('Kata kunci "ITA" tidak ditemukan.');
+                if (!numWord) throw new Error('Kata kunci "3550" tidak ditemukan.');
 
                 logToUI(`  > Kata "ITA" ditemukan di [x:${itaWord.bbox.x0}, y:${itaWord.bbox.y0}]`, 'success');
                 logToUI(`  > Kata "3550" ditemukan di [x:${numWord.bbox.x0}, y:${numWord.bbox.y0}]`, 'success');
                 
-                const verticalOverlap = Math.max(0, Math.min(itaWord.bbox.y1, numWord.bbox.y1) - Math.max(itaWord.bbox.y0, numWord.bbox.y0));
-                if (verticalOverlap === 0) {
-                     logToUI(`  > Peringatan: "ITA" dan "3550" tidak berada pada baris yang sama persis secara vertikal.`, 'warning');
-                }
-
-                logToUI('Langkah 5: Menentukan Batas Baris & Memotong Gambar Asli', 'step');
+                logToUI('Langkah 5: Memotong Gambar Asli', 'step');
                 const padding = 5; 
                 const rowTop = Math.min(itaWord.bbox.y0, numWord.bbox.y0) - padding;
                 const rowBottom = Math.max(itaWord.bbox.y1, numWord.bbox.y1) + padding;
@@ -171,13 +174,11 @@
                 const finalY = Math.max(0, rowTop);
                 const finalHeight = Math.min(src.rows - finalY, rowHeight);
                 
-                if (finalHeight <= 0) {
-                    throw new Error("Kalkulasi tinggi baris menghasilkan nilai nol atau negatif. Tidak bisa memotong.");
-                }
+                if (finalHeight <= 0) throw new Error("Kalkulasi tinggi baris tidak valid.");
 
                 const finalRect = new cv.Rect(0, finalY, src.cols, finalHeight);
                 finalCrop = src.roi(finalRect);
-                logToUI(`  > Memotong baris target dari gambar asli pada y:${Math.round(finalY)} dengan tinggi ${Math.round(finalHeight)}.`, 'info');
+                logToUI(`  > Memotong baris target pada y:${Math.round(finalY)}, tinggi:${Math.round(finalHeight)}.`, 'info');
 
                 const resultCanvas = document.createElement('canvas');
                 cv.imshow(resultCanvas, finalCrop);
@@ -195,6 +196,8 @@
             } finally {
                 if (src) src.delete();
                 if (leftColumnMat) leftColumnMat.delete();
+                if (gray) gray.delete();
+                if (binary) binary.delete();
                 if (finalCrop) finalCrop.delete();
 
                 if (worker) {
@@ -203,7 +206,7 @@
                     logToUI('Worker berhasil dimatikan.', 'success');
                 }
                 processButton.disabled = false;
-                processButton.textContent = 'Mulai Proses Cepat';
+                processButton.textContent = 'Mulai Proses';
             }
         }
     </script>
