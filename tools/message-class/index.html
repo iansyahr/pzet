@@ -9,8 +9,8 @@
         h1, h2 { text-align: center; color: #444; }
         #controls { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; padding: 20px; background-color: #fff; border: 1px dashed #ccc; border-radius: 8px; }
         input[type="file"] { padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
-        button { padding: 12px 20px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; transition: background-color 0.3s; }
-        button:hover { background-color: #218838; }
+        button { padding: 12px 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; transition: background-color 0.3s; }
+        button:hover { background-color: #0069d9; }
         button:disabled { background-color: #cccccc; cursor: not-allowed; }
 
         #log-container {
@@ -44,7 +44,7 @@
 </head>
 <body>
 
-    <h1>Potong Tabel - Versi Cepat</h1>
+    <h1>Potong Tabel - Versi Cepat & Efisien</h1>
     <p>Unggah gambar Anda, lalu perhatikan log proses di bawah untuk melihat setiap langkah yang dilakukan skrip secara detail.</p>
 
     <div id="controls">
@@ -92,6 +92,12 @@
             };
         }
 
+        imageUpload.addEventListener('change', () => {
+            if (imageUpload.files.length > 0 && !processButton.disabled) {
+                 processButton.textContent = 'Mulai Proses Cepat';
+            }
+        });
+
         processButton.addEventListener('click', () => {
             const file = imageUpload.files[0];
             if (!file) { logToUI('Silakan pilih file gambar terlebih dahulu!', 'error'); return; }
@@ -107,127 +113,79 @@
             const reader = new FileReader();
             reader.onload = (e) => {
                 const img = new Image();
-                img.onload = () => startAdvancedProcessing(img);
+                img.onload = () => startOptimizedProcessing(img);
                 img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         });
 
-        async function startAdvancedProcessing(img) {
+        async function startOptimizedProcessing(img) {
             let worker = null;
-            let src, gray, binary, contours, hierarchy, finalCrop; // Declare mats here for easier cleanup
-
+            let src = null;
+            let leftColumnMat = null;
             try {
-                // --- LANGKAH 1 & 2: DETEKSI SEL (SAMA SEPERTI SEBELUMNYA) ---
-                logToUI('Langkah 1: Pra-pemrosesan Gambar', 'step');
+                // Langkah 1: Muat gambar ke OpenCV
+                logToUI('Langkah 1: Memuat dan Mempersiapkan Gambar', 'step');
                 src = cv.imread(img);
-                gray = new cv.Mat();
-                cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
-                logToUI('  > Gambar diubah ke grayscale.', 'info');
+                logToUI('  > Gambar asli berhasil dimuat.', 'info');
+
+                // Langkah 2: Potong bagian kiri gambar untuk di-OCR
+                logToUI('Langkah 2: Mengisolasi Kolom Kiri untuk OCR', 'step');
+                const roiWidth = src.cols * 0.45; // Ambil 45% lebar gambar dari kiri
+                let roiRect = new cv.Rect(0, 0, roiWidth, src.rows);
+                leftColumnMat = src.roi(roiRect);
+                logToUI(`  > Memotong area [lebar: ${Math.round(roiWidth)}, tinggi: ${src.rows}] untuk dianalisis.`, 'info');
                 
-                binary = new cv.Mat();
-                cv.adaptiveThreshold(gray, binary, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY_INV, 11, 2);
-                logToUI('  > Threshold adaptif diterapkan.', 'info');
-                cv.imshow(canvasPreview, binary);
+                // Tampilkan pratinjau area yang di-OCR
                 canvasPreview.style.display = 'block';
-                
-                logToUI('Langkah 2: Deteksi & Pengelompokan Sel', 'step');
-                contours = new cv.MatVector();
-                hierarchy = new cv.Mat();
-                cv.findContours(binary, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
+                cv.imshow(canvasPreview, leftColumnMat);
 
-                let cellRects = [];
-                for (let i = 0; i < contours.size(); ++i) {
-                    let cnt = contours.get(i);
-                    let area = cv.contourArea(cnt);
-                    // Filter kontur yang terlalu kecil atau terlalu besar
-                    if (area > 500 && area < (src.rows * src.cols * 0.5)) { 
-                        cellRects.push(cv.boundingRect(cnt));
-                    }
-                    cnt.delete();
-                }
-                
-                if (cellRects.length === 0) throw new Error("OpenCV tidak menemukan kontur sel.");
-                logToUI(`  > Ditemukan ${cellRects.length} kandidat sel.`, 'info');
-
-                // --- OPTIMISASI UTAMA DIMULAI DI SINI ---
-                // 2.1. Urutkan sel berdasarkan koordinat Y
-                cellRects.sort((a, b) => a.y - b.y);
-
-                // 2.2. Kelompokkan sel ke dalam baris
-                const rows = [];
-                if (cellRects.length > 0) {
-                    let currentRow = [cellRects[0]];
-                    for (let i = 1; i < cellRects.length; i++) {
-                        const prevCell = currentRow[currentRow.length - 1];
-                        const currentCell = cellRects[i];
-                        // Jika pusat Y sel saat ini dekat dengan pusat Y sel sebelumnya, anggap satu baris
-                        const centerYPrev = prevCell.y + prevCell.height / 2;
-                        const centerYCurrent = currentCell.y + currentCell.height / 2;
-                        if (Math.abs(centerYCurrent - centerYPrev) < prevCell.height) {
-                            currentRow.push(currentCell);
-                        } else {
-                            rows.push(currentRow);
-                            currentRow = [currentCell];
-                        }
-                    }
-                    rows.push(currentRow); // Tambahkan baris terakhir
-                }
-                logToUI(`  > Sel dikelompokkan menjadi ${rows.length} baris.`, 'success');
-
-                // --- LANGKAH 3 & 4: OCR PINTAR & PENCARIAN BARIS TARGET ---
-                logToUI('Langkah 3: Menjalankan OCR per Baris (Pencarian Cerdas)', 'step');
+                // Langkah 3: Jalankan OCR hanya sekali pada area yang dipotong
+                logToUI('Langkah 3: Menjalankan OCR (Satu Kali)', 'step');
                 logToUI('  > Membuat & menginisialisasi Tesseract worker...', 'info');
                 worker = await Tesseract.createWorker('eng');
-                logToUI('  > Worker berhasil dibuat.', 'success');
+                logToUI('  > Worker berhasil dibuat. Memulai pengenalan teks...', 'success');
                 
-                let targetRow = null;
-                const tempCanvas = document.createElement('canvas');
+                const { data } = await worker.recognize(leftColumnMat.data, leftColumnMat.cols, leftColumnMat.rows, 'png');
+                logToUI(`  > OCR selesai. Ditemukan ${data.words.length} kata.`, 'success');
 
-                for (let i = 0; i < rows.length; i++) {
-                    const row = rows[i];
-                    let textInRow = '';
-                    logToUI(`  > Memproses Baris ${i + 1}/${rows.length}...`, 'info');
-                    
-                    for (const rect of row) {
-                        let cellMat = binary.roi(rect);
-                        cv.imshow(tempCanvas, cellMat);
-                        const { data: { text } } = await worker.recognize(tempCanvas);
-                        textInRow += ' ' + text.trim();
-                        cellMat.delete();
-                    }
-                    
-                    logToUI(`    > Teks terdeteksi: "${textInRow.trim()}"`, 'info');
+                // Langkah 4: Cari kata kunci dari hasil OCR
+                logToUI('Langkah 4: Mencari Kata Kunci "ITA" & "3550"', 'step');
+                const itaWord = data.words.find(w => w.text.toUpperCase().includes('ITA'));
+                const numWord = data.words.find(w => w.text.includes('3550'));
 
-                    const upperText = textInRow.toUpperCase();
-                    if (upperText.includes('ITA') && upperText.includes('3550')) {
-                        logToUI(`  > Baris Target DITEMUKAN di baris ke-${i + 1}!`, 'success');
-                        targetRow = row;
-                        break; // Hentikan perulangan setelah baris ditemukan!
-                    }
+                if (!itaWord) {
+                    throw new Error('Kata kunci "ITA" tidak ditemukan di kolom kiri gambar.');
+                }
+                if (!numWord) {
+                    throw new Error('Kata kunci "3550" tidak ditemukan di kolom kiri gambar.');
                 }
 
-                if (!targetRow) {
-                    throw new Error('Gagal menemukan baris yang mengandung "ITA" dan "3550".');
+                logToUI(`  > Kata "ITA" ditemukan di [x:${itaWord.bbox.x0}, y:${itaWord.bbox.y0}]`, 'success');
+                logToUI(`  > Kata "3550" ditemukan di [x:${numWord.bbox.x0}, y:${numWord.bbox.y0}]`, 'success');
+                
+                // Cek apakah kedua kata berada di baris yang sama secara vertikal
+                const verticalOverlap = Math.max(0, Math.min(itaWord.bbox.y1, numWord.bbox.y1) - Math.max(itaWord.bbox.y0, numWord.bbox.y0));
+                if (verticalOverlap === 0) {
+                     logToUI(`  > Peringatan: "ITA" dan "3550" tidak berada pada baris yang sama persis secara vertikal. Tetap melanjutkan dengan asumsi baris terdekat.`, 'warning');
                 }
 
-                // --- LANGKAH 5: PEMOTONGAN FINAL (SAMA SEPERTI SEBELUMNYA) ---
-                logToUI('Langkah 5: Memotong Gambar Asli', 'step');
-                const padding = 5;
-                const minX = Math.min(...targetRow.map(r => r.x)) - padding;
-                const minY = Math.min(...targetRow.map(r => r.y)) - padding;
-                const maxX = Math.max(...targetRow.map(r => r.x + r.width)) + padding;
-                const maxY = Math.max(...targetRow.map(r => r.y + r.height)) + padding;
-                
-                const finalRect = new cv.Rect(
-                    Math.max(0, minX), 
-                    Math.max(0, minY), 
-                    Math.min(src.cols - minX, maxX - minX), 
-                    Math.min(src.rows - minY, maxY - minY)
-                );
-                finalCrop = src.roi(finalRect);
-                logToUI('  > Gambar asli berhasil dipotong.', 'info');
+                // Langkah 5: Tentukan batas baris dan potong gambar asli
+                logToUI('Langkah 5: Menentukan Batas Baris & Memotong Gambar Asli', 'step');
+                const padding = 5; // Tambahkan sedikit ruang di atas dan bawah
+                const rowTop = Math.min(itaWord.bbox.y0, numWord.bbox.y0) - padding;
+                const rowBottom = Math.max(itaWord.bbox.y1, numWord.bbox.y1) + padding;
+                const rowHeight = rowBottom - rowTop;
 
+                // Pastikan koordinat valid
+                const finalY = Math.max(0, rowTop);
+                const finalHeight = Math.min(src.rows - finalY, rowHeight);
+                
+                const finalRect = new cv.Rect(0, finalY, src.cols, finalHeight);
+                let finalCrop = src.roi(finalRect);
+                logToUI(`  > Memotong baris target dari gambar asli pada y:${finalY} dengan tinggi ${finalHeight}.`, 'info');
+
+                // Tampilkan hasil
                 const resultCanvas = document.createElement('canvas');
                 cv.imshow(resultCanvas, finalCrop);
                 
@@ -238,18 +196,15 @@
 
                 logToUI('PROSES SELESAI!', 'success');
 
+                // Membersihkan memori OpenCV
+                src.delete();
+                leftColumnMat.delete();
+                finalCrop.delete();
+
             } catch (error) {
                 console.error("Terjadi kesalahan:", error);
                 logToUI(`Error: ${error.message}`, 'error');
             } finally {
-                // Bersihkan semua Mat OpenCV untuk menghindari kebocoran memori
-                if (src) src.delete();
-                if (gray) gray.delete();
-                if (binary) binary.delete();
-                if (contours) contours.delete();
-                if (hierarchy) hierarchy.delete();
-                if (finalCrop) finalCrop.delete();
-
                 if (worker) {
                     logToUI('Mematikan Tesseract worker...', 'info');
                     await worker.terminate();
