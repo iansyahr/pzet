@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Potong Tabel dengan UI Log</title>
+    <title>Potong Tabel dengan UI Log (FINAL FIXED)</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; max-width: 900px; margin: 20px auto; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px; }
         h1, h2 { text-align: center; color: #444; }
@@ -13,7 +13,6 @@
         button:hover { background-color: #218838; }
         button:disabled { background-color: #cccccc; cursor: not-allowed; }
 
-        /* --- CSS BARU UNTUK LOG --- */
         #log-container {
             background-color: #2b3035;
             color: #c0c5ce;
@@ -29,14 +28,13 @@
         #log-container p {
             margin: 0 0 5px 0;
             padding: 2px 5px;
-            white-space: pre-wrap; /* Agar teks panjang bisa wrap */
+            white-space: pre-wrap;
         }
         .log-step { font-weight: bold; color: #66d9ef; border-top: 1px solid #555; padding-top: 8px; margin-top: 8px;}
         .log-info { color: #e6e6e6; }
         .log-success { color: #a6e22e; font-weight: bold; }
         .log-error { color: #f92672; font-weight: bold; }
         .log-warning { color: #fd971f; }
-        /* ------------------------- */
 
         .processing-steps { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
         .processing-steps canvas { max-width: 45%; border: 1px solid #ccc; }
@@ -46,7 +44,7 @@
 </head>
 <body>
 
-    <h1>Potong Tabel dengan UI Log</h1>
+    <h1>Potong Tabel dengan UI Log (FINAL FIXED)</h1>
     <p>Unggah gambar Anda, lalu perhatikan log proses di bawah untuk melihat setiap langkah yang dilakukan skrip secara detail.</p>
 
     <div id="controls">
@@ -55,7 +53,6 @@
         <button id="processButton">Mulai Proses Canggih</button>
     </div>
 
-    <!-- Area Log Baru -->
     <h2>Log Proses</h2>
     <div id="log-container">
         <p class="log-info">Memuat library, harap tunggu...</p>
@@ -79,13 +76,12 @@
         
         processButton.disabled = true;
 
-        // --- FUNGSI LOGGING BARU ---
         function logToUI(message, type = 'info') {
             const p = document.createElement('p');
             p.textContent = message;
             p.className = `log-${type}`;
             logContainer.appendChild(p);
-            logContainer.scrollTop = logContainer.scrollHeight; // Auto-scroll ke bawah
+            logContainer.scrollTop = logContainer.scrollHeight;
         }
 
         function onOpenCvReady() {
@@ -103,7 +99,6 @@
                 return;
             }
             
-            // Bersihkan log dan hasil sebelumnya
             logContainer.innerHTML = '';
             resultContainer.innerHTML = '';
             canvasPreview.style.display = 'none';
@@ -118,7 +113,8 @@
                 img.onload = () => startAdvancedProcessing(img);
                 img.src = e.target.result;
             };
-            reader.readDataURL(file);
+            // --- INILAH PERBAIKANNYA ---
+            reader.readAsDataURL(file);
         });
 
         async function startAdvancedProcessing(img) {
@@ -174,7 +170,6 @@
                 }
                 logToUI(`  > OCR selesai untuk ${ocrResults.length} sel yang berisi teks.`, 'success');
                 
-                // Log data mentah agar bisa diperiksa
                 const ocrSummary = ocrResults.map(r => `"${r.text}" di [x:${r.rect.x}, y:${r.rect.y}]`);
                 logToUI('  > Data OCR Mentah:\n' + JSON.stringify(ocrSummary, null, 2), 'info');
 
