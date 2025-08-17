@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Potong Tabel dengan UI Log (FINAL FIXED)</title>
+    <title>Potong Tabel - Performa Dioptimalkan</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; max-width: 900px; margin: 20px auto; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px; }
         h1, h2 { text-align: center; color: #444; }
@@ -44,7 +44,7 @@
 </head>
 <body>
 
-    <h1>Potong Tabel dengan UI Log (FINAL FIXED)</h1>
+    <h1>Potong Tabel - Performa Dioptimalkan</h1>
     <p>Unggah gambar Anda, lalu perhatikan log proses di bawah untuk melihat setiap langkah yang dilakukan skrip secara detail.</p>
 
     <div id="controls">
@@ -94,10 +94,7 @@
 
         processButton.addEventListener('click', () => {
             const file = imageUpload.files[0];
-            if (!file) {
-                logToUI('Silakan pilih file gambar terlebih dahulu!', 'error');
-                return;
-            }
+            if (!file) { logToUI('Silakan pilih file gambar terlebih dahulu!', 'error'); return; }
             
             logContainer.innerHTML = '';
             resultContainer.innerHTML = '';
@@ -113,11 +110,12 @@
                 img.onload = () => startAdvancedProcessing(img);
                 img.src = e.target.result;
             };
-            // --- INILAH PERBAIKANNYA ---
             reader.readAsDataURL(file);
         });
 
         async function startAdvancedProcessing(img) {
+            // --- VARIABEL WORKER DIDEKLARASIKAN DI SINI ---
+            let worker = null;
             try {
                 logToUI('Langkah 1: Pra-pemrosesan Gambar', 'step');
                 let src = cv.imread(img);
@@ -148,27 +146,36 @@
                 }
                 
                 if (cellRects.length === 0) {
-                    throw new Error("OpenCV tidak menemukan kontur sel. Coba gambar lain atau sesuaikan parameter 'area' dalam kode.");
+                    throw new Error("OpenCV tidak menemukan kontur sel.");
                 }
                 logToUI(`  > Ditemukan ${cellRects.length} kandidat sel.`, 'success');
 
                 logToUI('Langkah 3: Menjalankan OCR per Sel', 'step');
+                // --- BUAT WORKER SATU KALI DI SINI ---
+                logToUI('  > Membuat & menginisialisasi Tesseract worker... (mungkin perlu beberapa saat)', 'info');
+                worker = await Tesseract.createWorker('eng');
+                logToUI('  > Worker berhasil dibuat.', 'success');
+                
                 const ocrResults = [];
                 const tempCanvas = document.createElement('canvas');
 
-                for (let i = 0; i < cellRects.length; i++) {
+                for (let i = 0; i < ocrResults.length; i++) {
                     const rect = cellRects[i];
                     let cellMat = binary.roi(rect);
                     cv.imshow(tempCanvas, cellMat);
-                    const { data: { text } } = await Tesseract.recognize(tempCanvas, 'eng');
+                    
+                    // --- GUNAKAN WORKER YANG SAMA BERULANG KALI ---
+                    const { data: { text } } = await worker.recognize(tempCanvas);
+
                     if (text.trim()) {
                         const cleanedText = text.trim().replace(/\n/g, ' ');
                         ocrResults.push({ text: cleanedText, rect });
-                        console.log(`Cell ${i}: "${cleanedText}"`);
                     }
                     cellMat.delete();
+                    // Log progres yang lebih baik
+                    logToUI(`  > OCR Sel ${i + 1}/${cellRects.length}: "${text.trim()}"`, 'info');
                 }
-                logToUI(`  > OCR selesai untuk ${ocrResults.length} sel yang berisi teks.`, 'success');
+                logToUI(`  > OCR selesai untuk semua sel.`, 'success');
                 
                 const ocrSummary = ocrResults.map(r => `"${r.text}" di [x:${r.rect.x}, y:${r.rect.y}]`);
                 logToUI('  > Data OCR Mentah:\n' + JSON.stringify(ocrSummary, null, 2), 'info');
@@ -179,6 +186,7 @@
                 logToUI(`  > Ditemukan ${itaCells.length} sel mengandung 'ITA' dan ${numCells.length} sel mengandung '3550'.`, 'info');
 
                 let targetRow = null;
+                // ... (sisa logika pencarian sama) ...
                 for (const itaCell of itaCells) {
                     for (const numCell of numCells) {
                         const isSameRow = (itaCell.rect.y < numCell.rect.y + numCell.rect.height && 
@@ -194,7 +202,7 @@
                 }
 
                 if (!targetRow || targetRow.length === 0) {
-                    throw new Error('Gagal menemukan baris yang mengandung "ITA" dan "3550" secara bersamaan setelah memeriksa semua sel.');
+                    throw new Error('Gagal menemukan baris yang mengandung "ITA" dan "3550" secara bersamaan.');
                 }
                 logToUI(`  > Baris target berhasil diidentifikasi, terdiri dari ${targetRow.length} sel.`, 'success');
 
@@ -224,6 +232,12 @@
                 console.error("Terjadi kesalahan:", error);
                 logToUI(`Error: ${error.message}`, 'error');
             } finally {
+                // --- PASTIKAN WORKER SELALU DIMATIKAN ---
+                if (worker) {
+                    logToUI('Mematikan Tesseract worker...', 'info');
+                    await worker.terminate();
+                    logToUI('Worker berhasil dimatikan.', 'success');
+                }
                 processButton.disabled = false;
                 processButton.textContent = 'Mulai Proses Canggih';
             }
