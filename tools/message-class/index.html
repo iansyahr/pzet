@@ -1,262 +1,315 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Potong Tabel - FINAL BUG FIX</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; max-width: 900px; margin: 20px auto; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px; }
-        h1, h2 { text-align: center; color: #444; }
-        #controls { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; padding: 20px; background-color: #fff; border: 1px dashed #ccc; border-radius: 8px; }
-        input[type="file"] { padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
-        button { padding: 12px 20px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; transition: background-color 0.3s; }
-        button:hover { background-color: #218838; }
-        button:disabled { background-color: #cccccc; cursor: not-allowed; }
-
-        #log-container {
-            background-color: #2b3035;
-            color: #c0c5ce;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 14px;
-            border-radius: 4px;
-            padding: 15px;
-            margin-top: 20px;
-            height: 300px;
-            overflow-y: scroll;
-            border: 1px solid #444;
-        }
-        #log-container p {
-            margin: 0 0 5px 0;
-            padding: 2px 5px;
-            white-space: pre-wrap;
-        }
-        .log-step { font-weight: bold; color: #66d9ef; border-top: 1px solid #555; padding-top: 8px; margin-top: 8px;}
-        .log-info { color: #e6e6e6; }
-        .log-success { color: #a6e22e; font-weight: bold; }
-        .log-error { color: #f92672; font-weight: bold; }
-        .log-warning { color: #fd971f; }
-
-        .processing-steps { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
-        .processing-steps canvas { max-width: 45%; border: 1px solid #ccc; }
-        #result-container { text-align: center; }
-        #result-container img { max-width: 100%; margin-top: 10px; border: 2px solid #17a2b8; border-radius: 4px; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Potong Tabel - FAST</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f4f4f9; color:#333; max-width:900px; margin:20px auto; padding:20px; box-shadow:0 0 10px rgba(0,0,0,.1); border-radius:8px; }
+    h1,h2 { text-align:center; color:#444; }
+    #controls { display:flex; flex-direction:column; gap:15px; margin-bottom:20px; padding:20px; background:#fff; border:1px dashed #ccc; border-radius:8px; }
+    input[type="file"]{ padding:10px; border:1px solid #ddd; border-radius:4px; }
+    button{ padding:12px 20px; background:#28a745; color:#fff; border:none; border-radius:4px; cursor:pointer; font-size:16px; transition:background-color .3s;}
+    button:hover{ background:#218838; }
+    button:disabled{ background:#ccc; cursor:not-allowed; }
+    #log-container{ background:#2b3035; color:#c0c5ce; font-family: 'Courier New', monospace; font-size:14px; border-radius:4px; padding:15px; margin-top:20px; height:300px; overflow-y:auto; border:1px solid #444; }
+    #log-container p{ margin:0 0 5px 0; padding:2px 5px; white-space:pre-wrap; }
+    .log-step{ font-weight:bold; color:#66d9ef; border-top:1px solid #555; padding-top:8px; margin-top:8px;}
+    .log-info{ color:#e6e6e6;}
+    .log-success{ color:#a6e22e; font-weight:bold;}
+    .log-error{ color:#f92672; font-weight:bold;}
+    .log-warning{ color:#fd971f;}
+    .processing-steps{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:20px; }
+    .processing-steps canvas{ max-width:45%; border:1px solid #ccc; }
+    #result-container{ text-align:center; }
+    #result-container img{ max-width:100%; margin-top:10px; border:2px solid #17a2b8; border-radius:4px; }
+  </style>
 </head>
 <body>
+  <h1>Potong Tabel - FAST</h1>
+  <p>Unggah gambar tabel. Engine akan mencari baris berisi “ITA” dan “3550”, lalu memotongnya.</p>
 
-    <h1>Potong Tabel - FINAL BUG FIX</h1>
-    <p>Memperbaiki kesalahan sintaks pada pemanggilan `scheduler.addJob` untuk mencegah error 'apply'.</p>
+  <div id="controls">
+    <label for="imageUpload">Pilih gambar tabel:</label>
+    <input type="file" id="imageUpload" accept="image/*"/>
+    <button id="processButton">Mulai Proses Cepat</button>
+  </div>
 
-    <div id="controls">
-        <label for="imageUpload">Pilih gambar tabel:</label>
-        <input type="file" id="imageUpload" accept="image/*">
-        <button id="processButton">Mulai Proses Super Cepat</button>
-    </div>
+  <h2>Log Proses</h2>
+  <div id="log-container"><p class="log-info">Memuat library, harap tunggu...</p></div>
 
-    <h2>Log Proses</h2>
-    <div id="log-container">
-        <p class="log-info">Memuat library, harap tunggu...</p>
-    </div>
-    
-    <div class="processing-steps">
-        <canvas id="canvasPreview" style="display:none;"></canvas>
-    </div>
+  <div class="processing-steps">
+    <canvas id="canvasPreview" style="display:none;"></canvas>
+  </div>
 
-    <div id="result-container"></div>
+  <div id="result-container"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-    <script async src="https://docs.opencv.org/4.9.0/opencv.js" onload="onOpenCvReady();"></script>
+  <!-- Libs -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script async src="https://docs.opencv.org/4.9.0/opencv.js" onload="onOpenCvReady();"></script>
 
-    <script>
-        const imageUpload = document.getElementById('imageUpload');
-        const processButton = document.getElementById('processButton');
-        const logContainer = document.getElementById('log-container');
-        const resultContainer = document.getElementById('result-container');
-        const canvasPreview = document.getElementById('canvasPreview');
-        
-        processButton.disabled = true;
+  <script>
+    const imageUpload = document.getElementById('imageUpload');
+    const processButton = document.getElementById('processButton');
+    const logContainer = document.getElementById('log-container');
+    const resultContainer = document.getElementById('result-container');
+    const canvasPreview = document.getElementById('canvasPreview');
 
-        function logToUI(message, type = 'info') {
-            const p = document.createElement('p');
-            p.textContent = message;
-            p.className = `log-${type}`;
-            logContainer.appendChild(p);
-            logContainer.scrollTop = logContainer.scrollHeight;
-        }
+    // ====== PARAM PENCARIAN (bisa kamu ubah) ======
+    const SEARCH_A = 'ITA';
+    const SEARCH_B = '3550';
+    // ==============================================
 
-        function onOpenCvReady() {
-            cv.onRuntimeInitialized = () => {
-                console.log('OpenCV runtime is now ready.');
-                processButton.disabled = false;
-                logToUI('Sistem siap. Silakan pilih gambar dan mulai proses.', 'success');
-            };
-        }
+    processButton.disabled = true;
 
-        processButton.addEventListener('click', () => {
-            const file = imageUpload.files[0];
-            if (!file) { logToUI('Silakan pilih file gambar terlebih dahulu!', 'error'); return; }
-            
-            logContainer.innerHTML = '';
-            resultContainer.innerHTML = '';
-            canvasPreview.style.display = 'none';
+    function logToUI(message, type='info'){
+      const p = document.createElement('p');
+      p.textContent = message;
+      p.className = `log-${type}`;
+      logContainer.appendChild(p);
+      logContainer.scrollTop = logContainer.scrollHeight;
+    }
 
-            processButton.disabled = true;
-            processButton.textContent = 'Memproses...';
-            logToUI('Proses dimulai...', 'info');
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => startAdvancedProcessing(img);
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
+    // ---- Reuse satu worker Tesseract antar proses ----
+    let _tessWorkerReady = null;
+    async function getTessWorker(){
+      if (_tessWorkerReady) return _tessWorkerReady;
+      _tessWorkerReady = (async () => {
+        const worker = await Tesseract.createWorker('eng'); // butuh angka & huruf latin
+        await worker.setParameters({
+          tessedit_pageseg_mode: '6', // assume a single block of text
+          preserve_interword_spaces: '1',
+          tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -/()',
         });
-        
-        function isCellEmpty(cellMat) {
-            const totalPixels = cellMat.rows * cellMat.cols;
-            const nonZeroPixels = cv.countNonZero(cellMat);
-            const pixelRatio = nonZeroPixels / totalPixels;
-            return pixelRatio < 0.005;
+        return worker;
+      })();
+      return _tessWorkerReady;
+    }
+
+    function onOpenCvReady(){
+      cv.onRuntimeInitialized = () => {
+        processButton.disabled = false;
+        logToUI('Sistem siap. Silakan pilih gambar dan mulai proses.', 'success');
+      };
+    }
+
+    processButton.addEventListener('click', () => {
+      const file = imageUpload.files[0];
+      if(!file){ logToUI('Silakan pilih file gambar terlebih dahulu!', 'error'); return; }
+
+      logContainer.innerHTML = '';
+      resultContainer.innerHTML = '';
+      canvasPreview.style.display = 'none';
+
+      processButton.disabled = true;
+      processButton.textContent = 'Memproses...';
+      logToUI('Proses dimulai...', 'info');
+
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => startFastPipeline(img).finally(()=>{
+          processButton.disabled = false;
+          processButton.textContent = 'Mulai Proses Cepat';
+        });
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // ==== Util: Skala deteksi agar lebih ringan ====
+    function computeScale(w, h, maxW=1600){
+      if (w <= maxW) return 1.0;
+      return maxW / w;
+    }
+
+    // ==== Util: kelompokkan rect jadi baris (cluster by centerY) ====
+    function groupRectsIntoRows(rects, yTolerance){
+      rects.sort((a,b)=> (a.y + a.height/2) - (b.y + b.height/2));
+      const rows = [];
+      for (const r of rects){
+        const cy = r.y + r.height/2;
+        let placed = false;
+        for (const row of rows){
+          // cek jika dekat secara vertikal dengan baris ini
+          const avgCy = row._sumCy / row._count;
+          if (Math.abs(cy - avgCy) <= yTolerance){
+            row.items.push(r);
+            row._sumCy += cy; row._count += 1;
+            placed = true; break;
+          }
         }
+        if (!placed) rows.push({ items:[r], _sumCy:cy, _count:1 });
+      }
+      // rapikan urutan kiri→kanan & hitung rect gabungan
+      for (const row of rows){
+        row.items.sort((a,b)=> a.x - b.x);
+        const minX = Math.min(...row.items.map(x=>x.x));
+        const minY = Math.min(...row.items.map(x=>x.y));
+        const maxX = Math.max(...row.items.map(x=>x.x + x.width));
+        const maxY = Math.max(...row.items.map(x=>x.y + x.height));
+        row.rect = { x:minX, y:minY, width:maxX-minX, height:maxY-minY };
+      }
+      return rows;
+    }
 
-        async function startAdvancedProcessing(img) {
-            let scheduler = null;
-            try {
-                logToUI('Langkah 1: Pra-pemrosesan Gambar', 'step');
-                let src = cv.imread(img);
-                let gray = new cv.Mat();
-                cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
-                
-                let binary = new cv.Mat();
-                cv.adaptiveThreshold(gray, binary, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY_INV, 11, 2);
-                logToUI('  > Threshold adaptif diterapkan.', 'info');
+    async function startFastPipeline(img){
+      let src=null, work=null, gray=null, binary=null, opened=null, contours=null, hierarchy=null;
+      try{
+        // ==== 1) Load + optional downscale untuk DETEKSI ====
+        logToUI('Langkah 1: Pra-pemrosesan (downscale + grayscale + threshold)', 'step');
+        const scale = computeScale(img.width, img.height, 1600);
+        const detW = Math.round(img.width*scale);
+        const detH = Math.round(img.height*scale);
 
-                canvasPreview.style.display = 'block';
-                cv.imshow(canvasPreview, binary);
-                
-                logToUI('Langkah 2: Deteksi Sel Tabel', 'step');
-                let contours = new cv.MatVector();
-                let hierarchy = new cv.Mat();
-                cv.findContours(binary, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
+        // src (deteksi) dan srcFull (pemetaan crop dari asli)
+        const srcFull = cv.imread(img); // ASLI
+        src = new cv.Mat(); // kerja (scaled)
+        cv.resize(srcFull, src, new cv.Size(detW, detH), 0, 0, cv.INTER_AREA);
 
-                const cellRects = [];
-                for (let i = 0; i < contours.size(); ++i) {
-                    let cnt = contours.get(i);
-                    let area = cv.contourArea(cnt);
-                    if (area > 500 && area < 50000) {
-                        cellRects.push(cv.boundingRect(cnt));
-                    }
-                    cnt.delete();
-                }
-                
-                if (cellRects.length === 0) throw new Error("OpenCV tidak menemukan kontur sel.");
-                logToUI(`  > Ditemukan ${cellRects.length} kandidat sel.`, 'success');
+        gray = new cv.Mat();
+        cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
 
-                logToUI('Langkah 3: Menjalankan OCR Paralel', 'step');
-                
-                logToUI('  > Membuat scheduler Tesseract...', 'info');
-                scheduler = Tesseract.createScheduler();
-                const workerCount = navigator.hardwareConcurrency || 4;
-                const workers = Array(workerCount).fill(null).map(() => Tesseract.createWorker('eng'));
-                await Promise.all(workers.map(worker => scheduler.addWorker(worker)));
-                logToUI(`  > Scheduler siap dengan ${workerCount} worker.`, 'success');
+        // Otsu dulu (lebih cepat), fallback ke adaptive jika kontur terlalu sedikit
+        binary = new cv.Mat();
+        cv.threshold(gray, binary, 0, 255, cv.THRESH_BINARY_INV | cv.THRESH_OTSU);
 
-                const ocrPromises = [];
-                const tempCanvas = document.createElement('canvas');
-                let skippedCells = 0;
+        // sedikit close untuk menyatukan karakter jadi blok baris
+        opened = new cv.Mat();
+        const k = cv.Mat.ones(3,3, cv.CV_8U);
+        cv.morphologyEx(binary, opened, cv.MORPH_CLOSE, k);
+        k.delete();
 
-                for (const rect of cellRects) {
-                    let cellMat = binary.roi(rect);
-                    if (isCellEmpty(cellMat)) {
-                        skippedCells++;
-                        cellMat.delete();
-                        continue;
-                    }
-                    cv.imshow(tempCanvas, cellMat);
-                    const dataUrl = tempCanvas.toDataURL();
-                    
-                    // --- PERBAIKAN FINAL DAN DEFINITIF ADA DI SINI ---
-                    // Bungkus `dataUrl` di dalam sebuah array: `[dataUrl]`
-                    ocrPromises.push(
-                        scheduler.addJob('recognize', [dataUrl]).then(result => ({
-                            text: result.data.text.trim().replace(/\n/g, ' '),
-                            rect: rect
-                        }))
-                    );
-                    cellMat.delete();
-                }
+        // tampilkan preview biner (scaled) sekali saja
+        canvasPreview.style.display = 'block';
+        cv.imshow(canvasPreview, opened);
 
-                logToUI(`  > Melewatkan ${skippedCells} sel kosong.`, 'warning');
-                logToUI(`  > Memproses ${ocrPromises.length} sel berisi teks secara paralel...`, 'info');
+        // ==== 2) Kontur → kandidat “sel/segmen” lalu kelompokkan jadi BARIS ====
+        logToUI('Langkah 2: Deteksi kontur & pengelompokan baris', 'step');
+        contours = new cv.MatVector();
+        hierarchy = new cv.Mat();
+        cv.findContours(opened, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
 
-                const ocrResults = (await Promise.all(ocrPromises)).filter(r => r.text);
-                
-                logToUI(`  > OCR paralel selesai.`, 'success');
-                const ocrSummary = ocrResults.map(r => `"${r.text}" di [x:${r.rect.x}, y:${r.rect.y}]`);
-                logToUI('  > Data OCR Mentah:\n' + JSON.stringify(ocrSummary, null, 2), 'info');
+        const rects = [];
+        for (let i=0;i<contours.size();i++){
+          const cnt = contours.get(i);
+          const r = cv.boundingRect(cnt);
+          // filter kasar: buang noise kecil/terlalu besar (pakai skala deteksi)
+          if (r.width>=20 && r.height>=12 && r.width*r.height<= (detW*detH*0.25)){
+            rects.push(r);
+          }
+          cnt.delete();
+        }
+        logToUI(`  > Kandidat segmen: ${rects.length}`, rects.length? 'info':'warning');
 
-                logToUI('Langkah 4: Mencari Baris Target', 'step');
-                const itaCells = ocrResults.filter(r => r.text.toUpperCase().includes('ITA'));
-                const numCells = ocrResults.filter(r => r.text.includes('3550'));
-                logToUI(`  > Ditemukan ${itaCells.length} sel mengandung 'ITA' dan ${numCells.length} sel mengandung '3550'.`, 'info');
+        if (!rects.length) {
+          // fallback: jika Otsu gagal, coba adaptive cepat
+          opened.delete(); binary.delete();
+          binary = new cv.Mat();
+          cv.adaptiveThreshold(gray, binary, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY_INV, 11, 2);
+          opened = new cv.Mat();
+          const k2 = cv.Mat.ones(3,3, cv.CV_8U);
+          cv.morphologyEx(binary, opened, cv.MORPH_CLOSE, k2);
+          k2.delete();
 
-                let targetRow = null;
-                for (const itaCell of itaCells) {
-                    for (const numCell of numCells) {
-                        const isSameRow = (itaCell.rect.y < numCell.rect.y + numCell.rect.height && 
-                                           itaCell.rect.y + itaCell.rect.height > numCell.rect.y);
-                        if (isSameRow) {
-                            logToUI(`  > Cocok! Sel 'ITA' di y=${itaCell.rect.y} dan sel '3550' di y=${numCell.rect.y} berada di baris yang sama.`, 'success');
-                            const rowCenterY = (itaCell.rect.y + itaCell.rect.height / 2);
-                            targetRow = ocrResults.filter(r => Math.abs((r.rect.y + r.rect.height / 2) - rowCenterY) < itaCell.rect.height / 2);
-                            break;
-                        }
-                    }
-                    if (targetRow) break;
-                }
-
-                if (!targetRow || targetRow.length === 0) {
-                    throw new Error('Gagal menemukan baris yang mengandung "ITA" dan "3550" secara bersamaan.');
-                }
-                logToUI(`  > Baris target berhasil diidentifikasi, terdiri dari ${targetRow.length} sel.`, 'success');
-
-                logToUI('Langkah 5: Memotong Gambar Asli', 'step');
-                const padding = 5;
-                const minX = Math.min(...targetRow.map(r => r.rect.x)) - padding;
-                const minY = Math.min(...targetRow.map(r => r.rect.y)) - padding;
-                const maxX = Math.max(...targetRow.map(r => r.rect.x + r.rect.width)) + padding;
-                const maxY = Math.max(...targetRow.map(r => r.rect.y + r.rect.height)) + padding;
-                
-                const finalRect = new cv.Rect(Math.max(0, minX), Math.max(0, minY), maxX - minX, maxY - minY);
-                let finalCrop = src.roi(finalRect);
-                logToUI('  > Gambar asli berhasil dipotong.', 'info');
-
-                const resultCanvas = document.createElement('canvas');
-                cv.imshow(resultCanvas, finalCrop);
-                
-                resultContainer.innerHTML = '<h2>Hasil Potongan Final:</h2>';
-                const resultImage = new Image();
-                resultImage.src = resultCanvas.toDataURL('image/png');
-                resultContainer.appendChild(resultImage);
-
-                logToUI('PROSES SELESAI!', 'success');
-                src.delete(); gray.delete(); binary.delete(); contours.delete(); hierarchy.delete(); finalCrop.delete();
-
-            } catch (error) {
-                console.error("Terjadi kesalahan:", error);
-                logToUI(`Error: ${error.message}`, 'error');
-            } finally {
-                if (scheduler) {
-                    logToUI('Mematikan scheduler Tesseract...', 'info');
-                    await scheduler.terminate();
-                    logToUI('Scheduler berhasil dimatikan.', 'success');
-                }
-                processButton.disabled = false;
-                processButton.textContent = 'Mulai Proses Super Cepat';
+          contours.delete(); hierarchy.delete();
+          contours = new cv.MatVector(); hierarchy = new cv.Mat();
+          cv.findContours(opened, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+          for (let i=0;i<contours.size();i++){
+            const cnt = contours.get(i);
+            const r = cv.boundingRect(cnt);
+            if (r.width>=20 && r.height>=12 && r.width*r.height<= (detW*detH*0.25)){
+              rects.push(r);
             }
+            cnt.delete();
+          }
+          logToUI(`  > Fallback adaptive: kandidat segmen: ${rects.length}`, rects.length? 'info':'error');
+          if (!rects.length) throw new Error('Tidak ada segmen yang bisa dianalisis.');
         }
-    </script>
 
+        // Kelompokkan ke baris
+        const medianH = rects.map(r=>r.height).sort((a,b)=>a-b)[Math.floor(rects.length/2)];
+        const rows = groupRectsIntoRows(rects, Math.max(8, Math.floor(medianH*0.6)));
+        logToUI(`  > Perkiraan baris: ${rows.length}`, 'info');
+
+        // ==== 3) OCR per-BARIS (early-exit saat ketemu) ====
+        logToUI('Langkah 3: OCR per-baris (dengan early-exit)', 'step');
+        const worker = await getTessWorker();
+
+        // canvas sementara (DOM) untuk menaruh ROI baris
+        const tempCanvas = document.createElement('canvas');
+        const tctx = tempCanvas.getContext('2d');
+
+        let foundRowRectScaled = null;
+        for (let i=0;i<rows.length;i++){
+          const r = rows[i].rect;
+
+          // ambil ROI dari GRAY (lebih cocok untuk OCR) pada citra scaled
+          const roi = gray.roi(new cv.Rect(r.x, r.y, r.width, r.height));
+          // konversi ROI -> canvas (sekali per baris)
+          tempCanvas.width = roi.cols;
+          tempCanvas.height = roi.rows;
+          // Tampilkan ke canvas via imshow (paling simpel & cepat untuk jumlah baris kecil)
+          cv.imshow(tempCanvas, roi);
+          roi.delete();
+
+          // set psm ke "single line" agar lebih cepat pada baris
+          await worker.setParameters({ tessedit_pageseg_mode: '7' });
+          const { data:{ text } } = await worker.recognize(tempCanvas);
+          const line = text.toUpperCase().replace(/\s+/g,' ').trim();
+
+          if (i % 3 === 0) logToUI(`  > OCR baris ${i+1}/${rows.length}...`, 'info'); // throttle log
+
+          if (line.includes(SEARCH_A) && line.includes(SEARCH_B)){
+            logToUI(`  > Cocok pada baris ${i+1}: "${line}"`, 'success');
+            foundRowRectScaled = r;
+            break; // EARLY EXIT
+          }
+        }
+
+        if (!foundRowRectScaled){
+          throw new Error(`Gagal menemukan baris yang mengandung "${SEARCH_A}" dan "${SEARCH_B}".`);
+        }
+
+        // ==== 4) Crop dari citra ASLI (pakai skala balik) ====
+        logToUI('Langkah 4: Memotong gambar asli', 'step');
+        const invScale = 1/scale;
+        const pad = Math.round(5*invScale);
+        const cropRect = new cv.Rect(
+          Math.max(0, Math.round(foundRowRectScaled.x*invScale) - pad),
+          Math.max(0, Math.round(foundRowRectScaled.y*invScale) - pad),
+          Math.min(srcFull.cols - Math.max(0, Math.round(foundRowRectScaled.x*invScale) - pad),
+                   Math.round(foundRowRectScaled.width*invScale) + 2*pad),
+          Math.min(srcFull.rows - Math.max(0, Math.round(foundRowRectScaled.y*invScale) - pad),
+                   Math.round(foundRowRectScaled.height*invScale) + 2*pad)
+        );
+
+        const finalCrop = srcFull.roi(cropRect);
+        const resultCanvas = document.createElement('canvas');
+        cv.imshow(resultCanvas, finalCrop);
+
+        resultContainer.innerHTML = '<h2>Hasil Potongan Final:</h2>';
+        const resultImage = new Image();
+        resultImage.src = resultCanvas.toDataURL('image/png');
+        resultContainer.appendChild(resultImage);
+
+        finalCrop.delete();
+        srcFull.delete();
+
+        logToUI('PROSES SELESAI!', 'success');
+      } catch(err){
+        console.error(err);
+        logToUI(`Error: ${err.message}`, 'error');
+      } finally {
+        // bereskan memori OpenCV
+        try{ src && src.delete(); }catch{}
+        try{ gray && gray.delete(); }catch{}
+        try{ binary && binary.delete(); }catch{}
+        try{ opened && opened.delete(); }catch{}
+        try{ contours && contours.delete(); }catch{}
+        try{ hierarchy && hierarchy.delete(); }catch{}
+      }
+    }
+  </script>
 </body>
-</html>```
+</html>
