@@ -83,11 +83,16 @@
             background-color: #f8d7da;
             color: #721c24;
         }
+        .log-entry.debug {
+            background-color: #fff3cd;
+            color: #856404;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Ekstraksi Tabel dari Gambar v2</h1>
+        <h1>Ekstraksi Tabel dari Gambar v3</h1>
         
         <div class="input-group">
             <input type="file" id="fileInput" accept="image/*">
@@ -188,37 +193,53 @@
 
                 // Proses gambar dengan OpenCV
                 const src = cv.imread(preview);
+                logToUI(`Dimensi gambar: ${src.cols} x ${src.rows}`, 'debug');
                 
                 // Konversi ke grayscale
                 const gray = new cv.Mat();
                 cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
                 
-                // Threshold adaptif
+                // Threshold adaptif dengan parameter yang lebih fleksibel
                 const binary = new cv.Mat();
                 cv.adaptiveThreshold(gray, binary, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2);
                 
                 // Inversi warna jika perlu
                 cv.bitwise_not(binary, binary);
                 
-                // Deteksi kontur
+                // Deteksi kontur dengan parameter yang lebih fleksibel
                 const contours = new cv.MatVector();
                 const hierarchy = new cv.Mat();
                 cv.findContours(binary, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
                 
-                // Filter kontur berdasarkan luas dan bentuk
+                logToUI(`Total kontur ditemukan: ${contours.size()}`, 'debug');
+                
+                // Filter kontur berdasarkan luas dan bentuk - lebih fleksibel
                 const cellRects = [];
                 for (let i = 0; i < contours.size(); i++) {
                     const cnt = contours.get(i);
                     const area = cv.contourArea(cnt);
                     
-                    if (area > 500 && area < 50000) {
+                    // Log area setiap kontur untuk debugging
+                    logToUI(`Kontur ${i}: area = ${area}`, 'debug');
+                    
+                    // Area threshold yang lebih fleksibel
+                    if (area > 100) { // Kurangi batas minimum
                         const perimeter = cv.arcLength(cnt, true);
                         const approx = new cv.Mat();
                         cv.approxPolyDP(cnt, approx, 0.02 * perimeter, true);
                         
-                        // Hanya ambil kontur yang mendekati persegi panjang (4 titik)
-                        if (approx.rows === 4) {
-                            cellRects.push(cv.boundingRect(cnt));
+                        // Log jumlah titik approxPolyDP
+                        logToUI(`Kontur ${i}: approx points = ${approx.rows}`, 'debug');
+                        
+                        // Ambil kontur yang mendekati persegi panjang (3-6 titik)
+                        if (approx.rows >= 3 && approx.rows <= 6) {
+                            const rect = cv.boundingRect(cnt);
+                            // Filter berdasarkan rasio aspek yang masuk akal untuk sel tabel
+                            const aspectRatio = rect.width / rect.height;
+                            if (aspectRatio > 0.1 && aspectRatio < 10) { // Rasio lebih fleksibel
+                                cellRects.push(rect);
+                                logToUI(`Kontur ${i}: diterima - ${rect.width}x${rect.height}`, 'debug');
+                            }
                         }
                         
                         approx.delete();
@@ -229,12 +250,48 @@
                 
                 logToUI(`Ditemukan ${cellRects.length} sel tabel`, 'info');
                 
-                // Urutkan kontur berdasarkan posisi (dari atas ke bawah, kiri ke kanan)
-                cellRects.sort((a, b) => {
-                    if (Math.abs(a.y - b.y) < 10) { // Jika pada baris yang sama (toleransi 10px)
-                        return a.x - b.x; // Urutkan berdasarkan x
+                // Jika tidak ada kontur yang ditemukan, coba preprocessing yang berbeda
+                if (cellRects.length === 0) {
+                    logToUI('Mencoba preprocessing alternatif...', 'info');
+                    
+                    // Threshold dengan nilai tetap
+                    const binary2 = new cv.Mat();
+                    cv.threshold(gray, binary2, 127, 255, cv.THRESH_BINARY);
+                    cv.bitwise_not(binary2, binary2);
+                    
+                    const contours2 = new cv.MatVector();
+                    const hierarchy2 = new cv.Mat();
+                    cv.findContours(binary2, contours2, hierarchy2, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+                    
+                    logToUI(`Total kontur alternatif: ${contours2.size()}`, 'debug');
+                    
+                    for (let i = 0; i < contours2.size(); i++) {
+                        const cnt = contours2.get(i);
+                        const area = cv.contourArea(cnt);
+                        
+                        if (area > 50) { // Batas area lebih rendah
+                            const rect = cv.boundingRect(cnt);
+                            const aspectRatio = rect.width / rect.height;
+                            if (aspectRatio > 0.05 && aspectRatio < 20) {
+                                cellRects.push(rect);
+                            }
+                        }
+                        cnt.delete();
                     }
-                    return a.y - b.y; // Urutkan berdasarkan y
+                    
+                    contours2.delete();
+                    hierarchy2.delete();
+                    binary2.delete();
+                    
+                    logToUI(`Ditemukan ${cellRects.length} sel tabel (dengan preprocessing alternatif)`, 'info');
+                }
+                
+                // Urutkan kontur berdasarkan posisi
+                cellRects.sort((a, b) => {
+                    if (Math.abs(a.y - b.y) < 20) { // Toleransi lebih besar
+                        return a.x - b.x;
+                    }
+                    return a.y - b.y;
                 });
                 
                 // Proses OCR dengan scheduler yang sudah diinisialisasi
@@ -264,7 +321,13 @@
                         tempCanvas.width = rect.width;
                         tempCanvas.height = rect.height;
                         const ctx = tempCanvas.getContext('2d');
-                        ctx.drawImage(canvas, 0, 0);
+                        const imageData = canvas.transferToImageBitmap ? 
+                            await createImageBitmap(canvas) : canvas;
+                        if (imageData instanceof ImageBitmap) {
+                            ctx.drawImage(imageData, 0, 0);
+                        } else {
+                            ctx.drawImage(canvas, 0, 0);
+                        }
                         blob = await new Promise(resolve => {
                             tempCanvas.toBlob(resolve, 'image/png');
                         });
@@ -288,7 +351,7 @@
                 ocrResults.forEach((result, index) => {
                     const { rect, text } = result;
                     
-                    if (index === 0 || Math.abs(rect.y - lastY) > 10) {
+                    if (index === 0 || Math.abs(rect.y - lastY) > 20) { // Toleransi lebih besar
                         if (currentRow.length > 0) {
                             tableData.push(currentRow);
                         }
