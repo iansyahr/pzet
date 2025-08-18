@@ -44,9 +44,16 @@
             background-color: #ccc;
             cursor: not-allowed;
         }
+        #preview-container {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+            max-height: 400px;
+            overflow: auto;
+        }
         #preview {
             max-width: 100%;
-            max-height: 300px;
+            max-height: 400px;
             display: none;
         }
         #output {
@@ -92,11 +99,13 @@
 </head>
 <body>
     <div class="container">
-        <h1>Ekstraksi Tabel dari Gambar v3</h1>
+        <h1>Ekstraksi Tabel dari Gambar v4</h1>
         
         <div class="input-group">
             <input type="file" id="fileInput" accept="image/*">
-            <img id="preview" alt="Preview">
+            <div id="preview-container">
+                <img id="preview" alt="Preview">
+            </div>
             <button id="processBtn">Proses Gambar</button>
         </div>
         
@@ -145,7 +154,7 @@
             }
         });
 
-        // Preview gambar saat dipilih
+        // Preview gambar saat dipilih dengan penanganan aspek rasio
         document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -154,6 +163,12 @@
                     const preview = document.getElementById('preview');
                     preview.src = event.target.result;
                     preview.style.display = 'block';
+                    
+                    // Reset style untuk menjaga aspek rasio
+                    preview.style.width = 'auto';
+                    preview.style.height = 'auto';
+                    preview.style.maxWidth = '100%';
+                    preview.style.maxHeight = '400px';
                 };
                 reader.readAsDataURL(file);
             }
