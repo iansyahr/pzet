@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -44,6 +45,11 @@
             background-color: #ccc;
             cursor: not-allowed;
         }
+        #preview {
+            max-width: 100%;
+            max-height: 300px;
+            display: none;
+        }
         #output {
             width: 100%;
             height: 300px;
@@ -86,6 +92,7 @@
         
         <div class="input-group">
             <input type="file" id="fileInput" accept="image/*">
+            <img id="preview" alt="Preview">
             <button id="processBtn">Proses Gambar</button>
         </div>
         
@@ -98,6 +105,17 @@
 
     <script>
         let scheduler = null;
+        let isOpencvLoaded = false;
+
+        // Inisialisasi OpenCV
+        function initOpenCV() {
+            if (typeof cv !== 'undefined' && cv.Mat) {
+                isOpencvLoaded = true;
+                logToUI('OpenCV.js loaded successfully', 'success');
+            } else {
+                setTimeout(initOpenCV, 1000);
+            }
+        }
 
         // Inisialisasi scheduler dan workers saat halaman dimuat
         window.addEventListener('load', async () => {
@@ -116,18 +134,39 @@
                 }
                 logToUI(`${numWorkers} workers siap.`, 'success');
                 document.getElementById('processBtn').disabled = false;
+                initOpenCV();
             } catch (error) {
                 logToUI(`Gagal memuat workers: ${error.message}`, 'error');
                 document.getElementById('processBtn').disabled = false;
             }
         });
 
+        // Preview gambar saat dipilih
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const preview = document.getElementById('preview');
+                    preview.src = event.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
         document.getElementById('processBtn').addEventListener('click', async function() {
             const fileInput = document.getElementById('fileInput');
             const file = fileInput.files[0];
+            const preview = document.getElementById('preview');
             
             if (!file) {
                 logToUI('Silakan pilih file gambar terlebih dahulu.', 'error');
+                return;
+            }
+
+            if (!isOpencvLoaded) {
+                logToUI('OpenCV.js masih dalam proses loading. Silakan coba lagi.', 'error');
                 return;
             }
 
@@ -139,12 +178,21 @@
                 processBtn.disabled = true;
                 processBtn.textContent = 'Memproses...';
                 
-                // Baca gambar
-                const image = cv.imread(fileInput);
+                // Tunggu sampai gambar dimuat
+                await new Promise((resolve) => {
+                    if (preview.complete && preview.naturalHeight !== 0) {
+                        resolve();
+                    } else {
+                        preview.onload = resolve;
+                    }
+                });
+
+                // Proses gambar dengan OpenCV
+                const src = cv.imread(preview);
                 
                 // Konversi ke grayscale
                 const gray = new cv.Mat();
-                cv.cvtColor(image, gray, cv.COLOR_RGBA2GRAY);
+                cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
                 
                 // Threshold adaptif
                 const binary = new cv.Mat();
@@ -264,7 +312,7 @@
                 logToUI(`Proses selesai dalam ${(endTime - startTime).toFixed(2)} ms`, 'success');
                 
                 // Bersihkan memori
-                image.delete();
+                src.delete();
                 gray.delete();
                 binary.delete();
                 contours.delete();
