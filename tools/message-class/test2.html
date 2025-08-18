@@ -99,7 +99,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Ekstraksi Tabel dari Gambar v4</h1>
+        <h1>Ekstraksi Tabel dari Gambar v5</h1>
         
         <div class="input-group">
             <input type="file" id="fileInput" accept="image/*">
@@ -313,40 +313,25 @@
                 const ocrPromises = cellRects.map(async (rect) => {
                     const cellMat = binary.roi(rect);
                     
-                    // Gunakan OffscreenCanvas jika tersedia, fallback ke canvas biasa
-                    let canvas;
-                    if (typeof OffscreenCanvas !== 'undefined') {
-                        canvas = new OffscreenCanvas(rect.width, rect.height);
-                    } else {
-                        canvas = document.createElement('canvas');
-                        canvas.width = rect.width;
-                        canvas.height = rect.height;
-                    }
+                    // Gunakan canvas DOM biasa (bukan OffscreenCanvas)
+                    const canvas = document.createElement('canvas');
+                    canvas.width = rect.width;
+                    canvas.height = rect.height;
+                    
+                    // Pastikan canvas sudah ditambahkan ke DOM (meskipun disembunyikan)
+                    canvas.style.display = 'none';
+                    document.body.appendChild(canvas);
                     
                     cv.imshow(canvas, cellMat);
                     cellMat.delete();
                     
                     // Konversi ke blob untuk OCR
-                    let blob;
-                    if (canvas.convertToBlob) {
-                        blob = await canvas.convertToBlob({type: 'image/png'});
-                    } else {
-                        // Fallback untuk browser yang tidak mendukung OffscreenCanvas
-                        const tempCanvas = document.createElement('canvas');
-                        tempCanvas.width = rect.width;
-                        tempCanvas.height = rect.height;
-                        const ctx = tempCanvas.getContext('2d');
-                        const imageData = canvas.transferToImageBitmap ? 
-                            await createImageBitmap(canvas) : canvas;
-                        if (imageData instanceof ImageBitmap) {
-                            ctx.drawImage(imageData, 0, 0);
-                        } else {
-                            ctx.drawImage(canvas, 0, 0);
-                        }
-                        blob = await new Promise(resolve => {
-                            tempCanvas.toBlob(resolve, 'image/png');
-                        });
-                    }
+                    const blob = await new Promise(resolve => {
+                        canvas.toBlob(resolve, 'image/png');
+                    });
+                    
+                    // Hapus canvas dari DOM setelah digunakan
+                    document.body.removeChild(canvas);
                     
                     // OCR dengan scheduler
                     const result = await scheduler.addJob('recognize', blob);
