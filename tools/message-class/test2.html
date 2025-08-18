@@ -1,0 +1,294 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ekstraksi Tabel dari Gambar</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    <script src="https://docs.opencv.org/4.5.0/opencv.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        #fileInput {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #processBtn {
+            padding: 12px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        #processBtn:hover {
+            background-color: #0056b3;
+        }
+        #processBtn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        #output {
+            width: 100%;
+            height: 300px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: monospace;
+            resize: vertical;
+        }
+        #log {
+            height: 150px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 10px;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        .log-entry.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        .log-entry.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .log-entry.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ekstraksi Tabel dari Gambar</h1>
+        
+        <div class="input-group">
+            <input type="file" id="fileInput" accept="image/*">
+            <button id="processBtn">Proses Gambar</button>
+        </div>
+        
+        <textarea id="output" placeholder="Hasil ekstraksi tabel akan muncul di sini..."></textarea>
+        
+        <div id="log">
+            <div class="log-entry info">[INFO] Sistem siap. Silakan pilih gambar dan klik proses.</div>
+        </div>
+    </div>
+
+    <script>
+        let scheduler = null;
+
+        // Inisialisasi scheduler dan workers saat halaman dimuat
+        window.addEventListener('load', async () => {
+            logToUI('Memuat Tesseract workers...', 'info');
+            document.getElementById('processBtn').disabled = true;
+            
+            try {
+                scheduler = Tesseract.createScheduler();
+                const numWorkers = Math.min(navigator.hardwareConcurrency || 4, 6);
+                for (let i = 0; i < numWorkers; i++) {
+                    const worker = await Tesseract.createWorker('eng', 1, {
+                        tessedit_pageseg_mode: Tesseract.PSM.SINGLE_WORD,
+                        tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ',
+                    });
+                    scheduler.addWorker(worker);
+                }
+                logToUI(`${numWorkers} workers siap.`, 'success');
+                document.getElementById('processBtn').disabled = false;
+            } catch (error) {
+                logToUI(`Gagal memuat workers: ${error.message}`, 'error');
+                document.getElementById('processBtn').disabled = false;
+            }
+        });
+
+        document.getElementById('processBtn').addEventListener('click', async function() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                logToUI('Silakan pilih file gambar terlebih dahulu.', 'error');
+                return;
+            }
+
+            const startTime = performance.now();
+            const processBtn = document.getElementById('processBtn');
+            
+            try {
+                logToUI('Memulai proses ekstraksi tabel...', 'info');
+                processBtn.disabled = true;
+                processBtn.textContent = 'Memproses...';
+                
+                // Baca gambar
+                const image = cv.imread(fileInput);
+                
+                // Konversi ke grayscale
+                const gray = new cv.Mat();
+                cv.cvtColor(image, gray, cv.COLOR_RGBA2GRAY);
+                
+                // Threshold adaptif
+                const binary = new cv.Mat();
+                cv.adaptiveThreshold(gray, binary, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2);
+                
+                // Inversi warna jika perlu
+                cv.bitwise_not(binary, binary);
+                
+                // Deteksi kontur
+                const contours = new cv.MatVector();
+                const hierarchy = new cv.Mat();
+                cv.findContours(binary, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+                
+                // Filter kontur berdasarkan luas dan bentuk
+                const cellRects = [];
+                for (let i = 0; i < contours.size(); i++) {
+                    const cnt = contours.get(i);
+                    const area = cv.contourArea(cnt);
+                    
+                    if (area > 500 && area < 50000) {
+                        const perimeter = cv.arcLength(cnt, true);
+                        const approx = new cv.Mat();
+                        cv.approxPolyDP(cnt, approx, 0.02 * perimeter, true);
+                        
+                        // Hanya ambil kontur yang mendekati persegi panjang (4 titik)
+                        if (approx.rows === 4) {
+                            cellRects.push(cv.boundingRect(cnt));
+                        }
+                        
+                        approx.delete();
+                    }
+                    
+                    cnt.delete();
+                }
+                
+                logToUI(`Ditemukan ${cellRects.length} sel tabel`, 'info');
+                
+                // Urutkan kontur berdasarkan posisi (dari atas ke bawah, kiri ke kanan)
+                cellRects.sort((a, b) => {
+                    if (Math.abs(a.y - b.y) < 10) { // Jika pada baris yang sama (toleransi 10px)
+                        return a.x - b.x; // Urutkan berdasarkan x
+                    }
+                    return a.y - b.y; // Urutkan berdasarkan y
+                });
+                
+                // Proses OCR dengan scheduler yang sudah diinisialisasi
+                const ocrPromises = cellRects.map(async (rect) => {
+                    const cellMat = binary.roi(rect);
+                    
+                    // Gunakan OffscreenCanvas jika tersedia, fallback ke canvas biasa
+                    let canvas;
+                    if (typeof OffscreenCanvas !== 'undefined') {
+                        canvas = new OffscreenCanvas(rect.width, rect.height);
+                    } else {
+                        canvas = document.createElement('canvas');
+                        canvas.width = rect.width;
+                        canvas.height = rect.height;
+                    }
+                    
+                    cv.imshow(canvas, cellMat);
+                    cellMat.delete();
+                    
+                    // Konversi ke blob untuk OCR
+                    let blob;
+                    if (canvas.convertToBlob) {
+                        blob = await canvas.convertToBlob({type: 'image/png'});
+                    } else {
+                        // Fallback untuk browser yang tidak mendukung OffscreenCanvas
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = rect.width;
+                        tempCanvas.height = rect.height;
+                        const ctx = tempCanvas.getContext('2d');
+                        ctx.drawImage(canvas, 0, 0);
+                        blob = await new Promise(resolve => {
+                            tempCanvas.toBlob(resolve, 'image/png');
+                        });
+                    }
+                    
+                    // OCR dengan scheduler
+                    const result = await scheduler.addJob('recognize', blob);
+                    return {
+                        rect: rect,
+                        text: result.data.text.trim()
+                    };
+                });
+                
+                const ocrResults = await Promise.all(ocrPromises);
+                
+                // Bangun struktur tabel
+                const tableData = [];
+                let currentRow = [];
+                let lastY = 0;
+                
+                ocrResults.forEach((result, index) => {
+                    const { rect, text } = result;
+                    
+                    if (index === 0 || Math.abs(rect.y - lastY) > 10) {
+                        if (currentRow.length > 0) {
+                            tableData.push(currentRow);
+                        }
+                        currentRow = [text];
+                        lastY = rect.y;
+                    } else {
+                        currentRow.push(text);
+                    }
+                });
+                
+                if (currentRow.length > 0) {
+                    tableData.push(currentRow);
+                }
+                
+                // Tampilkan hasil ke textarea
+                const output = tableData.map(row => row.join('\t')).join('\n');
+                document.getElementById('output').value = output;
+                
+                const endTime = performance.now();
+                logToUI(`Proses selesai dalam ${(endTime - startTime).toFixed(2)} ms`, 'success');
+                
+                // Bersihkan memori
+                image.delete();
+                gray.delete();
+                binary.delete();
+                contours.delete();
+                hierarchy.delete();
+                
+            } catch (error) {
+                logToUI(`Error: ${error.message}`, 'error');
+                console.error(error);
+            } finally {
+                processBtn.disabled = false;
+                processBtn.textContent = 'Proses Gambar';
+            }
+        });
+
+        // Fungsi untuk logging ke UI
+        function logToUI(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+    </script>
+</body>
+</html>
