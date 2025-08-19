@@ -249,8 +249,10 @@
 
     <div id="katex-container"></div>
 
+    <!-- 4. JavaScript Utama Aplikasi dengan Perbaikan Font -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- Pemilihan Elemen DOM ---
             const latexInput = document.getElementById('latex-input');
             const katexContainer = document.getElementById('katex-container');
             const pngPreview = document.getElementById('png-preview');
@@ -273,7 +275,7 @@
                 };
             };
 
-            const updatePreview = () => {
+            const updatePreview = async () => {
                 errorDisplay.style.display = 'none';
                 pngOutput.style.display = 'none';
                 actionButtons.style.display = 'none';
@@ -290,21 +292,29 @@
                     pngPreview.classList.remove('loading');
                     return;
                 }
-
+                
                 try {
+                    // 1. Render LaTeX ke HTML
                     katex.render(latexString, katexContainer, {
                         displayMode: mode === 'display',
                         throwOnError: true,
                         output: 'html'
                     });
 
+                    // --- PERBAIKAN KUNCI: Tunggu semua font siap ---
+                    await document.fonts.ready;
+
+                    // Beri sedikit jeda agar browser sempat me-render font
                     setTimeout(() => {
+                        // 2. Konversi HTML ke Canvas
                         html2canvas(katexContainer, {
                             backgroundColor: null,
-                            scale: scale
+                            scale: scale,
+                            logging: false // Matikan log html2canvas di console
                         }).then(canvas => {
                             const pngUrl = canvas.toDataURL('image/png');
                             
+                            // 3. Tampilkan hasil
                             pngOutput.src = pngUrl;
                             pngOutput.style.display = 'block';
                             downloadLink.href = pngUrl;
@@ -317,7 +327,7 @@
                         }).catch(err => {
                             showError(`Error saat membuat gambar: ${err.message}`);
                         });
-                    }, 50);
+                    }, 100); // Jeda 100ms untuk keamanan tambahan
 
                 } catch (e) {
                     const errorMessage = e.message.replace(/KaTeX parse error: /g, '');
@@ -355,7 +365,8 @@
                     alert('Gagal menyalin gambar. Browser Anda mungkin tidak mendukung fitur ini.');
                 }
             };
-
+            
+            // --- Event Listeners ---
             const debouncedUpdate = debounce(updatePreview, 400);
 
             latexInput.addEventListener('input', debouncedUpdate);
@@ -363,6 +374,7 @@
             modeRadios.forEach(radio => radio.addEventListener('change', updatePreview));
             copyBtn.addEventListener('click', copyImageToClipboard);
 
+            // --- Jalankan sekali saat halaman pertama kali dimuat ---
             updatePreview();
         });
     </script>
