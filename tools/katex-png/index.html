@@ -128,7 +128,6 @@
             align-items: center;
             transition: background-color 0.3s;
         }
-        /* --- PERBAIKAN: State untuk loading --- */
         #png-preview.loading {
             color: var(--secondary-color);
         }
@@ -173,7 +172,6 @@
             background-color: var(--info-color);
         }
         #katex-container {
-            /* --- PERBAIKAN: Styling lebih aman untuk rendering off-screen --- */
             position: absolute;
             left: -9999px;
             top: -9999px;
@@ -194,7 +192,6 @@
             min-height: 1.2em;
             display: none; /* Sembunyikan secara default */
         }
-        /* --- PERBAIKAN: Responsivitas untuk layar kecil --- */
         @media (max-width: 600px) {
             .options-grid {
                 grid-template-columns: 1fr;
@@ -236,7 +233,6 @@
             </div>
         </div>
 
-        <!-- Tombol "Buat PNG" dihapus karena sudah diganti preview instan -->
         <div id="error-display" class="error-message"></div>
 
         <div class="output-section">
@@ -253,10 +249,8 @@
 
     <div id="katex-container"></div>
 
-    <!-- 4. JavaScript Utama Aplikasi -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- Pemilihan Elemen DOM ---
             const latexInput = document.getElementById('latex-input');
             const katexContainer = document.getElementById('katex-container');
             const pngPreview = document.getElementById('png-preview');
@@ -270,9 +264,6 @@
 
             let debounceTimer;
 
-            // --- FITUR BARU: Fungsi Debounce ---
-            // Mencegah fungsi dijalankan terlalu sering saat mengetik.
-            // Fungsi baru akan jalan setelah pengguna berhenti mengetik selama `delay`.
             const debounce = (func, delay) => {
                 return function(...args) {
                     clearTimeout(debounceTimer);
@@ -282,14 +273,11 @@
                 };
             };
 
-            // --- PERBAIKAN: Logika utama dijadikan satu fungsi ---
             const updatePreview = () => {
-                // Sembunyikan error dan hasil sebelumnya
                 errorDisplay.style.display = 'none';
                 pngOutput.style.display = 'none';
                 actionButtons.style.display = 'none';
                 
-                // Tampilkan status loading
                 pngPreview.classList.add('loading');
                 pngPreview.textContent = 'Memproses...';
 
@@ -304,31 +292,26 @@
                 }
 
                 try {
-                    // 1. Render LaTeX ke dalam kontainer tersembunyi
                     katex.render(latexString, katexContainer, {
                         displayMode: mode === 'display',
                         throwOnError: true,
                         output: 'html'
                     });
 
-                    // 2. Konversi HTML hasil render ke Canvas, lalu ke PNG
-                    // Timeout kecil untuk memastikan DOM sudah ter-update
                     setTimeout(() => {
                         html2canvas(katexContainer, {
-                            backgroundColor: null, // Latar belakang transparan
+                            backgroundColor: null,
                             scale: scale
                         }).then(canvas => {
                             const pngUrl = canvas.toDataURL('image/png');
                             
-                            // 3. Tampilkan hasil
                             pngOutput.src = pngUrl;
                             pngOutput.style.display = 'block';
                             downloadLink.href = pngUrl;
                             actionButtons.style.display = 'flex';
                             
-                            // Hapus status loading
                             pngPreview.classList.remove('loading');
-                            pngPreview.textContent = ''; // Kosongkan teks "Memproses..."
+                            pngPreview.textContent = '';
                             pngPreview.appendChild(pngOutput);
 
                         }).catch(err => {
@@ -337,13 +320,11 @@
                     }, 50);
 
                 } catch (e) {
-                    // Tangani jika ada error dari KaTeX (misal: sintaks salah)
                     const errorMessage = e.message.replace(/KaTeX parse error: /g, '');
                     showError(`Error sintaks LaTeX: ${errorMessage}`);
                 }
             };
 
-            // --- PERBAIKAN: Fungsi terpisah untuk menampilkan error ---
             const showError = (message) => {
                 errorDisplay.textContent = message;
                 errorDisplay.style.display = 'block';
@@ -351,7 +332,6 @@
                 pngPreview.classList.remove('loading');
             };
 
-            // --- Fungsi untuk menyalin gambar ke clipboard ---
             const copyImageToClipboard = async () => {
                 if (!pngOutput.src) return;
                 
@@ -362,7 +342,6 @@
                         new ClipboardItem({ [blob.type]: blob })
                     ]);
                     
-                    // Beri feedback visual
                     const originalText = copyBtn.textContent;
                     copyBtn.textContent = 'Tersalin!';
                     copyBtn.classList.add('copied');
@@ -377,20 +356,13 @@
                 }
             };
 
-            // --- Event Listeners ---
-            const debouncedUpdate = debounce(updatePreview, 400); // Delay 400ms
+            const debouncedUpdate = debounce(updatePreview, 400);
 
-            // 1. Panggil update saat input teks berubah (dengan debounce)
             latexInput.addEventListener('input', debouncedUpdate);
-
-            // 2. Panggil update langsung saat mode atau skala diubah
             scaleSelect.addEventListener('change', updatePreview);
             modeRadios.forEach(radio => radio.addEventListener('change', updatePreview));
-
-            // 3. Event untuk tombol salin
             copyBtn.addEventListener('click', copyImageToClipboard);
 
-            // --- Jalankan sekali saat halaman pertama kali dimuat ---
             updatePreview();
         });
     </script>
