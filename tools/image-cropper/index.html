@@ -23,11 +23,7 @@
             --border-radius: 8px;
             --sidebar-width: 320px;
         }
-
-        *, *::before, *::after {
-            box-sizing: border-box;
-        }
-
+        *, *::before, *::after { box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: var(--bg-color);
@@ -35,15 +31,12 @@
             margin: 0;
             min-height: 100vh;
         }
-        
-        /* Tata Letak Utama */
         .main-layout {
             display: flex;
-            flex-direction: column; /* Default: Vertikal (Mobile First) */
+            flex-direction: column;
             width: 100%;
             min-height: 100vh;
         }
-
         .sidebar {
             background-color: var(--sidebar-bg);
             padding: 2rem;
@@ -52,7 +45,6 @@
             justify-content: center;
             text-align: center;
         }
-
         .content {
             flex-grow: 1;
             padding: 2rem;
@@ -61,7 +53,6 @@
             align-items: center;
             background-color: var(--bg-color);
         }
-        
         .content-inner {
             width: 100%;
             height: 100%;
@@ -73,14 +64,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 400px; /* Tinggi minimum untuk area konten */
+            min-height: 400px;
         }
-        
-        /* === MEDIA QUERY UNTUK LAYAR LEBAR (DESKTOP) === */
         @media (min-width: 992px) {
-            .main-layout {
-                flex-direction: row; /* Ubah ke Horizontal */
-            }
+            .main-layout { flex-direction: row; }
             .sidebar {
                 width: var(--sidebar-width);
                 flex-shrink: 0;
@@ -88,24 +75,10 @@
                 justify-content: flex-start;
                 text-align: left;
             }
-            .content {
-                padding: 2rem;
-            }
+            .content { padding: 2rem; }
         }
-
-        /* Elemen UI di Sidebar */
-        h1 {
-            font-size: 1.75rem;
-            margin-top: 0;
-            margin-bottom: 0.5rem;
-        }
-        .instructions {
-            color: var(--subtle-text-color);
-            margin-bottom: 2rem;
-            line-height: 1.5;
-        }
-
-        /* Tombol */
+        h1 { font-size: 1.75rem; margin-top: 0; margin-bottom: 0.5rem; }
+        .instructions { color: var(--subtle-text-color); margin-bottom: 2rem; line-height: 1.5; }
         .btn {
             display: block;
             width: 100%;
@@ -121,51 +94,19 @@
         }
         .btn:active { transform: scale(0.98); }
         .btn + .btn { margin-top: 1rem; }
-
         .btn-primary { background-color: var(--accent-color); color: white; }
         .btn-primary:hover { background-color: var(--accent-hover-color); }
-        
         .btn-secondary { background-color: #e4e6eb; color: var(--text-color); }
         .btn-secondary:hover { background-color: #d8dbdf; }
-        
-        /* Area Upload */
         #imageInput { display: none; }
-
-        /* Kontrol Aksi (Download, Copy, dll.) */
-        .action-controls {
-            margin-top: 2rem;
-            border-top: 1px solid var(--border-color);
-            padding-top: 2rem;
-        }
-
-        /* Area Konten (Gambar) */
-        .placeholder {
-            text-align: center;
-            color: var(--subtle-text-color);
-        }
-        .placeholder-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-        
-        .cropper-container {
-            width: 100%;
-            height: 100%;
-        }
-        #imageToCrop {
-            display: block;
-            max-width: 100%;
-            max-height: calc(100vh - 4rem); /* Batasi tinggi maks gambar */
-        }
-
-        /* --- Manajemen Status UI dengan Class 'is-cropping' --- */
-        /* Sembunyikan elemen yang tidak diperlukan secara default */
+        .action-controls { margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 2rem; }
+        .placeholder { text-align: center; color: var(--subtle-text-color); }
+        .placeholder-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .cropper-container { width: 100%; height: 100%; }
+        #imageToCrop { display: block; max-width: 100%; max-height: calc(100vh - 4rem); }
         .action-controls, .cropper-container { display: none; }
-        
-        /* Saat gambar dimuat (body.is-cropping) */
         body.is-cropping .upload-box { display: none; }
         body.is-cropping .action-controls { display: block; }
-
         body.is-cropping .placeholder { display: none; }
         body.is-cropping .cropper-container { display: block; }
     </style>
@@ -178,8 +119,10 @@
             <h1>Image Cropper</h1>
             
             <div class="upload-box">
-                <p class="instructions">Pilih file atau paste gambar (Ctrl+V) untuk memulai.</p>
+                <p class="instructions">Pilih file, paste gambar (Ctrl+V), atau gunakan gambar dari clipboard untuk memulai.</p>
                 <label for="imageInput" class="btn btn-primary">Pilih Gambar dari File</label>
+                <!-- Tombol baru untuk mobile -->
+                <button id="pasteBtn" class="btn btn-secondary">Paste dari Clipboard</button>
                 <input type="file" id="imageInput" accept="image/*">
             </div>
 
@@ -216,6 +159,7 @@
             const downloadBtn = document.getElementById('downloadBtn');
             const copyBtn = document.getElementById('copyBtn');
             const resetBtn = document.getElementById('resetBtn');
+            const pasteBtn = document.getElementById('pasteBtn'); // Ambil tombol baru
 
             let cropper = null;
 
@@ -231,7 +175,7 @@
                 
                 imageToCrop.src = imageSrc;
                 cropper = new Cropper(imageToCrop, {
-                    aspectRatio: NaN, // Mode crop bebas
+                    aspectRatio: NaN,
                     viewMode: 1,
                     background: false,
                     autoCropArea: 0.8,
@@ -242,6 +186,7 @@
                 setUIState(true);
             }
 
+            // Handler untuk input file
             imageInput.addEventListener('change', (e) => {
                 const file = e.target.files[0];
                 if (file?.type.startsWith('image/')) {
@@ -252,6 +197,7 @@
                 e.target.value = '';
             });
 
+            // Handler untuk paste di desktop (Ctrl+V)
             document.addEventListener('paste', (e) => {
                 const items = e.clipboardData?.items;
                 if (!items) return;
@@ -265,6 +211,36 @@
                         e.preventDefault();
                         break;
                     }
+                }
+            });
+
+            // Handler untuk tombol "Paste dari Clipboard" (untuk mobile & desktop)
+            pasteBtn.addEventListener('click', async () => {
+                if (!navigator.clipboard?.read) {
+                    alert('Maaf, browser Anda tidak mendukung fitur paste dari clipboard.');
+                    return;
+                }
+
+                try {
+                    const clipboardItems = await navigator.clipboard.read();
+                    let foundImage = false;
+                    for (const item of clipboardItems) {
+                        const imageType = item.types.find(type => type.startsWith('image/'));
+                        if (imageType) {
+                            const blob = await item.getType(imageType);
+                            const reader = new FileReader();
+                            reader.onload = (event) => initCropper(event.target.result);
+                            reader.readAsDataURL(blob);
+                            foundImage = true;
+                            break;
+                        }
+                    }
+                    if (!foundImage) {
+                        alert('Tidak ada gambar yang ditemukan di clipboard.');
+                    }
+                } catch (err) {
+                    console.error('Gagal membaca clipboard:', err);
+                    alert('Gagal mengambil gambar dari clipboard. Pastikan Anda telah memberikan izin akses.');
                 }
             });
 
@@ -283,8 +259,8 @@
                 if (!canvas) return;
 
                 const link = document.createElement('a');
-                link.href = canvas.toDataURL('image/avif');
-                link.download = 'cropped-image.avif';
+                link.href = canvas.toDataURL('image/png'); // Mengubah ke PNG untuk kompatibilitas lebih luas
+                link.download = 'cropped-image.png';
                 link.click();
             });
 
