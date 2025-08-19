@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/avif" href="https://pzet.pages.dev/tools/katex-png/icon-katex.avif">
-    <title>KaTeX PNG Converter</title>
+    <title>KaTeX PNG Converter (Live Preview)</title>
 
     <!-- 1. Pustaka KaTeX (untuk render LaTeX) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
@@ -19,6 +19,8 @@
             --primary-color: #007bff;
             --secondary-color: #6c757d;
             --success-color: #28a745;
+            --info-color: #17a2b8;
+            --danger-color: #dc3545;
             --light-gray: #f8f9fa;
             --dark-gray: #343a40;
             --border-color: #dee2e6;
@@ -47,7 +49,13 @@
         h1 {
             text-align: center;
             color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        p {
+            text-align: center;
+            margin-top: 0;
             margin-bottom: 25px;
+            color: var(--secondary-color);
         }
         .form-group {
             margin-bottom: 20px;
@@ -64,6 +72,12 @@
             border-radius: 5px;
             font-size: 16px;
             box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
         }
         textarea {
             min-height: 120px;
@@ -74,6 +88,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
+            margin-bottom: 25px;
         }
         fieldset {
             border: 1px solid var(--border-color);
@@ -88,25 +103,7 @@
             display: flex;
             gap: 15px;
             align-items: center;
-        }
-        .btn-generate {
-            display: block;
-            width: 100%;
-            padding: 12px 20px;
-            font-size: 18px;
-            font-weight: 700;
-            color: white;
-            background-color: var(--primary-color);
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.1s ease;
-        }
-        .btn-generate:hover {
-            background-color: #0056b3;
-        }
-        .btn-generate:active {
-            transform: scale(0.98);
+            flex-wrap: wrap;
         }
         .output-section {
             margin-top: 30px;
@@ -125,10 +122,15 @@
             padding: 20px;
             margin-top: 15px;
             overflow-x: auto;
-            min-height: 50px;
+            min-height: 100px;
             display: flex;
             justify-content: center;
             align-items: center;
+            transition: background-color 0.3s;
+        }
+        /* --- PERBAIKAN: State untuk loading --- */
+        #png-preview.loading {
+            color: var(--secondary-color);
         }
         #png-output {
             max-width: 100%;
@@ -168,21 +170,38 @@
             background-color: #5a6268;
         }
         #copy-btn.copied {
-            background-color: #17a2b8; /* Warna info untuk feedback */
+            background-color: var(--info-color);
         }
         #katex-container {
+            /* --- PERBAIKAN: Styling lebih aman untuk rendering off-screen --- */
             position: absolute;
             left: -9999px;
             top: -9999px;
             padding: 10px;
             color: black;
             background-color: transparent;
+            font-size: 1.5em; /* Ukuran dasar sebelum di-skala */
+            visibility: hidden;
         }
         .error-message {
-            color: #dc3545;
+            color: var(--danger-color);
             font-weight: bold;
-            margin-top: 10px;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
             min-height: 1.2em;
+            display: none; /* Sembunyikan secara default */
+        }
+        /* --- PERBAIKAN: Responsivitas untuk layar kecil --- */
+        @media (max-width: 600px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
         }
     </style>
 </head>
@@ -190,10 +209,10 @@
 
     <div class="container">
         <h1>LaTeX to PNG Converter</h1>
-        <p>Render LaTeX, ubah ke PNG, lalu unduh atau salin ke clipboard.</p>
+        <p>Ketik LaTeX Anda dan dapatkan preview PNG secara instan.</p>
 
         <div class="form-group">
-            <label for="latex-input">Masukkan Kode LaTeX Anda:</label>
+            <label for="latex-input">Masukkan Kode LaTeX:</label>
             <textarea id="latex-input" placeholder="Contoh: f(x) = \int_{-\infty}^\infty \hat f(\xi)\,e^{2 \pi i \xi x} \,d\xi">c = \pm\sqrt{a^2 + b^2}</textarea>
         </div>
 
@@ -209,20 +228,19 @@
                 <label for="scale-select">Skala Output</label>
                 <select id="scale-select">
                     <option value="1">100%</option>
-                    <option value="2" selected>200% (Direkomendasikan)</option>
-                    <option value="3">300%</option>
+                    <option value="2" selected>200% (HD)</option>
+                    <option value="3">300% (UHD)</option>
                     <option value="4">400%</option>
                     <option value="5">500%</option>
-                    <option value="10">1000%</option>
                 </select>
             </div>
         </div>
 
-        <button id="generate-btn" class="btn-generate">Buat PNG</button>
+        <!-- Tombol "Buat PNG" dihapus karena sudah diganti preview instan -->
         <div id="error-display" class="error-message"></div>
 
         <div class="output-section">
-            <h2>Hasil PNG</h2>
+            <h2>Hasil Preview</h2>
             <div id="png-preview">
                 <img id="png-output" alt="Hasil render LaTeX">
             </div>
@@ -238,103 +256,116 @@
     <!-- 4. JavaScript Utama Aplikasi -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- Pemilihan Elemen DOM ---
             const latexInput = document.getElementById('latex-input');
-            const generateBtn = document.getElementById('generate-btn');
             const katexContainer = document.getElementById('katex-container');
+            const pngPreview = document.getElementById('png-preview');
             const pngOutput = document.getElementById('png-output');
             const downloadLink = document.getElementById('download-link');
             const copyBtn = document.getElementById('copy-btn');
             const actionButtons = document.getElementById('action-buttons');
             const scaleSelect = document.getElementById('scale-select');
             const errorDisplay = document.getElementById('error-display');
+            const modeRadios = document.querySelectorAll('input[name="mode"]');
 
-            // Fungsi untuk menyembunyikan hasil output
-            const hideOutput = () => {
+            let debounceTimer;
+
+            // --- FITUR BARU: Fungsi Debounce ---
+            // Mencegah fungsi dijalankan terlalu sering saat mengetik.
+            // Fungsi baru akan jalan setelah pengguna berhenti mengetik selama `delay`.
+            const debounce = (func, delay) => {
+                return function(...args) {
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(() => {
+                        func.apply(this, args);
+                    }, delay);
+                };
+            };
+
+            // --- PERBAIKAN: Logika utama dijadikan satu fungsi ---
+            const updatePreview = () => {
+                // Sembunyikan error dan hasil sebelumnya
+                errorDisplay.style.display = 'none';
                 pngOutput.style.display = 'none';
                 actionButtons.style.display = 'none';
-            };
+                
+                // Tampilkan status loading
+                pngPreview.classList.add('loading');
+                pngPreview.textContent = 'Memproses...';
 
-            // Fungsi untuk mengubah Data URL menjadi Blob
-            const dataURLtoBlob = (dataurl) => {
-                const arr = dataurl.split(',');
-                const mime = arr[0].match(/:(.*?);/)[1];
-                const bstr = atob(arr[1]);
-                let n = bstr.length;
-                const u8arr = new Uint8Array(n);
-                while (n--) {
-                    u8arr[n] = bstr.charCodeAt(n);
-                }
-                return new Blob([u8arr], { type: mime });
-            };
-
-            // Event listener untuk tombol utama
-            generateBtn.addEventListener('click', () => {
-                errorDisplay.textContent = '';
                 const latexString = latexInput.value.trim();
                 const mode = document.querySelector('input[name="mode"]:checked').value;
                 const scale = parseFloat(scaleSelect.value);
 
                 if (!latexString) {
-                    errorDisplay.textContent = 'Error: Input LaTeX tidak boleh kosong.';
-                    hideOutput();
+                    pngPreview.textContent = 'Ketikkan kode LaTeX untuk memulai.';
+                    pngPreview.classList.remove('loading');
                     return;
                 }
 
                 try {
+                    // 1. Render LaTeX ke dalam kontainer tersembunyi
                     katex.render(latexString, katexContainer, {
                         displayMode: mode === 'display',
                         throwOnError: true,
                         output: 'html'
                     });
+
+                    // 2. Konversi HTML hasil render ke Canvas, lalu ke PNG
+                    // Timeout kecil untuk memastikan DOM sudah ter-update
+                    setTimeout(() => {
+                        html2canvas(katexContainer, {
+                            backgroundColor: null, // Latar belakang transparan
+                            scale: scale
+                        }).then(canvas => {
+                            const pngUrl = canvas.toDataURL('image/png');
+                            
+                            // 3. Tampilkan hasil
+                            pngOutput.src = pngUrl;
+                            pngOutput.style.display = 'block';
+                            downloadLink.href = pngUrl;
+                            actionButtons.style.display = 'flex';
+                            
+                            // Hapus status loading
+                            pngPreview.classList.remove('loading');
+                            pngPreview.textContent = ''; // Kosongkan teks "Memproses..."
+                            pngPreview.appendChild(pngOutput);
+
+                        }).catch(err => {
+                            showError(`Error saat membuat gambar: ${err.message}`);
+                        });
+                    }, 50);
+
                 } catch (e) {
-                    errorDisplay.textContent = `Error KaTeX: ${e.message.replace(/KaTeX parse error: /g, '')}`;
-                    hideOutput();
-                    return;
+                    // Tangani jika ada error dari KaTeX (misal: sintaks salah)
+                    const errorMessage = e.message.replace(/KaTeX parse error: /g, '');
+                    showError(`Error sintaks LaTeX: ${errorMessage}`);
                 }
+            };
 
-                setTimeout(() => {
-                    html2canvas(katexContainer, {
-                        backgroundColor: null,
-                        scale: scale
-                    }).then(canvas => {
-                        const pngUrl = canvas.toDataURL('image/png');
-                        
-                        pngOutput.src = pngUrl;
-                        pngOutput.style.display = 'block';
+            // --- PERBAIKAN: Fungsi terpisah untuk menampilkan error ---
+            const showError = (message) => {
+                errorDisplay.textContent = message;
+                errorDisplay.style.display = 'block';
+                pngPreview.textContent = 'Gagal memproses.';
+                pngPreview.classList.remove('loading');
+            };
 
-                        downloadLink.href = pngUrl;
-                        actionButtons.style.display = 'flex'; // Tampilkan kontainer tombol
-
-                    }).catch(err => {
-                        errorDisplay.textContent = `Error html2canvas: ${err.message}`;
-                        console.error('Error saat membuat canvas:', err);
-                        hideOutput();
-                    });
-                }, 50);
-            });
-
-            // Event listener untuk tombol Salin
-            copyBtn.addEventListener('click', async () => {
-                if (!pngOutput.src) {
-                    alert('Buat gambar terlebih dahulu!');
-                    return;
-                }
-                if (!navigator.clipboard || !navigator.clipboard.write) {
-                    alert('Maaf, browser Anda tidak mendukung penyalinan gambar ke clipboard.');
-                    return;
-                }
-
+            // --- Fungsi untuk menyalin gambar ke clipboard ---
+            const copyImageToClipboard = async () => {
+                if (!pngOutput.src) return;
+                
                 try {
-                    const blob = dataURLtoBlob(pngOutput.src);
+                    const response = await fetch(pngOutput.src);
+                    const blob = await response.blob();
                     await navigator.clipboard.write([
-                        new ClipboardItem({ 'image/png': blob })
+                        new ClipboardItem({ [blob.type]: blob })
                     ]);
                     
                     // Beri feedback visual
                     const originalText = copyBtn.textContent;
                     copyBtn.textContent = 'Tersalin!';
                     copyBtn.classList.add('copied');
-                    
                     setTimeout(() => {
                         copyBtn.textContent = originalText;
                         copyBtn.classList.remove('copied');
@@ -342,12 +373,25 @@
 
                 } catch (err) {
                     console.error('Gagal menyalin gambar:', err);
-                    alert('Gagal menyalin gambar ke clipboard.');
+                    alert('Gagal menyalin gambar. Browser Anda mungkin tidak mendukung fitur ini.');
                 }
-            });
+            };
 
-            // Jalankan fungsi generate saat pertama kali halaman dimuat
-            generateBtn.click();
+            // --- Event Listeners ---
+            const debouncedUpdate = debounce(updatePreview, 400); // Delay 400ms
+
+            // 1. Panggil update saat input teks berubah (dengan debounce)
+            latexInput.addEventListener('input', debouncedUpdate);
+
+            // 2. Panggil update langsung saat mode atau skala diubah
+            scaleSelect.addEventListener('change', updatePreview);
+            modeRadios.forEach(radio => radio.addEventListener('change', updatePreview));
+
+            // 3. Event untuk tombol salin
+            copyBtn.addEventListener('click', copyImageToClipboard);
+
+            // --- Jalankan sekali saat halaman pertama kali dimuat ---
+            updatePreview();
         });
     </script>
 </body>
