@@ -65,8 +65,11 @@
             align-items: start;
         }
         
+        /* === PERBAIKAN UTAMA ADA DI SINI === */
         .input-section, .preview-section {
             min-height: 400px;
+            /* Ini mencegah item grid melebar melebihi batasnya karena konten yang panjang */
+            min-width: 0; 
         }
         
         .form-group {
@@ -188,9 +191,12 @@
             text-align: center;
         }
         
+        /* === PERBAIKAN TAMBAHAN ADA DI SINI === */
         #latex-preview {
             max-width: 100%;
             font-size: 1.2em;
+            /* Ini akan memaksa teks panjang untuk ganti baris di dalam area preview */
+            word-break: break-all;
         }
         
         #png-output {
