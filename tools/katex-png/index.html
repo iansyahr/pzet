@@ -65,11 +65,9 @@
             align-items: start;
         }
         
-        /* === PERBAIKAN UTAMA ADA DI SINI === */
         .input-section, .preview-section {
             min-height: 400px;
-            /* Ini mencegah item grid melebar melebihi batasnya karena konten yang panjang */
-            min-width: 0; 
+            min-width: 0; /* PERBAIKAN 1: Mencegah grid item merusak layout */
         }
         
         .form-group {
@@ -169,6 +167,14 @@
         
         .preview-container {
             background-color: var(--preview-bg);
+            /* Menambahkan background checkerboard untuk preview transparansi */
+            background-image: 
+                linear-gradient(45deg, #eee 25%, transparent 25%), 
+                linear-gradient(-45deg, #eee 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #eee 75%), 
+                linear-gradient(-45deg, transparent 75%, #eee 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
             border: 2px solid var(--border-color);
             border-radius: 8px;
             padding: 20px;
@@ -189,14 +195,17 @@
             color: var(--secondary-color);
             font-style: italic;
             text-align: center;
+            background-color: var(--preview-bg); /* Beri background agar terbaca di atas checkerboard */
+            padding: 5px 10px;
+            border-radius: 4px;
         }
         
-        /* === PERBAIKAN TAMBAHAN ADA DI SINI === */
         #latex-preview {
             max-width: 100%;
             font-size: 1.2em;
-            /* Ini akan memaksa teks panjang untuk ganti baris di dalam area preview */
-            word-break: break-all;
+            word-break: break-all; /* PERBAIKAN 1: Memaksa teks panjang ganti baris */
+            background-color: var(--preview-bg); /* Beri background agar terbaca di atas checkerboard */
+            padding: 5px; /* Tambahkan sedikit padding */
         }
         
         #png-output {
@@ -256,13 +265,14 @@
             background-color: #17a2b8;
         }
         
+        /* === PERBAIKAN 2: UNTUK OUTPUT TRANSPARAN === */
         #katex-container {
             position: absolute;
             left: -9999px;
             top: -9999px;
             padding: 10px;
             color: black;
-            background-color: white;
+            background-color: transparent; /* Diubah dari 'white' menjadi 'transparent' */
         }
         
         .error-message {
@@ -373,6 +383,7 @@
 
     <!-- 4. JavaScript Utama Aplikasi -->
     <script>
+        // JavaScript tidak perlu diubah untuk fungsionalitas ini
         document.addEventListener('DOMContentLoaded', () => {
             const latexInput = document.getElementById('latex-input');
             const generateBtn = document.getElementById('generate-btn');
