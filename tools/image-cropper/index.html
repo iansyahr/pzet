@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/avif" href="https://pzet.pages.dev/tools/image-cropper/icon.avif">
-    <title>Image Cropper</title>
+    <title>Image Cropper & Rotator</title>
 
     <!-- 1. Sertakan CSS Cropper.js dari CDN -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
@@ -109,6 +109,38 @@
         body.is-cropping .action-controls { display: block; }
         body.is-cropping .placeholder { display: none; }
         body.is-cropping .cropper-container { display: block; }
+
+        /* BARU: Styling untuk Kontrol Rotasi */
+        .control-group {
+            margin-top: 1.5rem;
+        }
+        .control-group p {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+        }
+        .rotate-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .rotate-buttons .btn {
+            margin-top: 0;
+        }
+        .slider-control {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .slider-control input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+        .slider-control span {
+            font-weight: 600;
+            min-width: 40px;
+            text-align: right;
+        }
     </style>
 </head>
 <body>
@@ -116,21 +148,36 @@
     <div class="main-layout">
         <!-- KOLOM KIRI: KONTROL -->
         <aside class="sidebar">
-            <h1>Image Cropper</h1>
+            <h1>Image Cropper & Rotator</h1>
             
             <div class="upload-box">
                 <p class="instructions">Pilih file, paste gambar (Ctrl+V), atau gunakan gambar dari clipboard untuk memulai.</p>
                 <label for="imageInput" class="btn btn-primary">Pilih Gambar dari File</label>
-                <!-- Tombol baru untuk mobile -->
                 <button id="pasteBtn" class="btn btn-secondary">Paste dari Clipboard</button>
                 <input type="file" id="imageInput" accept="image/*">
             </div>
 
             <div class="action-controls">
-                <p class="instructions">Sesuaikan area crop, lalu simpan hasilnya.</p>
-                <button id="downloadBtn" class="btn btn-primary">Download Hasil Crop</button>
-                <button id="copyBtn" class="btn btn-secondary">Copy ke Clipboard</button>
-                <button id="resetBtn" class="btn btn-secondary">Pilih Gambar Lain</button>
+                <p class="instructions">Sesuaikan area crop, rotasi, lalu simpan hasilnya.</p>
+
+                <!-- BARU: KONTROL ROTASI -->
+                <div class="control-group">
+                    <p>Rotasi Gambar</p>
+                    <div class="rotate-buttons">
+                        <button id="rotateLeftBtn" class="btn btn-secondary">Kiri (-90°)</button>
+                        <button id="rotateRightBtn" class="btn btn-secondary">Kanan (+90°)</button>
+                    </div>
+                    <div class="slider-control">
+                        <input type="range" id="rotateSlider" min="-180" max="180" value="0" step="1">
+                        <span id="rotateValue">0°</span>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 2rem;">
+                    <button id="downloadBtn" class="btn btn-primary">Download Hasil</button>
+                    <button id="copyBtn" class="btn btn-secondary">Copy ke Clipboard</button>
+                    <button id="resetBtn" class="btn btn-secondary">Pilih Gambar Lain</button>
+                </div>
             </div>
         </aside>
 
@@ -159,19 +206,31 @@
             const downloadBtn = document.getElementById('downloadBtn');
             const copyBtn = document.getElementById('copyBtn');
             const resetBtn = document.getElementById('resetBtn');
-            const pasteBtn = document.getElementById('pasteBtn'); // Ambil tombol baru
+            const pasteBtn = document.getElementById('pasteBtn');
+            
+            // BARU: Ambil elemen kontrol rotasi
+            const rotateLeftBtn = document.getElementById('rotateLeftBtn');
+            const rotateRightBtn = document.getElementById('rotateRightBtn');
+            const rotateSlider = document.getElementById('rotateSlider');
+            const rotateValue = document.getElementById('rotateValue');
 
             let cropper = null;
 
-            // Fungsi untuk mengatur status UI
             function setUIState(isCropping) {
                 document.body.classList.toggle('is-cropping', isCropping);
+            }
+
+            function resetRotateControls() {
+                rotateSlider.value = 0;
+                rotateValue.textContent = '0°';
             }
 
             function initCropper(imageSrc) {
                 if (cropper) {
                     cropper.destroy();
                 }
+                
+                resetRotateControls(); // BARU: Reset slider saat gambar baru dimuat
                 
                 imageToCrop.src = imageSrc;
                 cropper = new Cropper(imageToCrop, {
@@ -186,7 +245,6 @@
                 setUIState(true);
             }
 
-            // Handler untuk input file
             imageInput.addEventListener('change', (e) => {
                 const file = e.target.files[0];
                 if (file?.type.startsWith('image/')) {
@@ -197,7 +255,6 @@
                 e.target.value = '';
             });
 
-            // Handler untuk paste di desktop (Ctrl+V)
             document.addEventListener('paste', (e) => {
                 const items = e.clipboardData?.items;
                 if (!items) return;
@@ -214,7 +271,6 @@
                 }
             });
 
-            // Handler untuk tombol "Paste dari Clipboard" (untuk mobile & desktop)
             pasteBtn.addEventListener('click', async () => {
                 if (!navigator.clipboard?.read) {
                     alert('Maaf, browser Anda tidak mendukung fitur paste dari clipboard.');
@@ -244,6 +300,27 @@
                 }
             });
 
+            // BARU: Tambahkan event listener untuk kontrol rotasi
+            rotateLeftBtn.addEventListener('click', () => {
+                if (cropper) {
+                    cropper.rotate(-90);
+                }
+            });
+            
+            rotateRightBtn.addEventListener('click', () => {
+                if (cropper) {
+                    cropper.rotate(90);
+                }
+            });
+
+            rotateSlider.addEventListener('input', (e) => {
+                if (cropper) {
+                    const value = e.target.value;
+                    cropper.rotateTo(Number(value)); // Menggunakan rotateTo untuk set nilai absolut
+                    rotateValue.textContent = `${value}°`;
+                }
+            });
+
             function getCroppedCanvas(options = {}) {
                 if (!cropper) return null;
                 return cropper.getCroppedCanvas({
@@ -259,8 +336,8 @@
                 if (!canvas) return;
 
                 const link = document.createElement('a');
-                link.href = canvas.toDataURL('image/png'); // Mengubah ke PNG untuk kompatibilitas lebih luas
-                link.download = 'cropped-image.png';
+                link.href = canvas.toDataURL('image/png');
+                link.download = 'rotated-cropped-image.png';
                 link.click();
             });
 
@@ -285,10 +362,10 @@
                     cropper = null;
                 }
                 imageToCrop.src = '';
+                resetRotateControls(); // BARU: Reset slider saat tombol reset diklik
                 setUIState(false);
             });
 
-            // Inisialisasi status UI awal
             setUIState(false);
         });
     </script>
