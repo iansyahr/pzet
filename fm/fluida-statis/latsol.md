@@ -395,3 +395,152 @@ Dua benda A dan B yang bermassa sama dicelupkan ke dalam air. Benda A melayang s
 (D) 2/3 bagian
 
 (E) 3/4 bagian
+
+---
+**28.** Suatu benda terapung di atas permukaan air yang berlapiskan bensin dengan 40% volume benda berada di dalam air, 30% di dalam bensin dan sisanya berada di atas permukaan bensin.
+Jika massa jenis bensin = 700 kg.m⁻³, maka massa jenis benda tersebut adalah ....
+
+(A) 580 kg.m⁻³
+
+(B) 590 kg.m⁻³
+
+(C) 600 kg.m⁻³
+
+(D) 610 kg.m⁻³
+
+(E) 620 kg.m⁻³
+
+---
+**29.** Suatu benda terapung di atas permukaan air yang berlapiskan minyak dengan 50% volum benda berada di dalam air, 30% di dalam minyak, dan sisanya berada di atas permukaan minyak.
+Jika massa jenis minyak = 0,8 gr/cm³, maka massa jenis benda tersebut adalah ....
+
+(A) 0,62 gr/cm³
+
+(B) 0,68 gr/cm³
+
+(C) 0,74 gr/cm³
+
+(D) 0,78 gr/cm³
+
+(E) 0,82 gr/cm³
+
+---
+**30.** Massa sebuah perahu kosong adalah 7210 ton, dengan 7/12 bagian perahu tercelup dalam air laut.
+Beban maksimum (ton) yang dapat diangkut perahu tersebut hingga perahu tercelup 11/12 bagian dalam air laut adalah ... ton.
+
+(A) 5120
+
+(B) 4820
+
+(C) 4720
+
+(D) 4320
+
+(E) 4120
+
+---
+**31.** Sebuah jarum dengan panjang 5 cm dapat diam di atas permukaan air yang memiliki tegangan permukaan 0,073 N/m.
+Gaya vertikal karena tegangan permukaan tersebut adalah ....
+
+(A) 7,3 x 10⁻⁵ N
+
+(B) 7,3 x 10⁻⁴ N
+
+(C) 7,3 x 10⁻³ N
+
+(D) 7,3 x 10⁻² N
+
+(E) 7,3 x 10⁻¹ N
+
+---
+**32.** Sebuah kawat lurus PQ dihubungkan dengan kawat U dan dicelupkan pada cairan sabun dan terbentuk lapisan sabun pada kawat seperti pada gambar di bawah ini.
+
+*(Deskripsi gambar: Sebuah kawat berbentuk U yang diposisikan vertikal dengan bagian terbuka di atas. Sebuah kawat lurus PQ dapat digeser-geser secara horizontal di sepanjang lengan kawat U. Di area yang dibatasi oleh kawat U dan kawat PQ, terdapat lapisan sabun. Panjang kawat PQ ditandai sebagai L.)*
+
+Massa kawat lurus adalah 1,2 gram dan tegangan permukaan sabun 0,025 N/m.
+Jika panjang kawat lurus L = 40 cm, maka massa beban maksimum yang harus dibebankan pada kawat lurus agar posisi kawat setimbang adalah ....
+
+(A) 0,2 gram
+
+(B) 0,4 gram
+
+(C) 0,8 gram
+
+(D) 1,2 gram
+
+(E) 1,8 gram
+
+---
+**33.** Permukaan air (ρ = 1,0 gr/cm³) di dalam pipa kapiler berdiameter dalam 1 mm adalah 4 cm di atas permukaan air di luar pipa itu.
+Jika sudut kontak air dengan bahan pipa kapiler 60°, besarnya tegangan permukaan air adalah ....
+
+(A) 0,2 N/m
+
+(B) 0,4 N/m
+
+(C) 0,6 N/m
+
+(D) 0,8 N/m
+
+(E) 1,0 N/m
+
+---
+**34.** Perhatikan gambar berikut!
+
+*(Deskripsi gambar: Sebuah pipa kapiler dicelupkan ke dalam air. Permukaan air di dalam pipa naik lebih tinggi daripada permukaan air di luar, membentuk meniskus cekung. Sudut kontak ditandai sebagai θ.)*
+
+Air berada dalam suatu pipa kapiler dengan sudut kontak θ.
+Jika jari-jari pipa kapiler 0,8 mm, tegangan permukaan air 0,072 N/m, dan cos θ = 0,55, maka ketinggian air di dalam pipa kapiler adalah .... (massa jenis air = 1.000 kg/m³, g = 10 m/s²)
+
+(A) 11,0 mm
+
+(B) 9,9 mm
+
+(C) 7,9 mm
+
+(D) 6,6 mm
+
+(E) 5,3 mm
+
+---
+**35.** Sebuah kelereng dengan jari-jari 0,5 cm jatuh ke dalam bak berisi oli yang memiliki koefisien viskositas 110 x 10⁻³ N.s/m².
+Jika kelereng bergerak dengan kelajuan 5 m/s, maka besar gaya gesekan yang dialami kelereng di dalam oli tersebut adalah ....
+
+(F) 1,65π x 10⁻² N
+
+(G) 3,30π x 10⁻² N
+
+(H) 1,65π x 10⁻¹ N
+
+(I) 3,30π x 10⁻¹ N
+
+(J) 1,65π N
+
+---
+**36.** Sebuah bola besi yang berjari-jari 5,5 x 10⁻³ m terjatuh ke dalam oli yang memiliki massa jenis 1000 kg/m³ dan koefisien viskositasnya 110 x 10⁻³ N.s/m².
+Jika massa jenis bola besi 2800 kg/m³, maka kecepatan yang dapat dicapai bola besi saat berada dalam keadaan setimbang adalah .... (g = 10 m/s²)
+
+(A) 11,00 m/s
+
+(B) 5,50 m/s
+
+(C) 2,75 m/s
+
+(D) 1,10 m/s
+
+(E) 0,55 m/s
+
+---
+**37.** Sebuah balon udara berisi gas hidrogen sebanyak 600 m³ yang massa jenisnya 0,09 kg/m³.
+Jika massa balon = 250 kg dan massa jenis udara luar = 1,2 kg/m³.
+Beban maksimum yang dapat diangkat balon udara adalah ....
+
+(A) 240 kg
+
+(B) 250 kg
+
+(C) 304 kg
+
+(D) 416 kg
+
+(E) 720 kg
