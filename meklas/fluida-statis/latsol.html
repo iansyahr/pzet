@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/avif" href="https://pzet.pages.dev/etc/media/magnolia-ico.avif">
+  <title>Fluida Statis - Mekanika Fluida - PZ</title>
+
+  <!-- Menambahkan Font 'Inter' dari Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Menambahkan Library Marked.js dari CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <style>
+    /* Style CSS dasar */
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #FFFBF5;
+      color: #333;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+    
+    /* Container untuk memusatkan layout */
+    .container {
+      max-width: 800px;
+      margin: 40px auto; /* Posisikan konten di tengah */
+      padding: 0 20px; /* Beri sedikit padding di sisi kiri-kanan */
+    }
+
+    /* === BARU: Style untuk Tombol Kembali === */
+    .back-button {
+      display: inline-block;
+      margin-bottom: 25px; /* Jarak antara tombol dan konten */
+      padding: 10px 18px;
+      background-color: #333;
+      color: #FFFBF5;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+
+    .back-button:hover {
+      background-color: #555;
+    }
+    /* ======================================= */
+
+    /* Style untuk area konten */
+    #content {
+      padding: 25px 30px;
+      background-color: #FFFFFF;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+
+    /* Style untuk elemen-elemen yang dihasilkan dari Markdown */
+    #content h1, #content h2, #content h3 {
+      color: #1a1a1a;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 0.3em;
+    }
+    
+    #content a {
+      color: #007BFF;
+      text-decoration: none;
+    }
+
+    #content a:hover {
+      text-decoration: underline;
+    }
+
+    #content code {
+      background-color: #f0f0f0;
+      padding: 0.2em 0.4em;
+      border-radius: 3px;
+    }
+
+    #content pre {
+      background-color: #2d2d2d;
+      color: #f8f8f2;
+      padding: 1em;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    
+    #content blockquote {
+      border-left: 4px solid #ccc;
+      padding-left: 1em;
+      color: #666;
+      margin-left: 0;
+    }
+    
+    #content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px; /* Tambahan agar gambar terlihat lebih modern */
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Container utama untuk layout -->
+  <div class="container">
+    <a href="https://pzet.pages.dev/" class="back-button">← Kembali ke Home</a>
+    
+    <!-- Markdown loading -->
+    <div id="content">
+      <p>Memuat konten, harap tunggu...</p>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const markdownUrl = 'https://pzet.pages.dev/fm/fluida-statis/latsol.md';
+      const contentElement = document.getElementById('content');
+
+      fetch(markdownUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.text();
+        })
+        .then(markdownText => {
+          const htmlContent = marked.parse(markdownText);
+          contentElement.innerHTML = htmlContent;
+        })
+        .catch(error => {
+          console.error('Gagal mengambil atau memproses markdown:', error);
+          contentElement.innerHTML = `<p style="color: red;"><strong>Error:</strong> Gagal memuat konten. Silakan cek konsol untuk detailnya.</p>`;
+        });
+    });
+  </script>
+
+</body>
+</html>
