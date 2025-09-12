@@ -455,7 +455,7 @@ Gaya vertikal karena tegangan permukaan tersebut adalah ....
 ---
 **32.** Sebuah kawat lurus PQ dihubungkan dengan kawat U dan dicelupkan pada cairan sabun dan terbentuk lapisan sabun pada kawat seperti pada gambar di bawah ini.
 
-*(Deskripsi gambar: Sebuah kawat berbentuk U yang diposisikan vertikal dengan bagian terbuka di atas. Sebuah kawat lurus PQ dapat digeser-geser secara horizontal di sepanjang lengan kawat U. Di area yang dibatasi oleh kawat U dan kawat PQ, terdapat lapisan sabun. Panjang kawat PQ ditandai sebagai L.)*
+<img width="45%" alt="17577186812711992578460687366388" src="https://github.com/user-attachments/assets/433569c3-b2b3-46dd-bdad-dcb9da032fcb" />
 
 Massa kawat lurus adalah 1,2 gram dan tegangan permukaan sabun 0,025 N/m.
 Jika panjang kawat lurus L = 40 cm, maka massa beban maksimum yang harus dibebankan pada kawat lurus agar posisi kawat setimbang adalah ....
