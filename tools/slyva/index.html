@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sylva - minimal text editor</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/dracula.min.css">
+
+<style>
+  /* ===== Minimal Design Tokens ===== */
+  :root{
+    /* logic vars */
+    --editor-bg-image: none;
+    --editor-bg-opacity: .25;
+    --editor-font-size: 14px; /* base font size */
+
+    /* layout */
+    --appbar-h: 48px;
+    --drawer-w: 320px;
+    --radius: 8px;
+    --space-1: 6px;
+    --space-2: 10px;
+    --space-3: 14px;
+
+    /* light theme */
+    --bg: #fafafa;
+    --elev: #ffffff;
+    --text: #111;
+    --muted: #666;
+    --border: #e6e6e6;
+    --accent: #111;
+
+    --z-appbar: 10;
+    --z-backdrop: 900;
+    --z-drawer: 901;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0c0f13;
+      --elev:#0f1318;
+      --text:#e7e9ec;
+      --muted:#9aa3ad;
+      --border:#1e242c;
+      --accent:#e7e9ec;
+    }
+  }
+
+  /* ===== Base ===== */
+  html,body{height:100%}
+  html{box-sizing:border-box}
+  *,*::before,*::after{box-sizing:inherit}
+  body{
+    margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+    background:var(--bg); color:var(--text);
+    display:flex; flex-direction:column; overflow:hidden;
+  }
+  a{color:inherit}
+
+  /* ===== Top Bar ===== */
+  .appbar{
+    height:var(--appbar-h); flex-shrink:0;
+    display:flex; align-items:center; gap:10px; padding:0 10px;
+    background:var(--elev); border-bottom:1px solid var(--border);
+  }
+  .appbar__title{font-size:14px; font-weight:600; letter-spacing:.2px}
+  .appbar__spacer{flex:1}
+
+  .hamburger{
+    width:36px;height:36px; display:inline-grid; place-items:center;
+    background:transparent; border:1px solid var(--border); border-radius:var(--radius);
+    color:var(--text); cursor:pointer;
+  }
+  .hamburger:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .bars{width:20px;height:14px; position:relative}
+  .bars::before,.bars::after,.bar{
+    content:""; position:absolute; left:0; right:0; height:2px; background:currentColor; border-radius:2px;
+    transition:transform .2s ease, opacity .2s ease;
+  }
+  .bar{ top:6px }
+  .bars::before{ top:0 }
+  .bars::after{ bottom:0 }
+  .hamburger[aria-expanded="true"] .bars::before{ transform:translateY(6px) rotate(45deg) }
+  .hamburger[aria-expanded="true"] .bar{ opacity:0 }
+  .hamburger[aria-expanded="true"] .bars::after{ transform:translateY(-6px) rotate(-45deg) }
+
+  /* Zoom buttons */
+  .zoom{display:flex; gap:6px}
+  .zoombtn{
+    height:32px; padding:0 10px; border:1px solid var(--border); border-radius:6px;
+    background:transparent; color:var(--text); cursor:pointer; font-weight:600; line-height:32px;
+  }
+  .zoombtn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+  /* ===== Tabs Bar ===== */
+  .tabsbar{
+    display:flex; align-items:center; gap:6px;
+    padding:6px 8px; background:var(--elev); border-bottom:1px solid var(--border);
+    overflow:auto hidden; scroll-behavior:smooth;
+  }
+  .tab{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:6px 10px; border:1px solid var(--border); border-radius:var(--radius);
+    background:var(--bg); color:var(--text);
+    max-width:240px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    cursor:pointer; user-select:none;
+  }
+  .tab:focus-visible{ outline:2px solid var(--accent); outline-offset:2px }
+  .tab.active{
+    background:var(--elev);
+    border-color:var(--text);
+  }
+  .tab__label{ pointer-events:none }
+  .tab__close{
+    width:18px; height:18px; line-height:18px; text-align:center;
+    border:1px solid var(--border); border-radius:4px; background:transparent; color:var(--muted);
+    cursor:pointer; flex:0 0 auto;
+  }
+  .tab:hover .tab__close{ color:var(--text) }
+
+  .add-tab{
+    display:inline-grid; place-items:center;
+    width:28px;height:28px; border:1px solid var(--border); border-radius:6px;
+    background:transparent; color:var(--text); cursor:pointer;
+  }
+  .add-tab:focus-visible{ outline:2px solid var(--accent); outline-offset:2px }
+
+  /* ===== Editor area ===== */
+  .editor-wrap{flex:1; min-height:0; display:flex; flex-direction:column}
+  .CodeMirror{
+    flex:1; height:auto;
+    font-size: var(--editor-font-size);
+    position:relative;
+    background: transparent;
+  }
+  .CodeMirror::before{
+    content:""; position:absolute; inset:0;
+    background-image: var(--editor-bg-image);
+    background-size:cover; background-position:center;
+    opacity: var(--editor-bg-opacity);
+    z-index:-1;
+  }
+  body.with-bg .cm-s-dracula{ background-color: rgba(40,42,54,.85) }
+
+  /* ===== Drawer ===== */
+  .backdrop{
+    position:fixed; inset:0; background:rgba(0,0,0,.28);
+  }
+  .backdrop[hidden]{ display:none }
+
+  .drawer{
+    position:fixed; inset:0 auto 0 0;
+    width:min(92vw,var(--drawer-w)); max-width:100%;
+    background:var(--elev); border-right:1px solid var(--border);
+    transform:translateX(-100%); transition:transform .22s ease;
+    display:flex; flex-direction:column; z-index:var(--z-drawer);
+  }
+  .drawer.open{ transform:translateX(0) }
+
+  .drawer__header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:var(--space-2) var(--space-3);
+    border-bottom:1px solid var(--border);
+  }
+  .drawer__title{font-size:12px; text-transform:uppercase; letter-spacing:.3px; color:var(--muted); font-weight:700}
+  .drawer__close{
+    width:32px;height:32px; border:1px solid var(--border); border-radius:var(--radius);
+    background:transparent; color:var(--text); cursor:pointer; line-height:1; font-size:18px;
+  }
+  .drawer__close:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+  .controls{ padding: var(--space-2) var(--space-3) var(--space-3); display:flex; flex-direction:column; gap:16px }
+  .settings-section{ display:flex; flex-direction:column; gap:10px }
+  .settings-section + .settings-section{ border-top:1px solid var(--border); padding-top:12px }
+  .settings-section h3{ margin:0; font-size:12px; color:var(--muted); font-weight:700; letter-spacing:.2px; text-transform:uppercase }
+  .control-group{ display:flex; gap:8px; flex-wrap:wrap; align-items:center }
+  label{ font-size:13px; color:var(--muted) }
+  select, input[type="text"], input[type="range"], button.minbtn{
+    font-size:14px; color:var(--text);
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+  }
+  select, input[type="text"]{ padding:6px 8px }
+  input[type="text"]{ min-width:220px; flex:1 }
+  input[type="range"]{ width:180px; height:32px; padding:0 6px; background:transparent }
+  .row-actions{ display:flex; gap:8px; flex-wrap:wrap }
+  .minbtn{ padding:6px 10px; cursor:pointer }
+  .minbtn--primary{ background:var(--text); color:var(--bg); border-color:var(--text) }
+  .minbtn--danger{ color:#b3261e; border-color:#b3261e; background:transparent }
+  .minbtn:focus-visible{ outline:2px solid var(--accent); outline-offset:2px }
+
+  @media (max-width:360px){
+    input[type="text"]{ min-width:0; width:100% }
+    .control-group{ flex-direction:column; align-items:stretch }
+  }
+</style>
+</head>
+<body>
+  <!-- Top Bar -->
+  <header class="appbar">
+    <button id="menu-toggle" class="hamburger" aria-label="Open settings" aria-controls="settings-drawer" aria-expanded="false">
+      <span class="bars"><span class="bar"></span></span>
+    </button>
+    <div class="appbar__title">Sylva</div>
+    <div class="appbar__spacer"></div>
+    <!-- Quick zoom controls -->
+    <div class="zoom" aria-label="Text zoom controls">
+      <button id="zoom-out" class="zoombtn" title="Zoom out (Ctrl+-)" aria-label="Zoom out">A−</button>
+      <button id="zoom-in"  class="zoombtn" title="Zoom in (Ctrl+=)"  aria-label="Zoom in">A+</button>
+    </div>
+  </header>
+
+  <!-- Tabs -->
+  <nav class="tabsbar" id="tabsbar" aria-label="Editor tabs">
+    <!-- tabs rendered by JS -->
+    <button id="add-tab" class="add-tab" title="New tab" aria-label="New tab">+</button>
+  </nav>
+
+  <!-- Editor -->
+  <main class="editor-wrap">
+    <textarea id="editor"></textarea>
+  </main>
+
+  <!-- Drawer + Backdrop -->
+  <div id="backdrop" class="backdrop" hidden></div>
+  <aside id="settings-drawer" class="drawer" aria-hidden="true" role="dialog" aria-labelledby="drawer-title">
+    <div class="drawer__header">
+      <div id="drawer-title" class="drawer__title">Settings</div>
+      <button id="menu-close" class="drawer__close" aria-label="Close settings">×</button>
+    </div>
+    <div class="controls" id="settings-controls">
+      <div class="settings-section">
+        <h3>Language</h3>
+        <div class="control-group">
+          <select id="language">
+            <option value="text/plain">Plain Text</option>
+            <option value="markdown">Markdown</option>
+            <option value="htmlmixed">HTML/CSS/JS</option>
+            <option value="python">Python</option>
+            <option value="go">Go</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3>Background</h3>
+        <div class="control-group">
+          <input type="text" id="bg-image-url" placeholder="https://…">
+        </div>
+        <div class="control-group">
+          <label for="bg-opacity-slider">Dimness</label>
+          <input type="range" id="bg-opacity-slider" min="0" max="1" step="0.05" value="0.25">
+        </div>
+        <div class="row-actions">
+          <button id="apply-bg" class="minbtn minbtn--primary">Apply</button>
+          <button id="remove-bg" class="minbtn minbtn--danger">Remove</button>
+        </div>
+      </div>
+
+      <!-- Text size controls -->
+      <div class="settings-section">
+        <h3>Text size</h3>
+        <div class="control-group">
+          <label for="font-size-range">Editor font</label>
+          <input type="range" id="font-size-range" min="10" max="28" step="1">
+          <span id="font-size-value">14px</span>
+        </div>
+        <div class="row-actions">
+          <button id="font-dec"   class="minbtn">Smaller</button>
+          <button id="font-inc"   class="minbtn">Larger</button>
+          <button id="font-reset" class="minbtn">Reset</button>
+        </div>
+      </div>
+
+      <!-- NEW: Word wrap -->
+      <div class="settings-section">
+        <h3>Word wrap</h3>
+        <div class="control-group">
+          <label for="word-wrap-toggle">Wrap long lines (Alt+Z)</label>
+          <input type="checkbox" id="word-wrap-toggle">
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CodeMirror JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/markdown/markdown.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/htmlmixed/htmlmixed.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/xml/xml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/css/css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/python/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/go/go.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/selection/active-line.min.js"></script>
+
+  <script>
+    // ===== Legacy keys (single-doc) =====
+    const CACHE_CONTENT_KEY  = 'simpleEditorContent';
+    const CACHE_LANGUAGE_KEY = 'simpleEditorLanguage';
+
+    // ===== Global settings keys =====
+    const CACHE_BACKGROUND_KEY = 'simpleEditorBackground';
+    const CACHE_OPACITY_KEY    = 'simpleEditorBgOpacity';
+    const FONT_SIZE_KEY        = 'simpleEditorFontSizeV1';
+    const WRAP_KEY             = 'simpleEditorWordWrapV1'; // NEW
+
+    // ===== Tabs keys =====
+    const TABS_KEY            = 'simpleEditorTabsV1';
+    const ACTIVE_TAB_KEY      = 'simpleEditorActiveTabV1';
+    const UNTITLED_COUNTER_KEY= 'simpleEditorUntitledCounterV1';
+
+    // ===== DOM =====
+    const drawer   = document.getElementById('settings-drawer');
+    const backdrop = document.getElementById('backdrop');
+    const btnOpen  = document.getElementById('menu-toggle');
+    const btnClose = document.getElementById('menu-close');
+
+    const tabsbar  = document.getElementById('tabsbar');
+    const addTabBtn= document.getElementById('add-tab');
+
+    const languageSelector = document.getElementById('language');
+    const bgImageUrlInput  = document.getElementById('bg-image-url');
+    const applyBgButton    = document.getElementById('apply-bg');
+    const removeBgButton   = document.getElementById('remove-bg');
+    const opacitySlider    = document.getElementById('bg-opacity-slider');
+
+    // Font size controls
+    const zoomOutBtn   = document.getElementById('zoom-out');
+    const zoomInBtn    = document.getElementById('zoom-in');
+    const fontRange    = document.getElementById('font-size-range');
+    const fontValueEl  = document.getElementById('font-size-value');
+    const fontIncBtn   = document.getElementById('font-inc');
+    const fontDecBtn   = document.getElementById('font-dec');
+    const fontResetBtn = document.getElementById('font-reset');
+
+    // Word wrap control
+    const wrapToggle   = document.getElementById('word-wrap-toggle');
+
+    // ===== CodeMirror =====
+    const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
+      lineNumbers: true,
+      mode: 'text/plain',
+      theme: 'dracula',
+      styleActiveLine: true,
+      autofocus: true,
+      lineWrapping: false // will be overridden by saved setting
+    });
+    const editorWrapper = editor.getWrapperElement();
+
+    // ===== Utils =====
+    const uid = () => (crypto && crypto.randomUUID) ? crypto.randomUUID() :
+                      'id-' + Math.random().toString(36).slice(2, 10);
+
+    const readJSON = (k, fallback) => {
+      try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : fallback; }
+      catch{ return fallback; }
+    };
+    const writeJSON = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+    // ===== Tabs State =====
+    let tabs = [];         // [{id,title,language,content}]
+    let activeTabId = null;
+    let suppressEditorChange = false;
+
+    function nextUntitledTitle(){
+      const n = parseInt(localStorage.getItem(UNTITLED_COUNTER_KEY) || '1', 10);
+      localStorage.setItem(UNTITLED_COUNTER_KEY, String(n+1));
+      return `Untitled-${n}`;
+    }
+
+    function createTab({title = nextUntitledTitle(), language='text/plain', content='' } = {}){
+      const t = { id: uid(), title, language, content };
+      tabs.push(t);
+      saveTabs();
+      renderTabs();
+      switchTab(t.id);
+      return t;
+    }
+
+    function getTab(id){ return tabs.find(t => t.id === id); }
+
+    function saveTabs(){
+      writeJSON(TABS_KEY, tabs);
+      localStorage.setItem(ACTIVE_TAB_KEY, activeTabId || '');
+    }
+
+    function renderTabs(){
+      const addBtn = addTabBtn;
+      tabsbar.innerHTML = '';
+      for(const t of tabs){
+        const btn = document.createElement('button');
+        btn.className = 'tab' + (t.id === activeTabId ? ' active' : '');
+        btn.setAttribute('data-id', t.id);
+        btn.title = t.title;
+
+        const label = document.createElement('span');
+        label.className = 'tab__label';
+        label.textContent = t.title;
+
+        const close = document.createElement('button');
+        close.className = 'tab__close';
+        close.setAttribute('aria-label', 'Close tab');
+        close.textContent = '×';
+
+        btn.appendChild(label);
+        btn.appendChild(close);
+        tabsbar.appendChild(btn);
+      }
+      tabsbar.appendChild(addBtn);
+    }
+
+    function switchTab(id){
+      const t = getTab(id);
+      if(!t) return;
+      activeTabId = id;
+      renderTabs();
+      suppressEditorChange = true;
+      editor.setOption('mode', t.language || 'text/plain');
+      editor.setValue(t.content || '');
+      suppressEditorChange = false;
+      languageSelector.value = t.language || 'text/plain';
+      saveTabs();
+      editor.focus();
+    }
+
+    function closeTab(id){
+      const idx = tabs.findIndex(t => t.id === id);
+      if(idx === -1) return;
+      const closingActive = (activeTabId === id);
+      tabs.splice(idx,1);
+      if(tabs.length === 0){
+        createTab();
+      }
+      if(closingActive){
+        const next = tabs[idx] || tabs[idx-1] || tabs[0];
+        activeTabId = next.id;
+      }
+      saveTabs();
+      renderTabs();
+      switchTab(activeTabId);
+    }
+
+    function renameTab(id){
+      const t = getTab(id);
+      if(!t) return;
+      const newName = prompt('Rename tab:', t.title);
+      if(newName && newName.trim()){
+        t.title = newName.trim();
+        saveTabs();
+        renderTabs();
+      }
+    }
+
+    // ===== Background & Opacity =====
+    function applyBackground(imageUrl){
+      if(!imageUrl) return;
+      editorWrapper.style.setProperty('--editor-bg-image', `url('${imageUrl}')`);
+      document.body.classList.add('with-bg');
+      bgImageUrlInput.value = imageUrl;
+      localStorage.setItem(CACHE_BACKGROUND_KEY, imageUrl);
+    }
+    function removeBackground(){
+      editorWrapper.style.setProperty('--editor-bg-image', 'none');
+      document.body.classList.remove('with-bg');
+      bgImageUrlInput.value = '';
+      localStorage.removeItem(CACHE_BACKGROUND_KEY);
+    }
+    function applyOpacity(opacityValue){
+      editorWrapper.style.setProperty('--editor-bg-opacity', opacityValue);
+      opacitySlider.value = opacityValue;
+      localStorage.setItem(CACHE_OPACITY_KEY, opacityValue);
+    }
+
+    // ===== Font size (global) =====
+    const FONT_MIN = 10, FONT_MAX = 28, FONT_STEP = 1, FONT_DEFAULT = 14;
+    function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
+    function applyFontSize(px){
+      const size = clamp(parseInt(px,10)||FONT_DEFAULT, FONT_MIN, FONT_MAX);
+      editorWrapper.style.setProperty('--editor-font-size', size + 'px');
+      if(fontRange) fontRange.value = size;
+      if(fontValueEl) fontValueEl.textContent = size + 'px';
+      localStorage.setItem(FONT_SIZE_KEY, String(size));
+      editor.refresh();
+    }
+    function incFont(){ const cur = parseInt(localStorage.getItem(FONT_SIZE_KEY) || FONT_DEFAULT, 10); applyFontSize(cur + FONT_STEP); }
+    function decFont(){ const cur = parseInt(localStorage.getItem(FONT_SIZE_KEY) || FONT_DEFAULT, 10); applyFontSize(cur - FONT_STEP); }
+    function resetFont(){ applyFontSize(FONT_DEFAULT); }
+
+    // ===== Word wrap (global) =====
+    function applyWordWrap(enabled){
+      const on = !!enabled;
+      editor.setOption('lineWrapping', on);
+      if(wrapToggle) wrapToggle.checked = on;
+      localStorage.setItem(WRAP_KEY, on ? '1' : '0');
+      editor.refresh();
+    }
+    function toggleWordWrap(){
+      const cur = localStorage.getItem(WRAP_KEY) === '1';
+      applyWordWrap(!cur);
+    }
+
+    // ===== Load & Migrate =====
+    function initTabs(){
+      const stored = readJSON(TABS_KEY, null);
+      const storedActive = localStorage.getItem(ACTIVE_TAB_KEY) || null;
+
+      if(stored && Array.isArray(stored) && stored.length){
+        tabs = stored;
+        activeTabId = storedActive && stored.some(t=>t.id===storedActive) ? storedActive : stored[0].id;
+      }else{
+        const legacyContent  = localStorage.getItem(CACHE_CONTENT_KEY) || '';
+        const legacyLanguage = localStorage.getItem(CACHE_LANGUAGE_KEY) || 'text/plain';
+        tabs = [{ id: uid(), title: nextUntitledTitle(), language: legacyLanguage, content: legacyContent }];
+        activeTabId = tabs[0].id;
+        localStorage.removeItem(CACHE_CONTENT_KEY);
+        localStorage.removeItem(CACHE_LANGUAGE_KEY);
+        saveTabs();
+      }
+      renderTabs();
+      switchTab(activeTabId);
+    }
+
+    function loadGlobalSettings(){
+      const savedOpacity = localStorage.getItem(CACHE_OPACITY_KEY);
+      applyOpacity(savedOpacity || 0.25);
+      const savedBackground = localStorage.getItem(CACHE_BACKGROUND_KEY);
+      if(savedBackground) applyBackground(savedBackground);
+
+      // Font size
+      const savedFont = localStorage.getItem(FONT_SIZE_KEY) || 14;
+      if(fontRange) fontRange.value = clamp(parseInt(savedFont,10)||14, FONT_MIN, FONT_MAX);
+      applyFontSize(savedFont);
+
+      // Word wrap
+      const savedWrap = localStorage.getItem(WRAP_KEY) === '1';
+      applyWordWrap(savedWrap);
+    }
+
+    // ===== Editor events =====
+    editor.on('change', () => {
+      if(suppressEditorChange) return;
+      const t = getTab(activeTabId);
+      if(!t) return;
+      t.content = editor.getValue();
+      saveTabs();
+    });
+
+    // ===== Settings events =====
+    languageSelector.addEventListener('change', function(){
+      const mode = this.value;
+      const t = getTab(activeTabId);
+      if(!t) return;
+      t.language = mode;
+      editor.setOption('mode', mode);
+      saveTabs();
+    });
+    applyBgButton.addEventListener('click', () => {
+      const url = bgImageUrlInput.value.trim();
+      if(url) applyBackground(url);
+    });
+    removeBgButton.addEventListener('click', removeBackground);
+    opacitySlider.addEventListener('input', function(){
+      applyOpacity(this.value);
+    });
+
+    // Text size events
+    if(fontRange){
+      fontRange.addEventListener('input', () => applyFontSize(fontRange.value));
+    }
+    if(fontIncBtn)  fontIncBtn.addEventListener('click', incFont);
+    if(fontDecBtn)  fontDecBtn.addEventListener('click', decFont);
+    if(fontResetBtn)fontResetBtn.addEventListener('click', resetFont);
+    if(zoomInBtn)   zoomInBtn.addEventListener('click', incFont);
+    if(zoomOutBtn)  zoomOutBtn.addEventListener('click', decFont);
+
+    // Word wrap events
+    if(wrapToggle){
+      wrapToggle.addEventListener('change', () => applyWordWrap(wrapToggle.checked));
+    }
+
+    // Ctrl/Cmd + wheel zoom
+    editorWrapper.addEventListener('wheel', (e) => {
+      if(e.ctrlKey){
+        e.preventDefault();
+        if(e.deltaY < 0) incFont(); else decFont();
+      }
+    }, { passive:false });
+
+    // ===== Drawer =====
+    let lastFocused = null;
+    function openDrawer(){
+      lastFocused = document.activeElement;
+      drawer.classList.add('open');
+      drawer.setAttribute('aria-hidden','false');
+      backdrop.hidden = false;
+      btnOpen.setAttribute('aria-expanded','true');
+      document.documentElement.style.overflow='hidden';
+      setTimeout(()=> (document.getElementById('language')||drawer).focus(),0);
+    }
+    function closeDrawer(){
+      drawer.classList.remove('open');
+      drawer.setAttribute('aria-hidden','true');
+      backdrop.hidden = true;
+      btnOpen.setAttribute('aria-expanded','false');
+      document.documentElement.style.overflow='';
+      if(lastFocused && lastFocused.focus) lastFocused.focus();
+    }
+    btnOpen.addEventListener('click', () => drawer.classList.contains('open') ? closeDrawer() : openDrawer());
+    btnClose.addEventListener('click', closeDrawer);
+    backdrop.addEventListener('click', closeDrawer);
+    window.addEventListener('keydown', (e) => { if(e.key==='Escape' && drawer.classList.contains('open')) closeDrawer(); });
+
+    // ===== Tabs interactions =====
+    addTabBtn.addEventListener('click', () => createTab());
+
+    tabsbar.addEventListener('click', (e) => {
+      const tabBtn = e.target.closest('.tab');
+      if(!tabBtn) return;
+      const id = tabBtn.getAttribute('data-id');
+      if(e.target.classList.contains('tab__close')){
+        closeTab(id);
+      }else{
+        switchTab(id);
+      }
+    });
+
+    tabsbar.addEventListener('dblclick', (e) => {
+      const tabBtn = e.target.closest('.tab');
+      if(!tabBtn) return;
+      renameTab(tabBtn.getAttribute('data-id'));
+    });
+
+    // Middle-click close
+    tabsbar.addEventListener('auxclick', (e) => {
+      if(e.button !== 1) return;
+      const tabBtn = e.target.closest('.tab');
+      if(!tabBtn) return;
+      closeTab(tabBtn.getAttribute('data-id'));
+    });
+
+    // ===== Keyboard Shortcuts =====
+    window.addEventListener('keydown', (e) => {
+      const mod = e.metaKey || e.ctrlKey;
+
+      // New tab
+      if(mod && !e.shiftKey && e.key.toLowerCase() === 't'){
+        e.preventDefault();
+        createTab();
+        return;
+      }
+      // Close tab
+      if(mod && !e.shiftKey && e.key.toLowerCase() === 'w'){
+        e.preventDefault();
+        closeTab(activeTabId);
+        return;
+      }
+      // Next / Prev tab
+      if(mod && e.key === 'Tab'){
+        e.preventDefault();
+        if(!tabs.length) return;
+        const idx = tabs.findIndex(t => t.id === activeTabId);
+        const nextIdx = e.shiftKey ? (idx - 1 + tabs.length) % tabs.length
+                                   : (idx + 1) % tabs.length;
+        switchTab(tabs[nextIdx].id);
+        return;
+      }
+      // Rename (F2)
+      if(e.key === 'F2'){
+        e.preventDefault();
+        renameTab(activeTabId);
+        return;
+      }
+
+      // Zoom shortcuts
+      if(mod && (e.key === '=' || e.key === '+')){
+        e.preventDefault(); incFont(); return;
+      }
+      if(mod && e.key === '-'){
+        e.preventDefault(); decFont(); return;
+      }
+      if(mod && e.key === '0'){
+        e.preventDefault(); resetFont(); return;
+      }
+
+      // NEW: Word wrap toggle (Alt+Z)
+      if(e.altKey && !mod && e.key.toLowerCase() === 'z'){
+        e.preventDefault();
+        toggleWordWrap();
+        return;
+      }
+    });
+
+    // ===== Init =====
+    loadGlobalSettings();
+    initTabs();
+  </script>
+</body>
+</html>
