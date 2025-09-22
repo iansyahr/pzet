@@ -234,7 +234,7 @@
                     const page = await pdf.getPage(i);
                     
                     // Atur skala untuk kualitas gambar yang lebih baik (misal: 2x resolusi asli)
-                    const scale = 2.0;
+                    const scale = 10.0;
                     const viewport = page.getViewport({ scale });
                     
                     // Buat elemen canvas
