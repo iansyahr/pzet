@@ -1,374 +1,662 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/avif" href="https://pzet.pages.dev/tools/image-cropper/icon.avif">
-    <title>Image Cropper & Rotator</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" type="image/avif" href="https://pzet.pages.dev/tools/image-cropper/icon.avif" />
+  <title>Image Cropper & Rotator</title>
 
-    <!-- 1. Sertakan CSS Cropper.js dari CDN -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
+  <!-- Cropper.js CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
 
-    <!-- 2. CSS untuk Tampilan Adaptif -->
-    <style>
-        :root {
-            --bg-color: #f0f2f5;
-            --sidebar-bg: #ffffff;
-            --content-bg: #ffffff;
-            --text-color: #1c1e21;
-            --subtle-text-color: #65676b;
-            --accent-color: #1877f2;
-            --accent-hover-color: #166fe5;
-            --border-color: #dddfe2;
-            --border-radius: 8px;
-            --sidebar-width: 320px;
-        }
-        *, *::before, *::after { box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            min-height: 100vh;
-        }
-        .main-layout {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            min-height: 100vh;
-        }
-        .sidebar {
-            background-color: var(--sidebar-bg);
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            text-align: center;
-        }
-        .content {
-            flex-grow: 1;
-            padding: 2rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: var(--bg-color);
-        }
-        .content-inner {
-            width: 100%;
-            height: 100%;
-            max-width: 900px;
-            background-color: var(--content-bg);
-            border-radius: var(--border-radius);
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 400px;
-        }
-        @media (min-width: 992px) {
-            .main-layout { flex-direction: row; }
-            .sidebar {
-                width: var(--sidebar-width);
-                flex-shrink: 0;
-                border-right: 1px solid var(--border-color);
-                justify-content: flex-start;
-                text-align: left;
-            }
-            .content { padding: 2rem; }
-        }
-        h1 { font-size: 1.75rem; margin-top: 0; margin-bottom: 0.5rem; }
-        .instructions { color: var(--subtle-text-color); margin-bottom: 2rem; line-height: 1.5; }
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 12px 20px;
-            font-size: 1rem;
-            font-weight: 600;
-            text-align: center;
-            text-decoration: none;
-            cursor: pointer;
-            border: 1px solid transparent;
-            border-radius: var(--border-radius);
-            transition: all 0.2s ease;
-        }
-        .btn:active { transform: scale(0.98); }
-        .btn + .btn { margin-top: 1rem; }
-        .btn-primary { background-color: var(--accent-color); color: white; }
-        .btn-primary:hover { background-color: var(--accent-hover-color); }
-        .btn-secondary { background-color: #e4e6eb; color: var(--text-color); }
-        .btn-secondary:hover { background-color: #d8dbdf; }
-        #imageInput { display: none; }
-        .action-controls { margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 2rem; }
-        .placeholder { text-align: center; color: var(--subtle-text-color); }
-        .placeholder-icon { font-size: 3rem; margin-bottom: 1rem; }
-        .cropper-container { width: 100%; height: 100%; }
-        #imageToCrop { display: block; max-width: 100%; max-height: calc(100vh - 4rem); }
-        .action-controls, .cropper-container { display: none; }
-        body.is-cropping .upload-box { display: none; }
-        body.is-cropping .action-controls { display: block; }
-        body.is-cropping .placeholder { display: none; }
-        body.is-cropping .cropper-container { display: block; }
+  <style>
+    :root{
+      /* palette (light) */
+      --bg: #f3f4f6;
+      --panel: #ffffff;
+      --text: #0f172a;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --accent: #2563eb;
+      --accent-2: #1d4ed8;
 
-        /* BARU: Styling untuk Kontrol Rotasi */
-        .control-group {
-            margin-top: 1.5rem;
-        }
-        .control-group p {
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-            font-size: 0.9rem;
-        }
-        .rotate-buttons {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        .rotate-buttons .btn {
-            margin-top: 0;
-        }
-        .slider-control {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        .slider-control input[type="range"] {
-            width: 100%;
-            cursor: pointer;
-        }
-        .slider-control span {
-            font-weight: 600;
-            min-width: 40px;
-            text-align: right;
-        }
-    </style>
+      /* palette (dark) */
+      --bg-dark: #0b1220;
+      --panel-dark: #0f172a;
+      --text-dark: #e5e7eb;
+      --muted-dark: #a1a1aa;
+      --border-dark: #1f2937;
+      --accent-dark: #60a5fa;
+      --accent-2-dark: #3b82f6;
+
+      /* misc */
+      --radius: 12px;
+      --radius-sm: 10px;
+      --shadow: 0 6px 18px rgba(0,0,0,.08);
+      --shadow-strong: 0 16px 40px rgba(0,0,0,.12);
+      --sidebar-w: 320px;
+      --toolbar-h: 56px;
+    }
+
+    /* theme */
+    html[data-theme="dark"]{
+      --bg: var(--bg-dark);
+      --panel: var(--panel-dark);
+      --text: var(--text-dark);
+      --muted: var(--muted-dark);
+      --border: var(--border-dark);
+      --accent: var(--accent-dark);
+      --accent-2: var(--accent-2-dark);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* App layout */
+    .app{
+      display:flex;
+      min-height:100dvh;
+      gap:16px;
+      padding:16px;
+    }
+    .sidebar{
+      width:100%;
+      max-width:var(--sidebar-w);
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      display:flex;
+      flex-direction:column;
+      padding:18px;
+      gap:16px;
+    }
+    .brand{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+    }
+    .brand h1{
+      font-size:1.1rem; font-weight:700; margin:0;
+      letter-spacing:.2px;
+    }
+    .theme-toggle{
+      border:1px solid var(--border);
+      background:transparent; color:var(--text);
+      padding:8px 12px; border-radius:999px; cursor:pointer;
+    }
+    .muted{color:var(--muted)}
+
+    .dropzone{
+      border:1.5px dashed var(--border);
+      border-radius:var(--radius);
+      background:linear-gradient(0deg,transparent,transparent), var(--panel);
+      padding:18px;
+      text-align:center;
+      transition:.2s ease;
+    }
+    .dropzone.dragover{
+      border-color:var(--accent);
+      box-shadow:inset 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent);
+      background:linear-gradient(0deg, color-mix(in srgb, var(--accent) 8%, transparent), transparent), var(--panel);
+    }
+    .dz-actions{
+      display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:12px;
+    }
+    .btn{
+      appearance:none; -webkit-appearance:none;
+      border:1px solid var(--border);
+      background:#eef2ff0d;
+      color:var(--text);
+      padding:10px 12px; font-weight:600; border-radius:10px; cursor:pointer;
+      transition:transform .06s ease, background .2s ease, border .2s ease;
+    }
+    .btn:active{ transform:scale(.985) }
+    .btn.primary{
+      background:var(--accent); color:white; border-color:color-mix(in srgb, var(--accent) 70%, black 0%);
+    }
+    .btn.primary:hover{ background:var(--accent-2) }
+    .btn.block{width:100%}
+    .btn.ghost{ background:transparent }
+
+    .controls{
+      display:grid; gap:12px;
+    }
+    .section{
+      padding:12px;
+      border:1px solid var(--border);
+      border-radius:var(--radius-sm);
+      background:var(--panel);
+    }
+    .section h3{
+      margin:0 0 8px; font-size:.95rem;
+    }
+    .grid{
+      display:grid; gap:8px;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+    }
+    .row{ display:flex; align-items:center; gap:8px; }
+    .select, .input, .range{
+      width:100%;
+      border:1px solid var(--border); background:transparent; color:var(--text);
+      padding:10px 12px; border-radius:10px;
+    }
+    .range{ padding:0; height:36px }
+    .kbd{
+      display:inline-block; border:1px solid var(--border); border-bottom-width:2px;
+      padding:0 6px; border-radius:6px; font-weight:700; font-size:.8rem;
+    }
+
+    /* Canvas area */
+    .stage{
+      position:relative;
+      flex:1;
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow-strong);
+      overflow:hidden;
+      min-height:420px;
+    }
+    .stage-inner{
+      position:absolute; inset:0;
+      display:grid; place-items:center;
+    }
+    .placeholder{
+      text-align:center; color:var(--muted);
+      display:grid; gap:6px;
+    }
+    .cropper-wrap{ display:none; width:100%; height:100%; }
+    #image{ display:block; max-width:100%; max-height:calc(100vh - 220px); }
+
+    /* Floating toolbar */
+    .toolbar{
+      position:absolute; left:50%; bottom:14px; transform:translateX(-50%);
+      height:var(--toolbar-h);
+      background:color-mix(in srgb, var(--panel) 80%, transparent);
+      backdrop-filter: blur(10px);
+      border:1px solid var(--border);
+      border-radius:999px;
+      display:flex; align-items:center; gap:6px;
+      padding:6px;
+      box-shadow:var(--shadow);
+      z-index:10;
+      pointer-events:auto;
+    }
+    .tool{
+      border:1px solid var(--border);
+      background:transparent; color:var(--text);
+      border-radius:999px; height:40px; min-width:40px; padding:0 12px;
+      display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;
+    }
+    .tool[data-active="true"]{
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
+      border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+    }
+    .divider{ width:1px; height:28px; background:var(--border); margin:0 2px }
+
+    .zoom-display{ min-width:54px; text-align:center; font-variant-numeric:tabular-nums; }
+
+    /* Status bar */
+    .statusbar{
+      display:flex; justify-content:space-between; align-items:center; gap:10px;
+      border-top:1px dashed var(--border);
+      padding-top:10px; font-size:.9rem; color:var(--muted);
+    }
+    .chip{
+      border:1px solid var(--border); padding:6px 8px; border-radius:999px;
+    }
+
+    /* Toast */
+    .toast{
+      position:fixed; right:18px; bottom:18px; z-index:50;
+      display:grid; gap:8px; width:min(360px, 90vw);
+    }
+    .toast .item{
+      background:var(--panel); color:var(--text);
+      border:1px solid var(--border);
+      border-radius:12px; padding:12px 14px; box-shadow:var(--shadow);
+      animation: pop .2s ease;
+    }
+    @keyframes pop{ from{ transform:translateY(6px); opacity:.4 } }
+
+    /* Responsive */
+    @media (max-width: 1080px){
+      .app{ flex-direction:column; }
+      .toolbar{ bottom:10px }
+      #image{ max-height:calc(100vh - 300px) }
+    }
+  </style>
 </head>
 <body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <h1>Image Cropper <span class="muted">/ Rotator</span></h1>
+        <button id="themeBtn" class="theme-toggle" title="Toggle tema (Alt+T)">🌗</button>
+      </div>
+      <p class="muted">Muat gambar lewat <span class="kbd">Drag & Drop</span>, <span class="kbd">Ctrl / ⌘ + V</span> (paste), atau pilih file.</p>
 
-    <div class="main-layout">
-        <!-- KOLOM KIRI: KONTROL -->
-        <aside class="sidebar">
-            <h1>Image Cropper & Rotator</h1>
-            
-            <div class="upload-box">
-                <p class="instructions">Pilih file, paste gambar (Ctrl+V), atau gunakan gambar dari clipboard untuk memulai.</p>
-                <label for="imageInput" class="btn btn-primary">Pilih Gambar dari File</label>
-                <button id="pasteBtn" class="btn btn-secondary">Paste dari Clipboard</button>
-                <input type="file" id="imageInput" accept="image/*">
+      <div class="dropzone" id="dropzone" aria-label="Dropzone">
+        <div>🖼️ <strong>Tarik & Lepas Gambar</strong></div>
+        <div class="muted" style="margin-top:6px">atau</div>
+        <div class="dz-actions">
+          <label class="btn primary">
+            Pilih File
+            <input id="fileInput" type="file" accept="image/*" hidden>
+          </label>
+          <button id="pasteBtn" class="btn">Paste dari Clipboard</button>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="section">
+          <h3>Rasio & Rotasi</h3>
+          <div class="grid">
+            <select id="ratio" class="select" title="Rasio">
+              <option value="free">Bebas</option>
+              <option value="1">1 : 1 (Square)</option>
+              <option value="4/3">4 : 3</option>
+              <option value="16/9">16 : 9</option>
+              <option value="3/2">3 : 2</option>
+              <option value="21/9">21 : 9</option>
+            </select>
+            <div class="row">
+              <button id="rotL" class="btn">↶ 90°</button>
+              <button id="rotR" class="btn">↷ 90°</button>
             </div>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <input id="rotRange" class="range" type="range" min="-180" max="180" value="0" step="1" />
+            <span id="rotVal" style="width:54px;text-align:right;font-weight:700">0°</span>
+          </div>
+          <div class="row">
+            <button id="flipH" class="btn">⇋ Flip H</button>
+            <button id="flipV" class="btn">⇅ Flip V</button>
+          </div>
+        </div>
 
-            <div class="action-controls">
-                <p class="instructions">Sesuaikan area crop, rotasi, lalu simpan hasilnya.</p>
+        <div class="section">
+          <h3>Ekspor</h3>
+          <div class="grid">
+            <select id="format" class="select">
+              <option value="png">PNG</option>
+              <option value="jpeg">JPEG (90%)</option>
+              <option value="webp">WEBP (90%)</option>
+            </select>
+            <input id="filename" class="input" placeholder="Nama file (tanpa ekstensi)" value="image" />
+          </div>
+          <div class="row" style="margin-top:8px">
+            <button id="downloadBtn" class="btn primary block">Download</button>
+          </div>
+          <div class="row">
+            <button id="copyBtn" class="btn block">Copy ke Clipboard</button>
+          </div>
+          <div class="row">
+            <button id="resetBtn" class="btn ghost block">Pilih Gambar Lain</button>
+          </div>
+        </div>
 
-                <!-- BARU: KONTROL ROTASI -->
-                <div class="control-group">
-                    <p>Rotasi Gambar</p>
-                    <div class="rotate-buttons">
-                        <button id="rotateLeftBtn" class="btn btn-secondary">Kiri (-90°)</button>
-                        <button id="rotateRightBtn" class="btn btn-secondary">Kanan (+90°)</button>
-                    </div>
-                    <div class="slider-control">
-                        <input type="range" id="rotateSlider" min="-180" max="180" value="0" step="1">
-                        <span id="rotateValue">0°</span>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 2rem;">
-                    <button id="downloadBtn" class="btn btn-primary">Download Hasil</button>
-                    <button id="copyBtn" class="btn btn-secondary">Copy ke Clipboard</button>
-                    <button id="resetBtn" class="btn btn-secondary">Pilih Gambar Lain</button>
-                </div>
-            </div>
-        </aside>
+        <div class="statusbar">
+          <div class="chip" id="metaInfo">Belum ada gambar</div>
+          <div class="chip">Tips: <span class="kbd">Alt</span> + <span class="kbd">Wheel</span> untuk zoom, <span class="kbd">Spasi</span> untuk geser</div>
+        </div>
+      </div>
+    </aside>
 
-        <!-- KOLOM KANAN: PREVIEW GAMBAR -->
-        <main class="content">
-            <div class="content-inner">
-                <div class="placeholder">
-                    <div class="placeholder-icon">🖼️</div>
-                    <p>Preview gambar akan muncul di sini</p>
-                </div>
-                <div class="cropper-container">
-                    <img id="imageToCrop" alt="Gambar untuk di-crop">
-                </div>
-            </div>
-        </main>
-    </div>
+    <!-- Stage -->
+    <main class="stage" aria-live="polite">
+      <div class="stage-inner">
+        <div id="placeholder" class="placeholder">
+          <div style="font-size:48px">📷</div>
+          <div><strong>Preview</strong> akan muncul di sini</div>
+        </div>
+        <div class="cropper-wrap" id="cropWrap">
+          <img id="image" alt="Gambar untuk di-crop">
+        </div>
 
-    <!-- 3. Sertakan JavaScript Cropper.js dari CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+        <!-- Floating toolbar -->
+        <div class="toolbar" role="toolbar" aria-label="Canvas tools">
+          <button class="tool" id="fitBtn" title="Fit (Alt+0)">Fit</button>
+          <button class="tool" id="fillBtn" title="Fill (Alt+Shift+0)">Fill</button>
+          <div class="divider"></div>
+          <button class="tool" id="zoomOut" title="Zoom out (Alt+–)">−</button>
+          <div class="tool" style="pointer-events:none"><span id="zoomVal" class="zoom-display">100%</span></div>
+          <button class="tool" id="zoomIn" title="Zoom in (Alt+=)">+</button>
+          <div class="divider"></div>
+          <button class="tool" id="centerBtn" title="Center canvas">Center</button>
+          <button class="tool" id="resetView" title="Reset view">Reset View</button>
+        </div>
+      </div>
+    </main>
+  </div>
 
-    <!-- 4. Kode JavaScript untuk Logika Aplikasi -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const imageInput = document.getElementById('imageInput');
-            const imageToCrop = document.getElementById('imageToCrop');
-            const downloadBtn = document.getElementById('downloadBtn');
-            const copyBtn = document.getElementById('copyBtn');
-            const resetBtn = document.getElementById('resetBtn');
-            const pasteBtn = document.getElementById('pasteBtn');
-            
-            // BARU: Ambil elemen kontrol rotasi
-            const rotateLeftBtn = document.getElementById('rotateLeftBtn');
-            const rotateRightBtn = document.getElementById('rotateRightBtn');
-            const rotateSlider = document.getElementById('rotateSlider');
-            const rotateValue = document.getElementById('rotateValue');
+  <div class="toast" id="toast"></div>
 
-            let cropper = null;
+  <!-- Cropper.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 
-            function setUIState(isCropping) {
-                document.body.classList.toggle('is-cropping', isCropping);
-            }
+  <script>
+    (function(){
+      const $ = (s,root=document)=>root.querySelector(s);
 
-            function resetRotateControls() {
-                rotateSlider.value = 0;
-                rotateValue.textContent = '0°';
-            }
+      // Theme
+      const themeBtn = $('#themeBtn');
+      const themeKey = 'imgcrop-theme';
+      function setTheme(mode){
+        document.documentElement.setAttribute('data-theme', mode);
+        localStorage.setItem(themeKey, mode);
+      }
+      setTheme(localStorage.getItem(themeKey) || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+      themeBtn.addEventListener('click', ()=> setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'));
+      window.addEventListener('keydown', (e)=>{ if(e.altKey && (e.key==='t' || e.key==='T')) { e.preventDefault(); themeBtn.click(); } });
 
-            function initCropper(imageSrc) {
-                if (cropper) {
-                    cropper.destroy();
-                }
-                
-                resetRotateControls(); // BARU: Reset slider saat gambar baru dimuat
-                
-                imageToCrop.src = imageSrc;
-                cropper = new Cropper(imageToCrop, {
-                    aspectRatio: NaN,
-                    viewMode: 1,
-                    background: false,
-                    autoCropArea: 0.8,
-                    responsive: true,
-                    checkCrossOrigin: true,
-                });
-                
-                setUIState(true);
-            }
+      // Elements
+      const dropzone = $('#dropzone');
+      const fileInput = $('#fileInput');
+      const pasteBtn = $('#pasteBtn');
+      const ratioSel = $('#ratio');
+      const rotL = $('#rotL');
+      const rotR = $('#rotR');
+      const rotRange = $('#rotRange');
+      const rotVal = $('#rotVal');
+      const flipH = $('#flipH');
+      const flipV = $('#flipV');
+      const formatSel = $('#format');
+      const filenameInp = $('#filename');
+      const downloadBtn = $('#downloadBtn');
+      const copyBtn = $('#copyBtn');
+      const resetBtn = $('#resetBtn');
 
-            imageInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file?.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => initCropper(event.target.result);
-                    reader.readAsDataURL(file);
-                }
-                e.target.value = '';
-            });
+      const imageEl = $('#image');
+      const cropWrap = $('#cropWrap');
+      const placeholder = $('#placeholder');
+      const metaInfo = $('#metaInfo');
 
-            document.addEventListener('paste', (e) => {
-                const items = e.clipboardData?.items;
-                if (!items) return;
+      const fitBtn = $('#fitBtn');
+      const fillBtn = $('#fillBtn');
+      const zoomInBtn = $('#zoomIn');
+      const zoomOutBtn = $('#zoomOut');
+      const zoomVal = $('#zoomVal');
+      const centerBtn = $('#centerBtn');
+      const resetViewBtn = $('#resetView');
 
-                for (const item of items) {
-                    if (item.type.startsWith('image/')) {
-                        const blob = item.getAsFile();
-                        const reader = new FileReader();
-                        reader.onload = (event) => initCropper(event.target.result);
-                        reader.readAsDataURL(blob);
-                        e.preventDefault();
-                        break;
-                    }
-                }
-            });
+      const toastBox = $('#toast');
+      function toast(msg, timeout=1800){
+        const item = document.createElement('div');
+        item.className='item';
+        item.textContent = msg;
+        toastBox.appendChild(item);
+        setTimeout(()=>{ item.style.opacity=0; item.style.transform='translateY(6px)'; setTimeout(()=>item.remove(), 250); }, timeout);
+      }
 
-            pasteBtn.addEventListener('click', async () => {
-                if (!navigator.clipboard?.read) {
-                    alert('Maaf, browser Anda tidak mendukung fitur paste dari clipboard.');
-                    return;
-                }
+      let cropper = null;
+      let scaleX = 1, scaleY = 1;
 
-                try {
-                    const clipboardItems = await navigator.clipboard.read();
-                    let foundImage = false;
-                    for (const item of clipboardItems) {
-                        const imageType = item.types.find(type => type.startsWith('image/'));
-                        if (imageType) {
-                            const blob = await item.getType(imageType);
-                            const reader = new FileReader();
-                            reader.onload = (event) => initCropper(event.target.result);
-                            reader.readAsDataURL(blob);
-                            foundImage = true;
-                            break;
-                        }
-                    }
-                    if (!foundImage) {
-                        alert('Tidak ada gambar yang ditemukan di clipboard.');
-                    }
-                } catch (err) {
-                    console.error('Gagal membaca clipboard:', err);
-                    alert('Gagal mengambil gambar dari clipboard. Pastikan Anda telah memberikan izin akses.');
-                }
-            });
+      function setUICropping(on){
+        placeholder.style.display = on ? 'none' : 'grid';
+        cropWrap.style.display   = on ? 'block' : 'none';
+      }
 
-            // BARU: Tambahkan event listener untuk kontrol rotasi
-            rotateLeftBtn.addEventListener('click', () => {
-                if (cropper) {
-                    cropper.rotate(-90);
-                }
-            });
-            
-            rotateRightBtn.addEventListener('click', () => {
-                if (cropper) {
-                    cropper.rotate(90);
-                }
-            });
+      function resetTransformUI(){
+        rotRange.value = 0;
+        rotVal.textContent = '0°';
+        scaleX = 1; scaleY = 1;
+        updateZoomDisplay();
+      }
 
-            rotateSlider.addEventListener('input', (e) => {
-                if (cropper) {
-                    const value = e.target.value;
-                    cropper.rotateTo(Number(value)); // Menggunakan rotateTo untuk set nilai absolut
-                    rotateValue.textContent = `${value}°`;
-                }
-            });
+      function updateMeta(fileLike){
+        if(!fileLike){
+          metaInfo.textContent = 'Belum ada gambar';
+          return;
+        }
+        // fileLike may be a File or an object with width/height/type/name
+        const {name, type, width, height, size} = fileLike;
+        const sizeKB = size ? (size/1024).toFixed(1)+' KB' : '';
+        const wh = width && height ? `${width}×${height}px` : '';
+        metaInfo.textContent = [name || 'Gambar', type || '', wh, sizeKB].filter(Boolean).join(' • ');
+      }
 
-            function getCroppedCanvas(options = {}) {
-                if (!cropper) return null;
-                return cropper.getCroppedCanvas({
-                    maxWidth: 4096,
-                    maxHeight: 4096,
-                    imageSmoothingQuality: 'high',
-                    ...options,
-                });
-            }
+      function initCropper(dataURL, fileMeta){
+        if(cropper){ cropper.destroy(); cropper = null; }
+        imageEl.src = dataURL;
+        setUICropping(true);
+        resetTransformUI();
 
-            downloadBtn.addEventListener('click', () => {
-                const canvas = getCroppedCanvas();
-                if (!canvas) return;
-
-                const link = document.createElement('a');
-                link.href = canvas.toDataURL('image/png');
-                link.download = 'rotated-cropped-image.png';
-                link.click();
-            });
-
-            copyBtn.addEventListener('click', () => {
-                const canvas = getCroppedCanvas();
-                if (!canvas) return;
-
-                canvas.toBlob(async (blob) => {
-                    try {
-                        await navigator.clipboard.write([ new ClipboardItem({ [blob.type]: blob }) ]);
-                        alert('Gambar berhasil disalin ke clipboard!');
-                    } catch (err) {
-                        console.error('Gagal menyalin:', err);
-                        alert('Gagal menyalin gambar. Browser Anda mungkin tidak mendukung fitur ini.');
-                    }
-                }, 'image/png');
-            });
-
-            resetBtn.addEventListener('click', () => {
-                if (cropper) {
-                    cropper.destroy();
-                    cropper = null;
-                }
-                imageToCrop.src = '';
-                resetRotateControls(); // BARU: Reset slider saat tombol reset diklik
-                setUIState(false);
-            });
-
-            setUIState(false);
+        cropper = new Cropper(imageEl, {
+          viewMode: 1,
+          aspectRatio: NaN,
+          background: false,
+          autoCropArea: 0.85,
+          responsive: true,
+          modal: true,
+          checkCrossOrigin: true,
+          movable: true,
+          zoomOnWheel: false, // we handle custom zoom
+          ready(){
+            // update meta with real dimensions
+            const imgData = cropper.getImageData();
+            updateMeta({ ...fileMeta, width: Math.round(imgData.naturalWidth), height: Math.round(imgData.naturalHeight) });
+            centerCanvas();
+          },
+          crop(){ updateZoomDisplay() }
         });
-    </script>
+      }
 
+      // Load helpers
+      function readFileToDataURL(file){
+        return new Promise((resolve,reject)=>{
+          const r = new FileReader();
+          r.onload = e=> resolve(e.target.result);
+          r.onerror = reject;
+          r.readAsDataURL(file);
+        });
+      }
+
+      async function handleFile(file){
+        if(!file?.type?.startsWith('image/')){ toast('File bukan gambar'); return; }
+        const dataURL = await readFileToDataURL(file);
+        initCropper(dataURL, { name:file.name, type:file.type, size:file.size });
+      }
+
+      function handleBlobImage(blob, name='clipboard.png'){
+        const reader = new FileReader();
+        reader.onload = e=> initCropper(e.target.result, { name, type: blob.type, size: blob.size });
+        reader.readAsDataURL(blob);
+      }
+
+      // Inputs
+      fileInput.addEventListener('change', async e=>{
+        const file = e.target.files?.[0];
+        if(file) await handleFile(file);
+        e.target.value = '';
+      });
+
+      // Drag & Drop
+      ;['dragenter','dragover'].forEach(evt=>{
+        dropzone.addEventListener(evt, e=>{ e.preventDefault(); e.dataTransfer.dropEffect='copy'; dropzone.classList.add('dragover'); });
+      });
+      ;['dragleave','drop'].forEach(evt=>{
+        dropzone.addEventListener(evt, e=>{ e.preventDefault(); dropzone.classList.remove('dragover'); });
+      });
+      dropzone.addEventListener('drop', async e=>{
+        const file = e.dataTransfer.files?.[0];
+        if(file) await handleFile(file);
+      });
+
+      // Paste (button)
+      pasteBtn.addEventListener('click', async ()=>{
+        if(!navigator.clipboard?.read){ toast('Browser tidak mendukung baca clipboard'); return; }
+        try{
+          const items = await navigator.clipboard.read();
+          for(const it of items){
+            const type = it.types.find(t=>t.startsWith('image/'));
+            if(type){
+              const blob = await it.getType(type);
+              handleBlobImage(blob, 'clipboard.'+(type.split('/')[1]||'png'));
+              return;
+            }
+          }
+          toast('Tidak ada gambar di clipboard');
+        }catch(err){ console.error(err); toast('Gagal akses clipboard'); }
+      });
+
+      // Global paste (Ctrl/⌘+V)
+      document.addEventListener('paste', e=>{
+        const items = e.clipboardData?.items || [];
+        for(const it of items){
+          if(it.type.startsWith('image/')){
+            const blob = it.getAsFile();
+            handleBlobImage(blob, 'clipboard.'+(blob.type.split('/')[1]||'png'));
+            e.preventDefault(); break;
+          }
+        }
+      });
+
+      // Ratio
+      ratioSel.addEventListener('change', ()=>{
+        if(!cropper) return;
+        const v = ratioSel.value;
+        cropper.setAspectRatio(v==='free' ? NaN : Function('"use strict";return ('+v+')')());
+      });
+
+      // Rotation & flip
+      rotL.addEventListener('click', ()=> cropper && cropper.rotate(-90));
+      rotR.addEventListener('click', ()=> cropper && cropper.rotate( 90));
+      rotRange.addEventListener('input', e=>{
+        if(!cropper) return;
+        const val = Number(e.target.value);
+        cropper.rotateTo(val);
+        rotVal.textContent = val+'°';
+      });
+      flipH.addEventListener('click', ()=>{
+        if(!cropper) return;
+        scaleX = scaleX * -1;
+        cropper.scaleX(scaleX);
+      });
+      flipV.addEventListener('click', ()=>{
+        if(!cropper) return;
+        scaleY = scaleY * -1;
+        cropper.scaleY(scaleY);
+      });
+
+      // Zoom & view
+      function updateZoomDisplay(){
+        if(!cropper){ zoomVal.textContent='100%'; return; }
+        const data = cropper.getImageData();
+        const zoom = (data.scaleX || 1) * 100;
+        zoomVal.textContent = Math.round(zoom)+'%';
+      }
+      function zoom(delta){ if(cropper){ cropper.zoom(delta); updateZoomDisplay(); } }
+      function fit(){ if(!cropper) return; cropper.reset(); cropper.setDragMode('move'); updateZoomDisplay(); }
+      function fill(){
+        if(!cropper) return;
+        // Max zoom so image fills the crop box
+        const c = cropper.getContainerData();
+        const i = cropper.getImageData();
+        const z = Math.max(c.width / i.naturalWidth, c.height / i.naturalHeight);
+        const target = z * 1.02; // small padding
+        const current = i.scaleX || 1;
+        cropper.zoomTo(target, { x: c.width/2, y: c.height/2 });
+        if(current<0) cropper.scaleX(1); // ensure not flipped from previous state for display
+        updateZoomDisplay();
+      }
+      function centerCanvas(){
+        if(!cropper) return;
+        const c = cropper.getCanvasData();
+        const con = cropper.getContainerData();
+        cropper.setCanvasData({ left: (con.width - c.width)/2, top: (con.height - c.height)/2, width: c.width, height: c.height });
+      }
+      fitBtn.addEventListener('click', fit);
+      fillBtn.addEventListener('click', fill);
+      zoomInBtn.addEventListener('click', ()=> zoom( 0.1));
+      zoomOutBtn.addEventListener('click',()=> zoom(-0.1));
+      centerBtn.addEventListener('click', centerCanvas);
+      resetViewBtn.addEventListener('click', ()=>{ if(!cropper) return; const r=Number(rotRange.value); cropper.reset(); cropper.rotateTo(r); centerCanvas(); updateZoomDisplay(); });
+
+      // Alt+wheel zoom
+      window.addEventListener('wheel', (e)=>{
+        if(!cropper) return;
+        if(e.altKey){
+          e.preventDefault();
+          const delta = -Math.sign(e.deltaY) * 0.12;
+          cropper.zoom(delta, { x: e.clientX, y: e.clientY });
+          updateZoomDisplay();
+        }
+      }, { passive:false });
+
+      // Space to pan
+      let spacePanning=false;
+      window.addEventListener('keydown', e=>{
+        if(e.code==='Space' && !spacePanning){ spacePanning=true; document.body.style.cursor='grabbing'; cropper?.setDragMode('move'); e.preventDefault(); }
+        if(e.altKey && e.key==='0'){ e.preventDefault(); fitBtn.click(); }
+        if(e.altKey && e.shiftKey && e.key==='0'){ e.preventDefault(); fillBtn.click(); }
+        if(e.altKey && (e.key==='=' || e.key==='+')){ e.preventDefault(); zoomInBtn.click(); }
+        if(e.altKey && (e.key==='-' || e.key==='_')){ e.preventDefault(); zoomOutBtn.click(); }
+      });
+      window.addEventListener('keyup', e=>{
+        if(e.code==='Space'){ spacePanning=false; document.body.style.cursor=''; cropper?.setDragMode('crop'); }
+      });
+
+      // Export helpers
+      function getCanvas(){
+        if(!cropper) return null;
+        return cropper.getCroppedCanvas({
+          maxWidth: 4096,
+          maxHeight: 4096,
+          imageSmoothingQuality: 'high',
+        });
+      }
+      function mimeFromFormat(fmt){
+        return fmt==='png' ? 'image/png'
+             : fmt==='jpeg' ? 'image/jpeg'
+             : fmt==='webp' ? 'image/webp'
+             : 'image/png';
+      }
+      downloadBtn.addEventListener('click', ()=>{
+        const cvs = getCanvas(); if(!cvs) return;
+        const fmt = formatSel.value;
+        const mime = mimeFromFormat(fmt);
+        const name = (filenameInp.value || 'image') + '.' + fmt;
+        if(fmt==='jpeg' || fmt==='webp'){
+          cvs.toBlob(b=>{
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(b);
+            a.download = name; a.click(); URL.revokeObjectURL(a.href);
+          }, mime, 0.9);
+        }else{
+          const a = document.createElement('a');
+          a.href = cvs.toDataURL(mime);
+          a.download = name; a.click();
+        }
+        toast('Gambar diunduh');
+      });
+
+      copyBtn.addEventListener('click', ()=>{
+        const cvs = getCanvas(); if(!cvs) return;
+        cvs.toBlob(async (blob)=>{
+          try{
+            await navigator.clipboard.write([ new ClipboardItem({ [blob.type]: blob }) ]);
+            toast('Tersalin ke clipboard');
+          }catch(err){
+            console.error(err); toast('Browser tidak mengizinkan salin gambar');
+          }
+        }, 'image/png');
+      });
+
+      resetBtn.addEventListener('click', ()=>{
+        cropper?.destroy(); cropper=null;
+        imageEl.src=''; setUICropping(false); updateMeta(null); resetTransformUI();
+      });
+
+      // Init
+      setUICropping(false);
+    })();
+  </script>
 </body>
 </html>
