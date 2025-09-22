@@ -1,579 +1,397 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/avif" href="https://pzet.pages.dev/tools/katex-png/icon-katex.avif">
-    <title>KaTeX PNG Converter</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#0ea5e9" />
+  <link rel="icon" type="image/avif" href="https://pzet.pages.dev/tools/katex-png/icon-katex.avif" />
+  <title>KaTeX PNG Converter — Elegant</title>
 
-    <!-- 1. Pustaka KaTeX (untuk render LaTeX) -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
 
-    <!-- 2. Pustaka html2canvas (untuk konversi HTML ke PNG) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- html2canvas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-    <!-- 3. CSS Internal untuk Styling Halaman -->
-    <style>
-        :root {
-            --primary-color: #007bff;
-            --secondary-color: #6c757d;
-            --success-color: #28a745;
-            --light-gray: #f8f9fa;
-            --dark-gray: #343a40;
-            --border-color: #dee2e6;
-            --shadow-color: rgba(0,0,0,0.1);
-            --preview-bg: #ffffff;
-        }
-        
-        * {
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: var(--light-gray);
-            color: var(--dark-gray);
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-        }
-        
-        .container {
-            width: 100%;
-            max-width: 1000px;
-            background-color: white;
-            padding: 25px 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px var(--shadow-color);
-        }
-        
-        h1 {
-            text-align: center;
-            color: var(--primary-color);
-            margin-bottom: 25px;
-        }
-        
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            align-items: start;
-        }
-        
-        .input-section, .preview-section {
-            min-height: 400px;
-            min-width: 0; /* PERBAIKAN 1: Mencegah grid item merusak layout */
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-        
-        textarea, select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-        }
-        
-        textarea:focus, select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-        }
-        
-        textarea {
-            min-height: 120px;
-            resize: vertical;
-            font-family: "Courier New", Courier, monospace;
-        }
-        
-        .options-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        
-        fieldset {
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            padding: 10px 15px;
-        }
-        
-        legend {
-            font-weight: 600;
-            padding: 0 10px;
-        }
-        
-        .radio-group {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-        
-        .radio-group label {
-            margin-bottom: 0;
-            font-weight: normal;
-            cursor: pointer;
-        }
-        
-        .btn-generate {
-            display: block;
-            width: 100%;
-            padding: 12px 20px;
-            font-size: 18px;
-            font-weight: 700;
-            color: white;
-            background-color: var(--primary-color);
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.1s ease;
-        }
-        
-        .btn-generate:hover {
-            background-color: #0056b3;
-        }
-        
-        .btn-generate:active {
-            transform: scale(0.98);
-        }
-        
-        .btn-generate:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        h2 {
-            color: var(--dark-gray);
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
-            margin-top: 0;
-        }
-        
-        .preview-container {
-            background-color: var(--preview-bg);
-            /* Menambahkan background checkerboard untuk preview transparansi */
-            background-image: 
-                linear-gradient(45deg, #eee 25%, transparent 25%), 
-                linear-gradient(-45deg, #eee 25%, transparent 25%), 
-                linear-gradient(45deg, transparent 75%, #eee 75%), 
-                linear-gradient(-45deg, transparent 75%, #eee 75%);
-            background-size: 20px 20px;
-            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            min-height: 200px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px;
-            overflow: auto;
-            transition: border-color 0.3s ease;
-        }
-        
-        .preview-container.has-content {
-            border-color: var(--success-color);
-        }
-        
-        .preview-placeholder {
-            color: var(--secondary-color);
-            font-style: italic;
-            text-align: center;
-            background-color: var(--preview-bg); /* Beri background agar terbaca di atas checkerboard */
-            padding: 5px 10px;
-            border-radius: 4px;
-        }
-        
-        #latex-preview {
-            max-width: 100%;
-            font-size: 1.2em;
-            word-break: break-all; /* PERBAIKAN 1: Memaksa teks panjang ganti baris */
-            background-color: var(--preview-bg); /* Beri background agar terbaca di atas checkerboard */
-            padding: 5px; /* Tambahkan sedikit padding */
-        }
-        
-        #png-output {
-            max-width: 100%;
-            display: none;
-        }
-        
-        .action-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-            opacity: 0.5;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-        
-        .action-buttons.enabled {
-            opacity: 1;
-            pointer-events: all;
-        }
-        
-        .action-btn {
-            padding: 10px 20px;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease, transform 0.1s ease;
-        }
-        
-        .action-btn:active {
-            transform: scale(0.96);
-        }
-        
-        #download-link {
-            background-color: var(--success-color);
-        }
-        
-        #download-link:hover {
-            background-color: #218838;
-        }
-        
-        #copy-btn {
-            background-color: var(--secondary-color);
-        }
-        
-        #copy-btn:hover {
-            background-color: #5a6268;
-        }
-        
-        #copy-btn.copied {
-            background-color: #17a2b8;
-        }
-        
-        /* === PERBAIKAN 2: UNTUK OUTPUT TRANSPARAN === */
-        #katex-container {
-            position: absolute;
-            left: -9999px;
-            top: -9999px;
-            padding: 10px;
-            color: black;
-            background-color: transparent; /* Diubah dari 'white' menjadi 'transparent' */
-        }
-        
-        .error-message {
-            color: #dc3545;
-            font-weight: bold;
-            margin-top: 10px;
-            min-height: 1.2em;
-            padding: 8px 12px;
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            border-radius: 4px;
-            display: none;
-        }
-        
-        .error-message.show {
-            display: block;
-        }
-        
-        .loading {
-            opacity: 0.7;
-            pointer-events: none;
-        }
-        
-        .loading::after {
-            content: " (Memproses...)";
-            color: var(--secondary-color);
-        }
-        
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-            
-            .container {
-                padding: 20px;
-            }
-            
-            .options-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+  <!-- Styles -->
+  <style>
+    :root{
+      --bg: #0b1020;           /* page bg (dark) */
+      --card: #0f172a;         /* surfaces */
+      --text: #e2e8f0;         /* primary text */
+      --muted: #94a3b8;        /* secondary text */
+      --ring: #38bdf8;         /* focus ring */
+      --brand: #0ea5e9;        /* buttons */
+      --brand-600: #0284c7;
+      --ok: #22c55e;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --border: #1f2a44;
+      --checker-a: #0b1020;    /* checkerboard */
+      --checker-b: #0e162c;
+    }
+
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg:#f7f8fb; --card:#ffffff; --text:#0f172a; --muted:#475569; --ring:#2563eb; --brand:#2563eb; --brand-600:#1d4ed8; --border:#e5e7eb; --checker-a:#f0f2f7; --checker-b:#e6e9f2;
+      }
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 80% -10%, rgba(56,189,248,.18), transparent 40%),
+                  radial-gradient(900px 700px at 0% 100%, rgba(34,197,94,.12), transparent 35%),
+                  var(--bg);
+      color: var(--text);
+    }
+
+    .wrap{max-width:1100px;margin:32px auto;padding:20px}
+    .appbar{
+      display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px
+    }
+    .title{display:flex;gap:10px;align-items:center}
+    .logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--brand),#22c55e);box-shadow:0 6px 20px rgba(14,165,233,.35)}
+    .title h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.2px}
+    .app-actions{display:flex;gap:8px;align-items:center}
+
+    .btn{appearance:none;border:1px solid var(--border);background:var(--card);color:var(--text);padding:8px 12px;border-radius:10px;cursor:pointer;transition:.15s;display:inline-flex;gap:8px;align-items:center}
+    .btn:hover{transform:translateY(-1px)}
+    .btn:active{transform:translateY(0)}
+    .btn.primary{background:var(--brand);border-color:transparent;color:#fff}
+    .btn.primary:hover{background:var(--brand-600)}
+    .btn.ok{background:var(--ok);border-color:transparent;color:#fff}
+    .btn.ghost{background:transparent}
+    .btn[disabled]{opacity:.6;cursor:not-allowed;transform:none}
+
+    .grid{display:grid;grid-template-columns: 1fr 1fr;gap:16px}
+    @media (max-width: 920px){.grid{grid-template-columns:1fr}}
+
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.08)}
+    .card h2{margin:0 0 12px;font-size:14px;letter-spacing:.3px;text-transform:uppercase;color:var(--muted)}
+
+    .stack{display:flex;flex-direction:column;gap:12px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    label{font-weight:600}
+
+    textarea, select, input[type="text"], input[type="number"], input[type="color"]{
+      width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:14px;transition:border-color .15s, box-shadow .15s
+    }
+    textarea{min-height:160px;font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;resize:vertical}
+    textarea:focus, select:focus, input:focus{outline:none;border-color:transparent;box-shadow:0 0 0 3px color-mix(in oklab, var(--ring) 40%, transparent)}
+
+    fieldset{border:1px dashed var(--border);border-radius:12px;padding:10px 12px}
+    legend{padding:0 6px;color:var(--muted);font-weight:600;font-size:12px}
+
+    .preview-box{
+      position:relative;border-radius:14px;border:1px solid var(--border);padding:14px;min-height:220px;display:flex;align-items:center;justify-content:center;overflow:auto;
+      background: repeating-conic-gradient(from 45deg, var(--checker-a) 0% 25%, var(--checker-b) 0% 50%) 0 0 / 24px 24px;
+    }
+    .preview-inner{max-width:100%;background:transparent}
+    .placeholder{color:var(--muted);font-style:italic;text-align:center}
+
+    .controls-grid{display:grid;grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px}
+    @media (max-width: 520px){.controls-grid{grid-template-columns:1fr}}
+
+    .subtle{color:var(--muted)}
+    .kbd{font: 500 12px/1 ui-monospace, SFMono-Regular; background:color-mix(in oklab, var(--muted) 16%, transparent); padding:6px 8px; border-radius:8px; border:1px solid var(--border)}
+    .footer{margin-top:18px;color:var(--muted);font-size:12px;text-align:center}
+
+    .ring{box-shadow:0 0 0 3px color-mix(in oklab, var(--ring) 40%, transparent)}
+    .hidden{position:absolute;left:-9999px;top:-9999px}
+
+    /* toast */
+    .toast{position:fixed;right:16px;bottom:16px;z-index:30;display:none}
+    .toast.show{display:block}
+    .toast > div{background:var(--card);border:1px solid var(--border);padding:10px 12px;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,.12)}
+  </style>
 </head>
 <body>
+  <div class="wrap">
+    <header class="appbar">
+      <div class="title">
+        <div class="logo" aria-hidden="true"></div>
+        <h1>KaTeX PNG Converter</h1>
+      </div>
+      <div class="app-actions">
+        <button id="themeBtn" class="btn ghost" title="Toggle tema (Ctrl+J)">🌓 <span class="hide-sm">Tema</span></button>
+        <button id="clearBtn" class="btn ghost" title="Bersihkan input (Esc)">🧹 Bersihkan</button>
+        <button id="genBtnTop" class="btn primary" title="Generate (Ctrl+Enter)">⚡ Generate</button>
+      </div>
+    </header>
 
-    <div class="container">
-        <h1>LaTeX to PNG Converter</h1>
-        <p style="text-align: center; margin-bottom: 30px;">Render LaTeX secara real-time, ubah ke PNG, lalu unduh atau salin ke clipboard.</p>
+    <section class="grid">
+      <!-- Left: Input -->
+      <div class="card stack" aria-labelledby="lbl-input">
+        <h2 id="lbl-input">Input LaTeX</h2>
+        <textarea id="latex" spellcheck="false" placeholder="Contoh: c = \\pm\\sqrt{a^2 + b^2}">c = \\pm\\sqrt{a^2 + b^2}</textarea>
 
-        <div class="main-content">
-            <!-- Input Section -->
-            <div class="input-section">
-                <div class="form-group">
-                    <label for="latex-input">Masukkan Kode LaTeX Anda:</label>
-                    <textarea id="latex-input" placeholder="Contoh: f(x) = \int_{-\infty}^\infty \hat f(\xi)\,e^{2 \pi i \xi x} \,d\xi">c = \pm\sqrt{a^2 + b^2}</textarea>
-                </div>
-
-                <div class="options-grid">
-                    <fieldset>
-                        <legend>Mode Persamaan</legend>
-                        <div class="radio-group">
-                            <label><input type="radio" name="mode" value="inline"> Inline</label>
-                            <label><input type="radio" name="mode" value="display" checked> Display</label>
-                        </div>
-                    </fieldset>
-                    <div class="form-group">
-                        <label for="scale-select">Skala Output PNG</label>
-                        <select id="scale-select">
-                            <option value="1">100%</option>
-                            <option value="2" selected>200% (Direkomendasikan)</option>
-                            <option value="3">300%</option>
-                            <option value="4">400%</option>
-                            <option value="5">500%</option>
-                            <option value="10">1000%</option>
-                        </select>
-                    </div>
-                </div>
-
-                <button id="generate-btn" class="btn-generate">Generate PNG</button>
-                <div id="error-display" class="error-message"></div>
+        <div class="controls-grid">
+          <fieldset>
+            <legend>Mode</legend>
+            <div class="row">
+              <label class="row"><input type="radio" name="mode" value="inline"> Inline</label>
+              <label class="row"><input type="radio" name="mode" value="display" checked> Display</label>
             </div>
-
-            <!-- Preview Section -->
-            <div class="preview-section">
-                <h2>Preview LaTeX</h2>
-                <div id="preview-container" class="preview-container">
-                    <div id="latex-preview">
-                        <div class="preview-placeholder">Preview akan muncul di sini...</div>
-                    </div>
-                </div>
-                
-                <h2>Hasil PNG</h2>
-                <div id="png-preview" class="preview-container">
-                    <img id="png-output" alt="Hasil render LaTeX">
-                    <div class="preview-placeholder" id="png-placeholder">Klik "Generate PNG" untuk membuat gambar</div>
-                </div>
-                
-                <div class="action-buttons" id="action-buttons">
-                    <button id="copy-btn" class="action-btn">📋 Salin PNG ke Clipboard</button>
-                    <a href="#" id="download-link" class="action-btn" download="latex_equation.png">💾 Unduh PNG</a>
-                </div>
+          </fieldset>
+          <fieldset>
+            <legend>Skala PNG</legend>
+            <select id="scale">
+              <option value="1">100%</option>
+              <option value="1.5">150%</option>
+              <option value="2" selected>200% (disarankan)</option>
+              <option value="3">300%</option>
+              <option value="4">400%</option>
+              <option value="5">500%</option>
+              <option value="10">1000%</option>
+            </select>
+          </fieldset>
+          <fieldset>
+            <legend>Ukuran Preview</legend>
+            <select id="previewZoom">
+              <option value="1">100%</option>
+              <option value="1.25">125%</option>
+              <option value="1.5">150%</option>
+              <option value="2">200%</option>
+            </select>
+          </fieldset>
+          <fieldset>
+            <legend>Padding</legend>
+            <div class="row">
+              <input type="number" id="pad" min="0" max="80" step="2" value="12" style="max-width:110px" />
+              <span class="subtle">px sekeliling formula</span>
             </div>
+          </fieldset>
+          <fieldset>
+            <legend>Background</legend>
+            <div class="row" style="align-items:center">
+              <label class="row"><input type="checkbox" id="transparent" checked> Transparan</label>
+              <input type="color" id="bgColor" value="#ffffff" title="Warna latar saat tidak transparan" />
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Preset Contoh</legend>
+            <div class="row" style="gap:6px">
+              <select id="preset">
+                <option value="">— pilih contoh —</option>
+                <option value="E=mc^2">E=mc^2</option>
+                <option value="F=ma">F=ma</option>
+                <option value="i\,\hbar\,\frac{\partial}{\partial t}\,\Psi = -\frac{\hbar^2}{2m}\nabla^2\Psi + V\,\Psi">Pers. Schrödinger</option>
+                <option value="\oint_{\partial S} \vec E\cdot d\vec l = -\frac{d}{dt}\int_S \vec B\cdot d\vec A">Hukum Faraday</option>
+                <option value="f(x)=\int_{-\infty}^{\infty}\hat f(\xi)\,e^{2\pi i\xi x}\,d\xi">Transform Fourier</option>
+              </select>
+              <button id="insertPreset" class="btn" title="Ganti input dengan preset">↩️ Sisipkan</button>
+            </div>
+          </fieldset>
         </div>
-    </div>
 
-    <div id="katex-container"></div>
+        <div class="row" style="justify-content:flex-end">
+          <button id="genBtn" class="btn primary">⚡ Generate PNG</button>
+        </div>
 
-    <!-- 4. JavaScript Utama Aplikasi -->
-    <script>
-        // JavaScript tidak perlu diubah untuk fungsionalitas ini
-        document.addEventListener('DOMContentLoaded', () => {
-            const latexInput = document.getElementById('latex-input');
-            const generateBtn = document.getElementById('generate-btn');
-            const katexContainer = document.getElementById('katex-container');
-            const latexPreview = document.getElementById('latex-preview');
-            const previewContainer = document.getElementById('preview-container');
-            const pngOutput = document.getElementById('png-output');
-            const pngPlaceholder = document.getElementById('png-placeholder');
-            const pngPreview = document.getElementById('png-preview');
-            const downloadLink = document.getElementById('download-link');
-            const copyBtn = document.getElementById('copy-btn');
-            const actionButtons = document.getElementById('action-buttons');
-            const scaleSelect = document.getElementById('scale-select');
-            const errorDisplay = document.getElementById('error-display');
-            const modeRadios = document.querySelectorAll('input[name="mode"]');
+        <div id="err" class="subtle" role="alert" style="min-height:20px;color:var(--danger);"></div>
+        <p class="subtle">Tips: <span class="kbd">Ctrl</span> + <span class="kbd">Enter</span> untuk generate • <span class="kbd">Esc</span> untuk bersihkan • <span class="kbd">Ctrl</span> + <span class="kbd">J</span> toggle tema</p>
+      </div>
 
-            let debounceTimer;
+      <!-- Right: Preview & Output -->
+      <div class="card stack" aria-labelledby="lbl-preview">
+        <h2 id="lbl-preview">Preview</h2>
+        <div id="previewBox" class="preview-box">
+          <div id="latexPreview" class="preview-inner"><div class="placeholder">Preview akan muncul di sini…</div></div>
+        </div>
 
-            // Fungsi untuk menyembunyikan error
-            const hideError = () => {
-                errorDisplay.classList.remove('show');
-                errorDisplay.textContent = '';
-            };
+        <h2>Hasil PNG</h2>
+        <div id="pngBox" class="preview-box" aria-live="polite">
+          <img id="png" alt="Hasil render LaTeX" style="display:none;max-width:100%" />
+          <div id="pngHint" class="placeholder">Klik <b>Generate</b> untuk membuat gambar</div>
+        </div>
 
-            // Fungsi untuk menampilkan error
-            const showError = (message) => {
-                errorDisplay.textContent = message;
-                errorDisplay.classList.add('show');
-            };
+        <div class="row" style="justify-content:center;gap:10px;flex-wrap:wrap">
+          <button id="copyBtn" class="btn" disabled>📋 Salin PNG</button>
+          <a id="dl" class="btn ok" download="latex.png" href="#" aria-disabled="true">💾 Unduh PNG</a>
+        </div>
+      </div>
+    </section>
 
-            // Fungsi untuk menyembunyikan hasil PNG
-            const hidePngOutput = () => {
-                pngOutput.style.display = 'none';
-                pngPlaceholder.style.display = 'block';
-                actionButtons.classList.remove('enabled');
-                pngPreview.classList.remove('has-content');
-            };
+    <div class="footer">Made with KaTeX · html2canvas · No frameworks · © 2025</div>
+  </div>
 
-            // Fungsi untuk menampilkan hasil PNG
-            const showPngOutput = () => {
-                pngOutput.style.display = 'block';
-                pngPlaceholder.style.display = 'none';
-                actionButtons.classList.add('enabled');
-                pngPreview.classList.add('has-content');
-            };
+  <!-- Hidden render container -->
+  <div id="renderHost" class="hidden"></div>
 
-            // Fungsi untuk update preview LaTeX secara real-time
-            const updatePreview = () => {
-                hideError();
-                const latexString = latexInput.value.trim();
-                const mode = document.querySelector('input[name="mode"]:checked').value;
+  <div id="toast" class="toast"><div id="toastMsg">Tersalin!</div></div>
 
-                if (!latexString) {
-                    latexPreview.innerHTML = '<div class="preview-placeholder">Masukkan kode LaTeX untuk melihat preview...</div>';
-                    previewContainer.classList.remove('has-content');
-                    return;
-                }
+  <script>
+    // Elements
+    const latex = document.getElementById('latex');
+    const preview = document.getElementById('latexPreview');
+    const previewBox = document.getElementById('previewBox');
+    const genBtn = document.getElementById('genBtn');
+    const genBtnTop = document.getElementById('genBtnTop');
+    const copyBtn = document.getElementById('copyBtn');
+    const dl = document.getElementById('dl');
+    const png = document.getElementById('png');
+    const pngBox = document.getElementById('pngBox');
+    const pngHint = document.getElementById('pngHint');
+    const err = document.getElementById('err');
 
-                try {
-                    katex.render(latexString, latexPreview, {
-                        displayMode: mode === 'display',
-                        throwOnError: true,
-                        output: 'html'
-                    });
-                    previewContainer.classList.add('has-content');
-                } catch (e) {
-                    const errorMsg = e.message.replace(/KaTeX parse error: /g, '');
-                    latexPreview.innerHTML = `<div style="color: #dc3545; font-style: italic;">Error: ${errorMsg}</div>`;
-                    previewContainer.classList.remove('has-content');
-                }
-            };
+    const scaleSel = document.getElementById('scale');
+    const modeRadios = document.querySelectorAll('input[name="mode"]');
+    const padInput = document.getElementById('pad');
+    const transparentChk = document.getElementById('transparent');
+    const bgColorInput = document.getElementById('bgColor');
+    const previewZoom = document.getElementById('previewZoom');
+    const presetSel = document.getElementById('preset');
+    const insertPreset = document.getElementById('insertPreset');
 
-            // Fungsi untuk mengubah Data URL menjadi Blob
-            const dataURLtoBlob = (dataurl) => {
-                const arr = dataurl.split(',');
-                const mime = arr[0].match(/:(.*?);/)[1];
-                const bstr = atob(arr[1]);
-                let n = bstr.length;
-                const u8arr = new Uint8Array(n);
-                while (n--) {
-                    u8arr[n] = bstr.charCodeAt(n);
-                }
-                return new Blob([u8arr], { type: mime });
-            };
+    const renderHost = document.getElementById('renderHost');
+    const themeBtn = document.getElementById('themeBtn');
+    const clearBtn = document.getElementById('clearBtn');
 
-            // Event listener untuk input LaTeX dengan debouncing
-            const handleInputChange = () => {
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(updatePreview, 300);
-            };
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toastMsg');
 
-            latexInput.addEventListener('input', handleInputChange);
-            modeRadios.forEach(radio => {
-                radio.addEventListener('change', updatePreview);
-            });
+    let debounce;
 
-            // Event listener untuk tombol generate PNG
-            generateBtn.addEventListener('click', () => {
-                hideError();
-                const latexString = latexInput.value.trim();
-                const mode = document.querySelector('input[name="mode"]:checked').value;
-                const scale = parseFloat(scaleSelect.value);
+    // Helpers
+    const showToast = (msg='Tersalin!')=>{toastMsg.textContent=msg;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1400)};
 
-                if (!latexString) {
-                    showError('Input LaTeX tidak boleh kosong.');
-                    hidePngOutput();
-                    return;
-                }
+    const setLoading = (flag)=>{
+      [genBtn, genBtnTop].forEach(b=>{b.disabled=flag; b.textContent = flag ? '⏳ Memproses…' : (b===genBtnTop?'⚡ Generate':'⚡ Generate PNG')});
+    };
 
-                // Tampilkan loading state
-                generateBtn.classList.add('loading');
-                generateBtn.disabled = true;
+    const disableOutput = ()=>{
+      png.style.display='none'; png.src=''; pngHint.style.display='block'; copyBtn.disabled=true; dl.setAttribute('aria-disabled','true');
+    };
 
-                try {
-                    katex.render(latexString, katexContainer, {
-                        displayMode: mode === 'display',
-                        throwOnError: true,
-                        output: 'html'
-                    });
-                } catch (e) {
-                    showError(`Error KaTeX: ${e.message.replace(/KaTeX parse error: /g, '')}`);
-                    hidePngOutput();
-                    generateBtn.classList.remove('loading');
-                    generateBtn.disabled = false;
-                    return;
-                }
+    const enableOutput = (url)=>{
+      png.src=url; png.style.display='block'; pngHint.style.display='none'; copyBtn.disabled=false; dl.href=url; dl.setAttribute('aria-disabled','false');
+    };
 
-                setTimeout(() => {
-                    html2canvas(katexContainer, {
-                        backgroundColor: null,
-                        scale: scale,
-                        useCORS: true,
-                        allowTaint: false
-                    }).then(canvas => {
-                        const pngUrl = canvas.toDataURL('image/png');
-                        
-                        pngOutput.src = pngUrl;
-                        downloadLink.href = pngUrl;
-                        showPngOutput();
+    const currentMode = ()=>[...modeRadios].find(r=>r.checked)?.value || 'display';
 
-                        generateBtn.classList.remove('loading');
-                        generateBtn.disabled = false;
+    const latexToName = (s)=>{
+      const clean = s.replace(/\\[a-zA-Z]+|[^a-zA-Z0-9]+/g,' ').trim().split(/\s+/).slice(0,6).join('-').toLowerCase();
+      return clean || 'latex';
+    };
 
-                    }).catch(err => {
-                        showError(`Error html2canvas: ${err.message}`);
-                        console.error('Error saat membuat canvas:', err);
-                        hidePngOutput();
-                        generateBtn.classList.remove('loading');
-                        generateBtn.disabled = false;
-                    });
-                }, 100);
-            });
+    const updatePreview = ()=>{
+      const code = latex.value.trim();
+      if(!code){ preview.innerHTML = '<div class="placeholder">Masukkan LaTeX untuk melihat preview…</div>'; previewBox.classList.remove('ring'); return; }
+      try{
+        katex.render(code, preview, {displayMode: currentMode()==='display', throwOnError:true, output:'html'});
+        preview.style.padding = Math.max(0, parseInt(padInput.value)||0) + 'px';
+        preview.style.transform = `scale(${parseFloat(previewZoom.value)||1})`;
+        preview.style.transformOrigin = 'top left';
+        previewBox.classList.add('ring');
+        err.textContent='';
+      }catch(e){
+        preview.innerHTML = `<span style="color:var(--danger);font-style:italic">Error: ${e.message.replace(/KaTeX parse error: /g,'')}</span>`;
+        previewBox.classList.remove('ring');
+      }
+      disableOutput();
+    };
 
-            // Event listener untuk tombol Salin
-            copyBtn.addEventListener('click', async () => {
-                if (!pngOutput.src) {
-                    alert('Generate PNG terlebih dahulu!');
-                    return;
-                }
+    const renderForExport = ()=>{
+      const code = latex.value.trim();
+      if(!code){ err.textContent='Input LaTeX tidak boleh kosong.'; return; }
+      err.textContent='';
 
-                if (!navigator.clipboard || !navigator.clipboard.write) {
-                    alert('Maaf, browser Anda tidak mendukung penyalinan gambar ke clipboard.');
-                    return;
-                }
+      // prepare host
+      renderHost.innerHTML = '';
+      const wrapper = document.createElement('div');
+      wrapper.style.display='inline-block';
+      wrapper.style.padding = Math.max(0, parseInt(padInput.value)||0) + 'px';
 
-                try {
-                    const blob = dataURLtoBlob(pngOutput.src);
-                    await navigator.clipboard.write([
-                        new ClipboardItem({ 'image/png': blob })
-                    ]);
-                    
-                    // Feedback visual
-                    const originalText = copyBtn.textContent;
-                    copyBtn.textContent = 'Tersalin!';
-                    copyBtn.classList.add('copied');
-                    
-                    setTimeout(() => {
-                        copyBtn.textContent = originalText;
-                        copyBtn.classList.remove('copied');
-                    }, 2000);
+      if(transparentChk.checked){
+        wrapper.style.backgroundColor = 'transparent';
+      } else {
+        wrapper.style.backgroundColor = bgColorInput.value || '#ffffff';
+      }
 
-                } catch (err) {
-                    console.error('Gagal menyalin gambar:', err);
-                    alert('Gagal menyalin gambar ke clipboard.');
-                }
-            });
+      renderHost.appendChild(wrapper);
 
-            // Initialize preview saat halaman dimuat
-            setTimeout(updatePreview, 100);
-        });
-    </script>
+      // render katex inside wrapper
+      try{
+        katex.render(code, wrapper, {displayMode: currentMode()==='display', throwOnError:true, output:'html'});
+      }catch(e){
+        err.textContent = 'Error KaTeX: ' + e.message.replace(/KaTeX parse error: /g,'');
+        return;
+      }
+
+      // html2canvas options
+      const scale = Math.max(1, parseFloat(scaleSel.value)||2);
+      const bg = transparentChk.checked ? null : (bgColorInput.value||'#ffffff');
+
+      setLoading(true);
+      html2canvas(wrapper, {backgroundColor: bg, scale, useCORS:true, allowTaint:false})
+        .then(canvas=>{
+          const url = canvas.toDataURL('image/png');
+          enableOutput(url);
+          const name = latexToName(code);
+          dl.download = `${name}.png`;
+        })
+        .catch(err2=>{ console.error(err2); err.textContent = 'Error html2canvas: '+err2.message; disableOutput(); })
+        .finally(()=> setLoading(false));
+    };
+
+    const dataURLtoBlob = (dataurl)=>{
+      const [meta, data] = dataurl.split(',');
+      const mime = meta.match(/:(.*?);/)[1];
+      const bin = atob(data); const len = bin.length; const u8 = new Uint8Array(len);
+      for(let i=0;i<len;i++) u8[i] = bin.charCodeAt(i);
+      return new Blob([u8], {type:mime});
+    };
+
+    const copyPNG = async ()=>{
+      if(!png.src){ showToast('Buat PNG dulu'); return; }
+      if(!navigator.clipboard || !navigator.clipboard.write){ showToast('Clipboard gambar tak didukung'); return; }
+      try{
+        await navigator.clipboard.write([new ClipboardItem({'image/png': dataURLtoBlob(png.src)})]);
+        showToast('PNG tersalin ke clipboard');
+      }catch(e){ console.error(e); showToast('Gagal menyalin PNG'); }
+    };
+
+    // Events
+    const onInput = ()=>{ clearTimeout(debounce); debounce = setTimeout(updatePreview, 200); };
+    latex.addEventListener('input', onInput);
+    [padInput, previewZoom].forEach(el=> el.addEventListener('input', updatePreview));
+    modeRadios.forEach(r=> r.addEventListener('change', updatePreview));
+
+    scaleSel.addEventListener('change', ()=> disableOutput());
+    transparentChk.addEventListener('change', ()=>{ bgColorInput.disabled = transparentChk.checked; updatePreview(); });
+    bgColorInput.addEventListener('input', updatePreview);
+
+    genBtn.addEventListener('click', renderForExport);
+    genBtnTop.addEventListener('click', renderForExport);
+    copyBtn.addEventListener('click', copyPNG);
+
+    insertPreset.addEventListener('click', ()=>{
+      if(!presetSel.value) return; latex.value = presetSel.value; updatePreview(); latex.focus();
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter' && (e.ctrlKey||e.metaKey)){ e.preventDefault(); renderForExport(); }
+      if(e.key==='Escape'){ latex.value=''; updatePreview(); }
+      if((e.ctrlKey||e.metaKey) && (e.key.toLowerCase()==='j')){ e.preventDefault(); toggleTheme(); }
+    });
+
+    // Theme toggle (persist)
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const getTheme = ()=> localStorage.getItem('kpx-theme') || (prefersDark.matches? 'dark':'light');
+    const applyTheme = (t)=>{ document.documentElement.style.colorScheme = t; document.documentElement.dataset.theme = t; };
+    const toggleTheme = ()=>{ const t = getTheme()==='dark'?'light':'dark'; localStorage.setItem('kpx-theme', t); applyTheme(t); };
+    themeBtn.addEventListener('click', toggleTheme);
+    applyTheme(getTheme());
+
+    clearBtn.addEventListener('click', ()=>{ latex.value=''; updatePreview(); latex.focus(); });
+
+    // Init
+    window.addEventListener('load', ()=>{ updatePreview(); });
+  </script>
 </body>
 </html>
