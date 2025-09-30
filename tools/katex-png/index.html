@@ -6,7 +6,7 @@
   <meta name="color-scheme" content="light dark" />
   <meta name="theme-color" content="#0ea5e9" />
   <link rel="icon" type="image/avif" href="https://pzet.pages.dev/tools/katex-png/icon-katex.avif" />
-  <title>KaTeX PNG Converter — Elegant</title>
+  <title>KaTeX PNG Converter</title>
 
   <!-- KaTeX -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous" />
@@ -33,8 +33,12 @@
       --checker-b: #0e162c;
     }
 
+    [data-theme="light"]{
+      --bg:#f7f8fb; --card:#ffffff; --text:#0f172a; --muted:#475569; --ring:#2563eb; --brand:#2563eb; --brand-600:#1d4ed8; --border:#e5e7eb; --checker-a:#f0f2f7; --checker-b:#e6e9f2;
+    }
+
     @media (prefers-color-scheme: light){
-      :root{
+      :root:not([data-theme]){
         --bg:#f7f8fb; --card:#ffffff; --text:#0f172a; --muted:#475569; --ring:#2563eb; --brand:#2563eb; --brand-600:#1d4ed8; --border:#e5e7eb; --checker-a:#f0f2f7; --checker-b:#e6e9f2;
       }
     }
@@ -383,7 +387,7 @@
     // Theme toggle (persist)
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
     const getTheme = ()=> localStorage.getItem('kpx-theme') || (prefersDark.matches? 'dark':'light');
-    const applyTheme = (t)=>{ document.documentElement.style.colorScheme = t; document.documentElement.dataset.theme = t; };
+    const applyTheme = (t)=>{ document.documentElement.setAttribute('data-theme', t); };
     const toggleTheme = ()=>{ const t = getTheme()==='dark'?'light':'dark'; localStorage.setItem('kpx-theme', t); applyTheme(t); };
     themeBtn.addEventListener('click', toggleTheme);
     applyTheme(getTheme());
