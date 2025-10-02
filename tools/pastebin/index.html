@@ -1,331 +1,466 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clipboard Sementara</title>
-    <style>
-        /* CSS untuk Tampilan */
-        :root {
-            --bg-color: #f0f2f5;
-            --card-bg: #ffffff;
-            --text-color: #333;
-            --primary-color: #007bff;
-            --primary-hover: #0056b3;
-            --danger-color: #dc3545;
-            --danger-hover: #c82333;
-            --border-color: #dee2e6;
-            --shadow-color: rgba(0, 0, 0, 0.1);
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 20px;
-        }
-
-        h1 {
-            color: var(--primary-color);
-            margin-bottom: 5px;
-        }
-
-        p.instructions {
-            color: #6c757d;
-            font-size: 1.1em;
-        }
-        
-        .header-actions {
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            color: white;
-            border: none;
-            padding: 10px 18px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 1em;
-            transition: background-color 0.2s;
-        }
-        
-        .btn-primary {
-            background-color: var(--primary-color);
-        }
-        .btn-primary:hover {
-            background-color: var(--primary-hover);
-        }
-        
-        .btn-danger {
-            background-color: var(--danger-color);
-        }
-        .btn-danger:hover {
-            background-color: var(--danger-hover);
-        }
-
-        #paste-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .paste-item {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            box-shadow: 0 4px 6px var(--shadow-color);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.2s ease-in-out;
-        }
-
-        .paste-item:hover {
-            transform: translateY(-5px);
-        }
-
-        .content {
-            padding: 15px;
-            flex-grow: 1;
-            overflow: auto;
-            max-height: 400px;
-        }
-
-        .content pre {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            margin: 0;
-            font-size: 0.9em;
-            background-color: #f8f9fa;
-            padding: 10px;
-            border-radius: 4px;
-        }
-
-        .content img {
-            max-width: 100%;
-            height: auto;
-            display: block;
-            border-radius: 4px;
-        }
-
-        .actions {
-            background-color: #f8f9fa;
-            padding: 10px 15px;
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .copy-btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.2s;
-        }
-
-        .copy-btn:hover {
-            background-color: var(--primary-hover);
-        }
-
-        #empty-message {
-            grid-column: 1 / -1;
-            text-align: center;
-            color: #6c757d;
-            font-size: 1.2em;
-            padding: 50px 20px;
-            border: 2px dashed var(--border-color);
-            border-radius: 8px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Clipboard Sementara</title>
+  <meta name="color-scheme" content="light dark">
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --primary: #2563eb;
+      --primary-600: #1d4ed8;
+      --danger: #ef4444;
+      --danger-600: #dc2626;
+      --warning: #f59e0b;
+      --success: #10b981;
+      --shadow: 0 6px 20px rgba(0,0,0,.08);
+      --radius: 14px;
+      --code-bg: #f3f4f6;
+      --chip: #eef2ff;
+    }
+    :root.dark {
+      --bg: #0b1220;
+      --card: #0f172a;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --border: #1f2a44;
+      --primary: #60a5fa;
+      --primary-600: #3b82f6;
+      --danger: #f87171;
+      --danger-600: #ef4444;
+      --warning: #fbbf24;
+      --success: #34d399;
+      --shadow: 0 6px 20px rgba(0,0,0,.35);
+      --code-bg: #0b1327;
+      --chip: #0b1b3a;
+    }
+    * { box-sizing: border-box }
+    html, body { height: 100% }
+    body {
+      margin: 0; padding: 24px;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: radial-gradient(1200px 600px at 15% -10%, rgba(37,99,235,.08), transparent 40%),
+                  radial-gradient(1000px 500px at 110% 0%, rgba(16,185,129,.07), transparent 35%),
+                  var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .container { max-width: 1200px; margin: 0 auto }
+    header {
+      background: linear-gradient(180deg, rgba(37,99,235,.08), transparent 70%);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .title-row {
+      display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;
+    }
+    h1 { margin: 0; font-size: clamp(22px, 2.5vw, 28px); letter-spacing: .2px }
+    .subtitle { color: var(--muted); margin-top: 6px }
+    .controls {
+      display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: flex-end;
+    }
+    .btn {
+      appearance: none; border: 1px solid var(--border);
+      background: var(--card); color: var(--text);
+      padding: 10px 14px; border-radius: 10px; cursor: pointer; font-weight: 600;
+      transition: transform .06s ease, background .2s ease, border-color .2s ease;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn:active { transform: translateY(1px) }
+    .btn-primary { background: var(--primary); color: white; border-color: transparent }
+    .btn-primary:hover { background: var(--primary-600) }
+    .btn-danger { background: var(--danger); color: white; border-color: transparent }
+    .btn-danger:hover { background: var(--danger-600) }
+    .btn-ghost:hover { border-color: var(--primary) }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--chip); color: var(--text);
+      padding: 6px 10px; border-radius: 999px; font-size: 12px; border: 1px solid var(--border);
+    }
+    .searchbar {
+      display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-top: 14px;
+    }
+    .input {
+      width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px;
+      background: var(--card); color: var(--text); outline: none;
+    }
+    .grid {
+      display: grid; gap: 16px; margin-top: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+    .card {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow);
+      display: flex; flex-direction: column; min-height: 140px; overflow: hidden;
+    }
+    .card:hover { border-color: var(--primary) }
+    .card-header, .card-footer { padding: 12px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 8px }
+    .card-footer { border-bottom: none; border-top: 1px solid var(--border) }
+    .badge { font-size: 12px; color: var(--muted) }
+    .type { font-weight: 700; letter-spacing: .3px }
+    .content { padding: 12px 14px; overflow: auto; max-height: 420px }
+    .content pre {
+      margin: 0; background: var(--code-bg); padding: 12px; border-radius: 10px; border: 1px solid var(--border);
+      white-space: pre-wrap; word-wrap: break-word; font-size: .92em;
+    }
+    .content img { max-width: 100%; height: auto; display: block; border-radius: 10px; border: 1px solid var(--border) }
+    .footer-actions { display: flex; gap: 8px; flex-wrap: wrap }
+    .empty {
+      text-align: center; padding: 60px 20px; border: 2px dashed var(--border); border-radius: var(--radius); color: var(--muted);
+      background: linear-gradient(180deg, rgba(96,165,250,.08), transparent 70%);
+    }
+    .toggle {
+      display: inline-flex; gap: 8px; align-items: center; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--card)
+    }
+    .hidden { display: none !important }
+    .tag { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted) }
+    .toast {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: var(--card); color: var(--text); border: 1px solid var(--border);
+      border-radius: 12px; padding: 10px 14px; box-shadow: var(--shadow); z-index: 50; opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(-6px); pointer-events: auto }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0 }
+  </style>
 </head>
 <body>
-
-    <div class="container">
-        <header>
-            <h1>Clipboard Sementara</h1>
-            <p class="instructions">Gunakan tombol di bawah atau tempel (Ctrl+V) di mana saja.</p>
-            <div class="header-actions">
-                <button class="btn btn-primary" id="paste-from-clipboard-btn">Tempel dari Clipboard</button>
-                <button class="btn btn-danger" id="clear-all-btn">Hapus Semua</button>
-            </div>
-        </header>
-
-        <div id="paste-container">
-             <div id="empty-message">
-                <p>Area ini akan terisi otomatis saat Anda menempelkan sesuatu.</p>
-             </div>
+  <div class="container">
+    <header>
+      <div class="title-row">
+        <div>
+          <h1>Clipboard Sementara</h1>
+          <div class="subtitle">Tempel (Ctrl/⌘+V) di mana saja. Item akan <b>tersimpan otomatis</b> dan muncul kembali saat kamu membuka halaman ini.</div>
         </div>
+        <div class="controls">
+          <button class="btn btn-primary" id="pasteBtn" title="Tempel dari Clipboard">📋 Tempel</button>
+          <label class="toggle" title="Mode Gelap/Terang">
+            <input id="themeToggle" type="checkbox" class="sr-only" />
+            <span>🌙/☀️ Tema</span>
+          </label>
+          <span class="chip" id="statsChip">0 item</span>
+          <button class="btn btn-ghost" id="exportBtn" title="Ekspor JSON">⬇️ Ekspor</button>
+          <label class="btn btn-ghost" title="Impor JSON" for="importInput">⬆️ Impor</label>
+          <input id="importInput" type="file" accept="application/json" class="hidden"/>
+          <button class="btn btn-danger" id="clearAllBtn" title="Hapus semua">🗑️ Bersihkan</button>
+        </div>
+      </div>
+      <div class="searchbar">
+        <input id="searchInput" class="input" placeholder="Cari teks… (otomatis memfilter)"/>
+        <select id="typeFilter" class="input" style="max-width:190px">
+          <option value="all">Semua Tipe</option>
+          <option value="text">Teks</option>
+          <option value="image">Gambar</option>
+        </select>
+      </div>
+    </header>
+
+    <div id="grid" class="grid">
+      <div id="empty" class="empty">
+        Area ini akan terisi otomatis saat kamu menempelkan sesuatu.
+        <div style="margin-top:10px"><span class="tag">Ctrl/⌘+V</span> <span class="tag">Klik “Tempel”</span> <span class="tag">Ekspor/Impor JSON</span></div>
+      </div>
     </div>
+  </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const pasteContainer = document.getElementById('paste-container');
-            const clearAllBtn = document.getElementById('clear-all-btn');
-            const pasteFromClipboardBtn = document.getElementById('paste-from-clipboard-btn');
-            const emptyMessage = document.getElementById('empty-message');
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-            const updateEmptyMessage = () => {
-                if (pasteContainer.querySelector('.paste-item')) {
-                    emptyMessage.style.display = 'none';
-                } else {
-                    emptyMessage.style.display = 'block';
-                }
-            };
+  <script>
+    // ---------- Util: state & storage ----------
+    const KEY = "clipboard_items_v2";
+    const THEME_KEY = "clipboard_theme";
+    const MAX_ITEMS = 200; // jaga-jaga biar tidak terlalu besar
+    const state = { items: [], filtered: [], query: "", type: "all" };
 
-            // Event listener untuk paste tradisional (Ctrl+V)
-            window.addEventListener('paste', (event) => {
-                event.preventDefault();
-                handleClipboardItems(event.clipboardData.items);
-            });
-            
-            // Event listener untuk tombol "Tempel dari Clipboard"
-            pasteFromClipboardBtn.addEventListener('click', async () => {
-                try {
-                    // Minta izin dan baca clipboard
-                    const clipboardItems = await navigator.clipboard.read();
-                    handleClipboardItems(clipboardItems);
-                } catch (err) {
-                    console.error('Gagal membaca clipboard: ', err);
-                    alert('Gagal menempel. Pastikan Anda memberikan izin dan halaman ini diakses via HTTPS.');
-                }
-            });
+    const $ = (s, r=document) => r.querySelector(s);
+    const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+    const toast = (msg) => {
+      const t = $("#toast");
+      t.textContent = msg; t.classList.add("show");
+      setTimeout(()=>t.classList.remove("show"), 1600);
+    };
+    const fmtTime = ts => {
+      const d = new Date(ts);
+      return d.toLocaleString(undefined, { year:"numeric", month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+    };
+    const saveAll = () => localStorage.setItem(KEY, JSON.stringify(state.items));
+    const loadAll = () => {
+      try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
+      catch { return []; }
+    };
+    const upsert = (item, toTop=true) => {
+      // tambahkan item; batasi jumlah
+      if (toTop) state.items.unshift(item); else state.items.push(item);
+      if (state.items.length > MAX_ITEMS) state.items.length = MAX_ITEMS;
+      saveAll(); render();
+    };
+    const removeById = (id) => {
+      const i = state.items.findIndex(x => x.id === id);
+      if (i >= 0) { state.items.splice(i,1); saveAll(); render(); }
+    };
 
-            // Fungsi terpusat untuk memproses item dari clipboard
-            async function handleClipboardItems(items) {
-                let found = false;
-                for (const item of items) {
-                    // Cek jika ada gambar
-                    const imageType = item.types.find(type => type.startsWith('image/'));
-                    if (imageType) {
-                        const blob = await item.getAsFile ? item.getAsFile() : await item.getType(imageType);
-                        const reader = new FileReader();
-                        reader.onload = (e) => createImageItem(e.target.result);
-                        reader.readAsDataURL(blob);
-                        found = true;
-                        break; 
-                    }
-                }
-                
-                if (!found) {
-                    for (const item of items) {
-                        // Cek jika ada teks
-                        if (item.type === 'text/plain' || item.types.includes('text/plain')) {
-                             if(item.getAsString) { // Untuk event 'paste'
-                                item.getAsString(createTextItem);
-                            } else { // Untuk API 'navigator.clipboard.read()'
-                                const blob = await item.getType('text/plain');
-                                const text = await blob.text();
-                                createTextItem(text);
-                            }
-                            break;
-                        }
-                    }
-                }
-                
-                updateEmptyMessage();
-            }
+    // ---------- Theme ----------
+    const applyTheme = (mode) => {
+      if (mode === "dark") document.documentElement.classList.add("dark");
+      else document.documentElement.classList.remove("dark");
+      localStorage.setItem(THEME_KEY, mode);
+      $("#themeToggle").checked = (mode === "dark");
+    };
 
-            function createTextItem(text) {
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'paste-item';
-                itemDiv.innerHTML = `
-                    <div class="content">
-                        <pre>${escapeHtml(text)}</pre>
-                    </div>
-                    <div class="actions">
-                        <span>Teks</span>
-                        <button class="copy-btn">Salin Teks</button>
-                    </div>
-                `;
+    // ---------- Render ----------
+    function render() {
+      const grid = $("#grid"); const empty = $("#empty");
+      grid.innerHTML = ""; // reset
+      // filter
+      const q = state.query.trim().toLowerCase();
+      let list = state.items;
+      if (state.type !== "all") list = list.filter(i => i.type === state.type);
+      if (q) list = list.filter(i => i.type === "image" ? false : (i.text || "").toLowerCase().includes(q));
+      state.filtered = list;
 
-                const copyBtn = itemDiv.querySelector('.copy-btn');
-                copyBtn.addEventListener('click', () => {
-                    navigator.clipboard.writeText(text).then(() => {
-                        copyBtn.textContent = 'Disalin!';
-                        setTimeout(() => { copyBtn.textContent = 'Salin Teks'; }, 2000);
-                    }).catch(err => {
-                        console.error('Gagal menyalin teks: ', err);
-                        alert('Gagal menyalin teks.');
-                    });
-                });
-                
-                pasteContainer.prepend(itemDiv);
-                updateEmptyMessage();
-            }
+      if (!list.length) {
+        grid.appendChild(empty);
+      } else {
+        list.forEach(item => grid.appendChild(renderCard(item)));
+      }
+      $("#statsChip").textContent = `${state.items.length} item`;
+    }
 
-            function createImageItem(imageUrl) {
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'paste-item';
-                itemDiv.innerHTML = `
-                    <div class="content">
-                        <img src="${imageUrl}" alt="Pasted Image">
-                    </div>
-                    <div class="actions">
-                        <span>Gambar</span>
-                        <button class="copy-btn">Salin Gambar</button>
-                    </div>
-                `;
+    function renderCard(item) {
+      const card = document.createElement("div");
+      card.className = "card";
+      // header
+      const header = document.createElement("div");
+      header.className = "card-header";
+      header.innerHTML = `
+        <div class="type">${item.type === "text" ? "Teks" : "Gambar"}</div>
+        <div class="badge" title="${new Date(item.ts).toISOString()}">${fmtTime(item.ts)}</div>
+      `;
+      // content
+      const body = document.createElement("div");
+      body.className = "content";
+      if (item.type === "text") {
+        const pre = document.createElement("pre");
+        pre.textContent = item.text;
+        body.appendChild(pre);
+      } else {
+        const img = document.createElement("img");
+        img.alt = "Pasted Image";
+        img.src = item.dataURL;
+        body.appendChild(img);
+      }
 
-                const copyBtn = itemDiv.querySelector('.copy-btn');
-                copyBtn.addEventListener('click', async () => {
-                    try {
-                        const response = await fetch(imageUrl);
-                        const blob = await response.blob();
-                        await navigator.clipboard.write([
-                            new ClipboardItem({ [blob.type]: blob })
-                        ]);
-                        copyBtn.textContent = 'Disalin!';
-                        setTimeout(() => { copyBtn.textContent = 'Salin Gambar'; }, 2000);
-                    } catch (err) {
-                        console.error('Gagal menyalin gambar: ', err);
-                        alert('Gagal menyalin gambar. Browser Anda mungkin tidak mendukung fitur ini.');
-                    }
-                });
+      // footer
+      const footer = document.createElement("div");
+      footer.className = "card-footer";
+      const actions = document.createElement("div");
+      actions.className = "footer-actions";
 
-                pasteContainer.prepend(itemDiv);
-                updateEmptyMessage();
-            }
-
-            clearAllBtn.addEventListener('click', () => {
-                if (confirm('Apakah Anda yakin ingin menghapus semua item?')) {
-                    pasteContainer.innerHTML = '';
-                    pasteContainer.appendChild(emptyMessage);
-                    updateEmptyMessage();
-                }
-            });
-
-            function escapeHtml(unsafe) {
-                return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-            }
-
-            updateEmptyMessage();
+      // action buttons
+      if (item.type === "text") {
+        const copyBtn = btn("Salin", async () => {
+          await navigator.clipboard.writeText(item.text);
+          toast("Teks disalin");
         });
-    </script>
+        const editBtn = btn("Edit", async () => {
+          const next = await openEditor(item.text);
+          if (next != null) {
+            item.text = next;
+            item.ts = Date.now();
+            saveAll(); render(); toast("Perubahan disimpan");
+          }
+        });
+        actions.append(copyBtn, editBtn);
+      } else {
+        const copyImg = btn("Salin Gambar", async () => {
+          try {
+            const res = await fetch(item.dataURL);
+            const blob = await res.blob();
+            await navigator.clipboard.write([ new ClipboardItem({ [blob.type]: blob }) ]);
+            toast("Gambar disalin");
+          } catch {
+            toast("Browser tidak mendukung salin gambar");
+          }
+        });
+        const downloadBtn = btn("Unduh", () => downloadDataURL(item.dataURL, `clipboard-${item.id}.png`));
+        actions.append(copyImg, downloadBtn);
+      }
 
+      const deleteBtn = btn("Hapus", () => {
+        if (confirm("Hapus item ini?")) removeById(item.id);
+      });
+      deleteBtn.classList.add("btn-danger");
+      actions.append(deleteBtn);
+      footer.appendChild(actions);
+
+      card.append(header, body, footer);
+      return card;
+    }
+
+    function btn(label, onClick) {
+      const b = document.createElement("button");
+      b.className = "btn";
+      b.textContent = label;
+      b.addEventListener("click", onClick);
+      return b;
+    }
+
+    function downloadDataURL(dataURL, filename) {
+      const a = document.createElement("a");
+      a.href = dataURL; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+    }
+
+    // simple modal editor (prompt-like, tapi multi-line)
+    async function openEditor(text) {
+      const dlg = document.createElement("dialog");
+      dlg.style.padding = "0"; dlg.style.border = "1px solid var(--border)"; dlg.style.borderRadius = "12px"; dlg.style.background = "var(--card)";
+      dlg.innerHTML = `
+        <div style="padding:16px 16px 0 16px"><b>Edit Teks</b></div>
+        <div style="padding:12px 16px">
+          <textarea id="editArea" class="input" style="width:100%; min-height:180px; resize:vertical"></textarea>
+        </div>
+        <div style="display:flex; gap:8px; justify-content:flex-end; padding:0 16px 16px 16px">
+          <button id="cancelBtn" class="btn">Batal</button>
+          <button id="saveBtn" class="btn btn-primary">Simpan</button>
+        </div>
+      `;
+      document.body.appendChild(dlg);
+      $("#editArea", dlg).value = text;
+      return new Promise(resolve => {
+        $("#cancelBtn", dlg).onclick = () => { dlg.close(); dlg.remove(); resolve(null); };
+        $("#saveBtn", dlg).onclick = () => { const v = $("#editArea", dlg).value; dlg.close(); dlg.remove(); resolve(v); };
+        dlg.addEventListener("close", ()=>{});
+        dlg.showModal();
+      });
+    }
+
+    // ---------- Clipboard handlers ----------
+    async function handleClipboardItems(items) {
+      // Prioritaskan gambar
+      let found = false;
+      for (const item of items) {
+        const imageType = item.types?.find?.(t => t.startsWith("image/"));
+        if (imageType) {
+          const blob = item.getAsFile ? item.getAsFile() : await item.getType(imageType);
+          const dataURL = await blobToDataURL(blob);
+          const obj = { id: crypto.randomUUID(), type: "image", dataURL, ts: Date.now() };
+          upsert(obj);
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        for (const item of items) {
+          if (item.type === "text/plain" || item.types?.includes?.("text/plain")) {
+            if (item.getAsString) {
+              item.getAsString(text => {
+                const obj = { id: crypto.randomUUID(), type: "text", text, ts: Date.now() };
+                upsert(obj);
+              });
+            } else {
+              (async () => {
+                const blob = await item.getType("text/plain");
+                const text = await blob.text();
+                const obj = { id: crypto.randomUUID(), type: "text", text, ts: Date.now() };
+                upsert(obj);
+              })();
+            }
+            break;
+          }
+        }
+      }
+    }
+
+    async function blobToDataURL(blob) {
+      return new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(r.result);
+        r.onerror = reject;
+        r.readAsDataURL(blob);
+      });
+    }
+
+    // ---------- Events ----------
+    window.addEventListener("paste", (e) => {
+      e.preventDefault();
+      const items = e.clipboardData?.items || [];
+      handleClipboardItems(items);
+      toast("Ditempel");
+    });
+
+    $("#pasteBtn").addEventListener("click", async () => {
+      try {
+        const clipItems = await navigator.clipboard.read();
+        await handleClipboardItems(clipItems);
+        toast("Ditempel");
+      } catch (err) {
+        console.error(err);
+        alert("Gagal membaca clipboard. Pastikan izin diberikan dan situs via HTTPS.");
+      }
+    });
+
+    $("#clearAllBtn").addEventListener("click", () => {
+      if (!state.items.length) return;
+      if (confirm("Apakah kamu yakin ingin menghapus SEMUA item?")) {
+        state.items = []; saveAll(); render(); toast("Semua item dihapus");
+      }
+    });
+
+    $("#exportBtn").addEventListener("click", () => {
+      const blob = new Blob([JSON.stringify(state.items, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = `clipboard-export-${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.json`;
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      toast("Diekspor sebagai JSON");
+    });
+
+    $("#importInput").addEventListener("change", async (e) => {
+      const file = e.target.files?.[0]; if (!file) return;
+      try {
+        const text = await file.text();
+        const arr = JSON.parse(text);
+        if (!Array.isArray(arr)) throw new Error("Format tidak valid");
+        // gabungkan + deduplicate by id
+        const existing = new Map(state.items.map(i => [i.id, i]));
+        for (const it of arr) {
+          if (!it?.id) it.id = crypto.randomUUID();
+          existing.set(it.id, it);
+        }
+        state.items = Array.from(existing.values()).sort((a,b)=>b.ts-a.ts).slice(0, MAX_ITEMS);
+        saveAll(); render(); toast("Impor selesai");
+      } catch (err) {
+        alert("Gagal impor: " + err.message);
+      } finally {
+        e.target.value = "";
+      }
+    });
+
+    $("#searchInput").addEventListener("input", (e) => { state.query = e.target.value; render(); });
+    $("#typeFilter").addEventListener("change", (e) => { state.type = e.target.value; render(); });
+
+    // ---------- Init ----------
+    (function init() {
+      // theme
+      const storedTheme = localStorage.getItem(THEME_KEY);
+      if (storedTheme) applyTheme(storedTheme);
+      else {
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        applyTheme(prefersDark ? "dark" : "light");
+      }
+      $("#themeToggle").addEventListener("change", e => applyTheme(e.target.checked ? "dark" : "light"));
+
+      // data
+      state.items = loadAll().filter(Boolean).sort((a,b)=>b.ts-a.ts);
+      render();
+    })();
+  </script>
 </body>
 </html>
