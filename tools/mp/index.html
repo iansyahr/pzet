@@ -23,6 +23,8 @@
             --code-bg: #2d2d2d;
             --shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
             --shadow-lg: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+            --header-height: 60px;
+            --status-height: 32px;
         }
 
         [data-theme="dark"] {
@@ -43,13 +45,21 @@
             box-sizing: border-box;
         }
 
-        body {
+        html, body {
+            height: 100%;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background-color: var(--bg-primary);
             color: var(--text-primary);
-            height: 100vh;
             overflow: hidden;
             transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* App Container */
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            min-height: 100vh;
         }
 
         /* Header */
@@ -60,10 +70,25 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 0.5rem;
             box-shadow: var(--shadow);
             z-index: 100;
+            height: var(--header-height);
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            justify-content: flex-end;
+            min-width: 0;
         }
 
         .logo {
@@ -73,20 +98,29 @@
             font-size: 1.25rem;
             font-weight: 600;
             color: var(--accent-color);
+            margin-right: 1rem;
         }
 
         .toolbar {
             display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
+            gap: 0.25rem;
             align-items: center;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding: 0.25rem;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .toolbar::-webkit-scrollbar {
+            display: none;
         }
 
         .btn {
             background: var(--bg-tertiary);
             border: 1px solid var(--border-color);
             color: var(--text-primary);
-            padding: 0.5rem 0.75rem;
+            padding: 0.4rem 0.6rem;
             border-radius: 0.375rem;
             cursor: pointer;
             font-size: 0.875rem;
@@ -95,6 +129,8 @@
             gap: 0.375rem;
             transition: all 0.2s ease;
             white-space: nowrap;
+            flex-shrink: 0;
+            min-width: fit-content;
         }
 
         .btn:hover {
@@ -110,7 +146,7 @@
         }
 
         .btn-icon {
-            padding: 0.5rem;
+            padding: 0.4rem 0.5rem;
         }
 
         .separator {
@@ -118,12 +154,14 @@
             height: 1.5rem;
             background: var(--border-color);
             margin: 0 0.25rem;
+            flex-shrink: 0;
         }
 
         /* Main Container */
-        .container {
+        .main-container {
             display: flex;
-            height: calc(100vh - 60px);
+            flex: 1;
+            min-height: 0;
             position: relative;
         }
 
@@ -133,6 +171,7 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            min-width: 0;
         }
 
         .pane-header {
@@ -144,6 +183,7 @@
             align-items: center;
             font-size: 0.875rem;
             color: var(--text-secondary);
+            flex-shrink: 0;
         }
 
         .editor {
@@ -160,6 +200,7 @@
             overflow-y: auto;
             white-space: pre-wrap;
             word-wrap: break-word;
+            min-height: 0;
         }
 
         .preview {
@@ -167,6 +208,7 @@
             padding: 1.5rem;
             overflow-y: auto;
             background: var(--bg-primary);
+            min-height: 0;
         }
 
         /* Markdown Styles */
@@ -284,6 +326,7 @@
             cursor: col-resize;
             position: relative;
             transition: background-color 0.2s ease;
+            flex-shrink: 0;
         }
 
         .resizer:hover {
@@ -311,6 +354,9 @@
             align-items: center;
             font-size: 0.75rem;
             color: var(--text-secondary);
+            height: var(--status-height);
+            flex-shrink: 0;
+            z-index: 10;
         }
 
         .status-item {
@@ -374,7 +420,7 @@
 
         /* Responsive Design */
         @media (max-width: 768px) {
-            .container {
+            .main-container {
                 flex-direction: column;
             }
 
@@ -395,14 +441,29 @@
                 height: 100%;
             }
 
-            .toolbar {
-                justify-content: center;
-            }
-
             .header {
                 padding: 0.5rem;
             }
 
+            .logo {
+                font-size: 1rem;
+                margin-right: 0.5rem;
+            }
+
+            .btn span {
+                display: none;
+            }
+
+            .btn {
+                padding: 0.4rem 0.5rem;
+            }
+
+            .toolbar {
+                gap: 0.2rem;
+            }
+        }
+
+        @media (max-width: 1024px) {
             .btn span {
                 display: none;
             }
@@ -454,120 +515,126 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="logo">
-            <i class="fas fa-markdown"></i>
-            <span>Markdown Editor</span>
-        </div>
-        
-        <div class="toolbar">
-            <button class="btn" onclick="insertMarkdown('**', '**')" title="Bold">
-                <i class="fas fa-bold"></i>
-                <span>Bold</span>
-            </button>
-            <button class="btn" onclick="insertMarkdown('*', '*')" title="Italic">
-                <i class="fas fa-italic"></i>
-                <span>Italic</span>
-            </button>
-            <button class="btn" onclick="insertMarkdown('~~', '~~')" title="Strikethrough">
-                <i class="fas fa-strikethrough"></i>
-                <span>Strike</span>
-            </button>
-            <button class="btn" onclick="insertMarkdown('# ', '')" title="Heading">
-                <i class="fas fa-heading"></i>
-                <span>H1</span>
-            </button>
-            <div class="separator"></div>
-            <button class="btn" onclick="insertMarkdown('[', '](url)')" title="Link">
-                <i class="fas fa-link"></i>
-                <span>Link</span>
-            </button>
-            <button class="btn" onclick="insertMarkdown('![', '](alt)')" title="Image">
-                <i class="fas fa-image"></i>
-                <span>Image</span>
-            </button>
-            <button class="btn" onclick="insertMarkdown('`', '`')" title="Code">
-                <i class="fas fa-code"></i>
-                <span>Code</span>
-            </button>
-            <div class="separator"></div>
-            <button class="btn" onclick="insertMarkdown('- ', '')" title="List">
-                <i class="fas fa-list-ul"></i>
-                <span>List</span>
-            </button>
-            <button class="btn" onclick="insertMarkdown('1. ', '')" title="Numbered List">
-                <i class="fas fa-list-ol"></i>
-                <span>Num</span>
-            </button>
-            <button class="btn" onclick="insertMarkdown('> ', '')" title="Quote">
-                <i class="fas fa-quote-left"></i>
-                <span>Quote</span>
-            </button>
-            <div class="separator"></div>
-            <button class="btn" onclick="insertMath()" title="Inline Math">
-                <i class="fas fa-square-root-variable"></i>
-                <span>Math</span>
-            </button>
-            <button class="btn" onclick="insertMathBlock()" title="Math Block">
-                <i class="fas fa-superscript"></i>
-                <span>Block</span>
-            </button>
-            <div class="separator"></div>
-            <button class="btn" onclick="toggleView()" title="Toggle View">
-                <i class="fas fa-eye"></i>
-                <span>View</span>
-            </button>
-            <button class="btn" onclick="toggleTheme()" title="Toggle Theme">
-                <i class="fas fa-moon" id="themeIcon"></i>
-                <span>Theme</span>
-            </button>
-            <button class="btn" onclick="exportMarkdown()" title="Export">
-                <i class="fas fa-download"></i>
-                <span>Export</span>
-            </button>
-            <button class="btn" onclick="showHelp()" title="Help">
-                <i class="fas fa-question-circle"></i>
-                <span>Help</span>
-            </button>
-        </div>
-    </header>
-
-    <!-- Main Container -->
-    <div class="container">
-        <!-- Editor Pane -->
-        <div class="pane editor-pane" id="editorPane">
-            <div class="pane-header">
-                <span><i class="fas fa-edit"></i> Editor</span>
-                <span id="saveStatus">Auto-saved</span>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo">
+                    <i class="fas fa-markdown"></i>
+                    <span>Markdown Editor</span>
+                </div>
             </div>
-            <div class="editor" id="editor" contenteditable="true" spellcheck="false"></div>
-        </div>
-
-        <!-- Resizer -->
-        <div class="resizer" id="resizer"></div>
-
-        <!-- Preview Pane -->
-        <div class="pane preview-pane" id="previewPane">
-            <div class="pane-header">
-                <span><i class="fas fa-eye"></i> Preview</span>
-                <span id="renderTime"></span>
+            
+            <div class="header-right">
+                <div class="toolbar">
+                    <button class="btn" onclick="insertMarkdown('**', '**')" title="Bold">
+                        <i class="fas fa-bold"></i>
+                        <span>Bold</span>
+                    </button>
+                    <button class="btn" onclick="insertMarkdown('*', '*')" title="Italic">
+                        <i class="fas fa-italic"></i>
+                        <span>Italic</span>
+                    </button>
+                    <button class="btn" onclick="insertMarkdown('~~', '~~')" title="Strikethrough">
+                        <i class="fas fa-strikethrough"></i>
+                        <span>Strike</span>
+                    </button>
+                    <button class="btn" onclick="insertMarkdown('# ', '')" title="Heading">
+                        <i class="fas fa-heading"></i>
+                        <span>H1</span>
+                    </button>
+                    <div class="separator"></div>
+                    <button class="btn" onclick="insertMarkdown('[', '](url)')" title="Link">
+                        <i class="fas fa-link"></i>
+                        <span>Link</span>
+                    </button>
+                    <button class="btn" onclick="insertMarkdown('![', '](alt)')" title="Image">
+                        <i class="fas fa-image"></i>
+                        <span>Image</span>
+                    </button>
+                    <button class="btn" onclick="insertMarkdown('`', '`')" title="Code">
+                        <i class="fas fa-code"></i>
+                        <span>Code</span>
+                    </button>
+                    <div class="separator"></div>
+                    <button class="btn" onclick="insertMarkdown('- ', '')" title="List">
+                        <i class="fas fa-list-ul"></i>
+                        <span>List</span>
+                    </button>
+                    <button class="btn" onclick="insertMarkdown('1. ', '')" title="Numbered List">
+                        <i class="fas fa-list-ol"></i>
+                        <span>Num</span>
+                    </button>
+                    <button class="btn" onclick="insertMarkdown('> ', '')" title="Quote">
+                        <i class="fas fa-quote-left"></i>
+                        <span>Quote</span>
+                    </button>
+                    <div class="separator"></div>
+                    <button class="btn" onclick="insertMath()" title="Inline Math">
+                        <i class="fas fa-square-root-variable"></i>
+                        <span>Math</span>
+                    </button>
+                    <button class="btn" onclick="insertMathBlock()" title="Math Block">
+                        <i class="fas fa-superscript"></i>
+                        <span>Block</span>
+                    </button>
+                    <div class="separator"></div>
+                    <button class="btn" onclick="toggleView()" title="Toggle View">
+                        <i class="fas fa-eye"></i>
+                        <span>View</span>
+                    </button>
+                    <button class="btn" onclick="toggleTheme()" title="Toggle Theme">
+                        <i class="fas fa-moon" id="themeIcon"></i>
+                        <span>Theme</span>
+                    </button>
+                    <button class="btn" onclick="exportMarkdown()" title="Export">
+                        <i class="fas fa-download"></i>
+                        <span>Export</span>
+                    </button>
+                    <button class="btn" onclick="showHelp()" title="Help">
+                        <i class="fas fa-question-circle"></i>
+                        <span>Help</span>
+                    </button>
+                </div>
             </div>
-            <div class="preview" id="preview"></div>
-        </div>
-    </div>
+        </header>
 
-    <!-- Status Bar -->
-    <div class="status-bar">
-        <div class="status-item">
-            <span>Words: <strong id="wordCount">0</strong></span>
-            <span>|</span>
-            <span>Characters: <strong id="charCount">0</strong></span>
-            <span>|</span>
-            <span>Lines: <strong id="lineCount">0</strong></span>
+        <!-- Main Container -->
+        <div class="main-container">
+            <!-- Editor Pane -->
+            <div class="pane editor-pane" id="editorPane">
+                <div class="pane-header">
+                    <span><i class="fas fa-edit"></i> Editor</span>
+                    <span id="saveStatus">Auto-saved</span>
+                </div>
+                <div class="editor" id="editor" contenteditable="true" spellcheck="false"></div>
+            </div>
+
+            <!-- Resizer -->
+            <div class="resizer" id="resizer"></div>
+
+            <!-- Preview Pane -->
+            <div class="pane preview-pane" id="previewPane">
+                <div class="pane-header">
+                    <span><i class="fas fa-eye"></i> Preview</span>
+                    <span id="renderTime"></span>
+                </div>
+                <div class="preview" id="preview"></div>
+            </div>
         </div>
-        <div class="status-item">
-            <span id="cursorPosition">Line 1, Column 1</span>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-item">
+                <span>Words: <strong id="wordCount">0</strong></span>
+                <span>|</span>
+                <span>Characters: <strong id="charCount">0</strong></span>
+                <span>|</span>
+                <span>Lines: <strong id="lineCount">0</strong></span>
+            </div>
+            <div class="status-item">
+                <span id="cursorPosition">Line 1, Column 1</span>
+            </div>
         </div>
     </div>
 
@@ -962,7 +1029,7 @@ Cobalah menulis markdown Anda sendiri di editor ini!`;
         function doResize(e) {
             if (!isResizing) return;
             
-            const containerWidth = document.querySelector('.container').offsetWidth;
+            const containerWidth = document.querySelector('.main-container').offsetWidth;
             const newEditorWidth = (e.clientX / containerWidth) * 100;
             
             if (newEditorWidth > 20 && newEditorWidth < 80) {
