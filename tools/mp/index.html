@@ -60,6 +60,7 @@
             flex-direction: column;
             height: 100vh;
             min-height: 100vh;
+            padding-bottom: 8px;
         }
 
         /* Header */
@@ -357,6 +358,9 @@
             height: var(--status-height);
             flex-shrink: 0;
             z-index: 10;
+            margin: 0 8px 4px 8px;
+            border-radius: 6px;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
         }
 
         .status-item {
@@ -460,6 +464,11 @@
 
             .toolbar {
                 gap: 0.2rem;
+            }
+
+            .status-bar {
+                margin: 0 4px 2px 4px;
+                font-size: 0.7rem;
             }
         }
 
