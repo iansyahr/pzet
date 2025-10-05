@@ -2,116 +2,336 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/avif" href="https://pzet.pages.dev/etc/media/magnolia-ico.avif">
-    <title>PZ</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <link
+      rel="icon"
+      type="image/avif"
+      href="https://pzet.pages.dev/etc/media/magnolia-ico.avif"
+    />
+    <title>PZ — Blog</title>
+
+    <!-- Tema awal -->
+    <script>
+      (function () {
+        try {
+          const key = "pz-theme";
+          const saved = localStorage.getItem(key);
+          const root = document.documentElement;
+          if (saved === "light" || saved === "dark") {
+            root.setAttribute("data-theme", saved);
+          } else {
+            const prefersDark = matchMedia("(prefers-color-scheme: dark)").matches;
+            root.setAttribute("data-theme", prefersDark ? "dark" : "light");
+          }
+        } catch (_) {}
+      })();
+    </script>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+
     <style>
-      body {
-        font-family: 'Inter', sans-serif;
-        background-color: #FFFBF5;
-        color: #333;
+      :root {
+        --bg: #fffdf8;
+        --bg-elev: #ffffff;
+        --text: #1f2328;
+        --text-muted: #5b6470;
+        --border: #e7e2da;
+        --accent: #5b8def;
+        --accent-contrast: #ffffff;
+
+        --card-hover: rgba(0, 0, 0, 0.04);
+        --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.06);
+        --shadow-2: 0 6px 20px rgba(0, 0, 0, 0.08);
+
+        --radius-lg: 16px;
+        --radius-md: 12px;
+        --radius-sm: 8px;
+
+        --content-max: 1100px;
       }
+
+      html[data-theme="dark"] {
+        --bg: #0f1214;
+        --bg-elev: #141a1f;
+        --text: #e6eaef;
+        --text-muted: #9aa7b2;
+        --border: #2a3238;
+        --accent: #77a6ff;
+        --accent-contrast: #0f1214;
+
+        --card-hover: rgba(255, 255, 255, 0.04);
+        --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.5);
+        --shadow-2: 0 8px 28px rgba(0, 0, 0, 0.45);
+      }
+
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        body, header, main, footer, .card, .post, .nav, .theme-toggle {
+          transition: background-color 220ms ease, color 220ms ease,
+                      border-color 220ms ease, box-shadow 220ms ease;
+        }
+      }
+
+      .wrap {
+        min-height: 100dvh;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+      }
+      .container {
+        width: 100%;
+        max-width: var(--content-max);
+        margin-inline: auto;
+        padding-inline: clamp(14px, 4vw, 28px);
+      }
+
+      header.site-header {
+        background: var(--bg-elev);
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        backdrop-filter: saturate(160%) blur(8px);
+      }
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding-block: 10px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        color: inherit;
+      }
+      .brand h1 {
+        font-size: clamp(20px, 5vw, 32px);
+        font-weight: 800;
+        margin: 0;
+      }
+      .tagline {
+        font-size: clamp(12px, 3.2vw, 14px);
+        color: var(--text-muted);
+        margin: 2px 0 0 0;
+      }
+      .brand-logo {
+        width: clamp(50px, 6vw, 77px);
+        height: clamp(50px, 6vw, 77px);
+        border-radius: 10px;
+        box-shadow: var(--shadow-1);
+      }
+
+      .theme-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border);
+        background: var(--bg);
+        color: var(--text);
+        border-radius: 999px;
+        padding: clamp(10px, 2.3vw, 12px) clamp(12px, 3vw, 14px);
+        font-size: clamp(18px, 5.2vw, 20px);
+        cursor: pointer;
+        box-shadow: var(--shadow-1);
+      }
+      .theme-toggle:hover {
+        box-shadow: var(--shadow-2);
+        background: var(--card-hover);
+      }
+
+      main {
+        padding-block: clamp(16px, 5vw, 48px);
+      }
+      section.block {
+        background: var(--bg-elev);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: clamp(14px, 4.5vw, 28px);
+        box-shadow: var(--shadow-1);
+        margin-bottom: clamp(14px, 4vw, 28px);
+      }
+      .block h2 { margin: 0 0 8px 0; font-size: clamp(18px, 5vw, 28px); }
+      .block .sub { margin: 0 0 14px 0; color: var(--text-muted); font-size: clamp(13px, 3.6vw, 14px); }
+
+      .grid {
+        display: grid;
+        gap: clamp(10px, 3.5vw, 16px);
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+      }
+      @media (min-width: 560px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      @media (min-width: 980px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+      .card {
+        display: block;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: clamp(14px, 4vw, 16px);
+        text-decoration: none;
+        color: inherit;
+        box-shadow: var(--shadow-1);
+      }
+      .card:hover { transform: translateY(-1px); background: var(--card-hover); box-shadow: var(--shadow-2); }
+      .card h3 { margin: 2px 0 6px; font-size: clamp(16px, 4.6vw, 18px); }
+      .card p  { margin: 0; color: var(--text-muted); font-size: clamp(13px, 3.8vw, 14px); }
+      .card .arrow { margin-top: 10px; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; color: var(--accent); }
+
+      .posts { display: grid; gap: clamp(10px, 3.5vw, 16px); }
+      .post  { border: 1px solid var(--border); background: var(--bg); border-radius: var(--radius-md); padding: clamp(14px, 4.5vw, 16px); }
+      .post h3 { margin: 0 0 6px; font-size: clamp(17px, 4.8vw, 20px); }
+      .post .meta { font-size: clamp(12px, 3.3vw, 12.5px); color: var(--text-muted); margin-bottom: 8px; }
+      .post .more { margin-top: 10px; display: inline-flex; align-items: center; gap: 8px; color: var(--accent); text-decoration: none; font-weight: 600; }
+
+      footer.site-footer {
+        background: var(--bg-elev);
+        border-top: 1px solid var(--border);
+      }
+      .foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 3px;
+        padding-block: 3px;
+        color: var(--text-muted);
+        font-size: clamp(13px, 3.6vw, 14px);
+        flex-wrap: wrap;
+      }
+      .socials { display: inline-flex; gap: 24px; font-size: 20px }
+      .socials a { color: var(--text-muted); text-decoration: none; }
+      .socials a:hover { color: var(--text); }
+
+      /* Ketika portrait (smartphone) → footer center */
+      @media (orientation: portrait), (max-width: 600px) {
+        .foot {
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          text-align: center;
+          gap: 10px;
+        }
+      }
+
+      @media (max-width: 360px) { .tagline { display: none; } }
     </style>
   </head>
-  <body class="antialiased">
-    <div class="min-h-screen flex flex-col">
-      <!-- Header Section -->
-      <header class="bg-white shadow-sm py-6 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center">
-          <div class="text-center sm:text-left mb-4 sm:mb-0">
-            <h1 class="text-5xl font-extrabold text-gray-900 tracking-tight"> PZ </h1>
-            <p class="mt-2 text-lg text-gray-600"> "If you're not having fun, you're not learning. There's a pleasure in finding things out" - Richard Feynman </p>
-          </div>
+
+  <body>
+    <div class="wrap">
+      <!-- HEADER -->
+      <header class="site-header">
+        <div class="container nav">
+          <a class="brand" href="/">
+            <img
+              class="brand-logo"
+              src="https://pzet.pages.dev/etc/media/magnolia-ico.avif"
+              alt="Logo PZ"
+            />
+            <div>
+              <h1>PZ</h1>
+              <p class="tagline">“If you're not having fun, you're not learning.” — Richard Feynman</p>
+            </div>
+          </a>
+
+          <button id="theme-toggle" class="theme-toggle" type="button" aria-live="polite">
+            <span id="theme-emoji" aria-hidden="true">☀️</span>
+          </button>
         </div>
       </header>
-      <!-- Main Content Section -->
-      <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div class="max-w-4xl mx-auto">
-          <!-- Subbab Fisika Section -->
-          <section class="bg-white p-8 rounded-lg shadow-md mb-12">
-            <h2 class="text-3xl font-bold text-gray-800 mb-8 border-b-2 border-gray-200 pb-2"> Subbab Fisika </h2>
-            <!-- This div will be populated by JavaScript -->
-            <div id="subbab-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              <!-- Subbab boxes will be dynamically inserted here -->
-            </div>
-          </section>
-        </div>
+
+      <!-- MAIN -->
+      <main class="container">
+        <section class="block">
+          <h2>Subbab Fisika</h2>
+          <p class="sub">Pilih topik untuk mulai membaca.</p>
+          <div id="subbab-container" class="grid"></div>
+        </section>
       </main>
-      <!-- Footer Section -->
-      <footer class="bg-gray-100 py-8 px-4 sm:px-6 lg:px-8 mt-12">
-        <div class="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center text-center sm:text-left">
-          <p class="text-gray-600 text-sm mb-4 sm:mb-0"> &copy; 2025 PZ. Konten dapat disebarluaskan dengan atribusi. </p>
-          <!-- Social Media Links -->
-          <div class="flex space-x-4 text-gray-600">
-            <a href="#" class="hover:text-gray-800 transition duration-300 ease-in-out" aria-label="X.com (Twitter)">
-              <i class="fab fa-x-twitter fa-lg"></i>
-              <!-- Font Awesome X.com icon -->
-            </a>
-            <a href="#" class="hover:text-gray-800 transition duration-300 ease-in-out" aria-label="Instagram">
-              <i class="fab fa-instagram fa-lg"></i>
-              <!-- Font Awesome Instagram icon -->
-            </a>
+
+      <!-- FOOTER -->
+      <footer class="site-footer">
+        <div class="container foot">
+          <p>&copy; 2025 PZ. Konten dapat disebarluaskan dengan atribusi.</p>
+          <div class="socials">
+            <a href="#" aria-label="X (Twitter)"><i class="fab fa-x-twitter"></i></a>
+            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
           </div>
         </div>
       </footer>
     </div>
+
     <script>
-      // Data subbab fisika dalam format JSON
-      const physicsSubtopics = [{
-        "title": "Mekanika Klasik",
-        "description": "Mempelajari gerak benda makroskopis dan interaksinya, menjadi dasar untuk memahami fenomena dari jatuhnya benda hingga pergerakan planet.",
-        "link": "/meklas"
-      }, {
-        "title": "Sifat Mekanik Zat dan Termodinamika",
-        "description": "Mendalami respons material terhadap gaya (elastisitas, fluida) dan hukum-hukum yang mengatur energi, panas, dan usaha dalam suatu sistem.",
-        "link": "#ndas"
-      }, {
-        "title": "Getaran, Gelombang, dan Optika",
-        "description": "Mempelajari fenomena periodik, mulai dari getaran satu benda hingga perambatan energi (gelombang).",
-        "link": "#ndas"
-      }, {
-        "title": "Listrik dan Magnet",
-        "description": "Mempelajari salah satu gaya fundamental alam semesta dan teknologinya yang sangat luas.",
-        "link": "#ndas"
-      }, {
-        "title": "Fisika Modern",
-        "description": "Menjelajahi fisika di luar pengalaman sehari-hari: pada kecepatan sangat tinggi dan skala sangat kecil.",
-        "link": "#ndas"
-      }];
-      // Fungsi untuk merender subbab secara dinamis
+      const physicsSubtopics = [
+        { title: "Mekanika Klasik", description: "Gerak benda makroskopis dan interaksinya.", link: "/meklas" },
+        { title: "Sifat Mekanik Zat & Termodinamika", description: "Elastisitas, fluida, energi, panas, usaha.", link: "#ndas" },
+        { title: "Getaran, Gelombang, & Optika", description: "Fenomena periodik dan perambatan energi.", link: "#ndas" },
+        { title: "Listrik & Magnet", description: "Gaya fundamental dan teknologi turunannya.", link: "#ndas" },
+        { title: "Fisika Modern", description: "Fisika relativistik dan kuantum.", link: "#ndas" }
+      ];
+
       function renderSubtopics() {
         const container = document.getElementById("subbab-container");
-        if (!container) {
-          console.error("Container with ID 'subbab-container' not found.");
-          return;
-        }
-        // Clear existing content in case of re-rendering
         container.innerHTML = "";
-        physicsSubtopics.forEach((subtopic) => {
-          // Create the anchor element (the box itself)
-          const anchor = document.createElement("a");
-          anchor.href = subtopic.link;
-          anchor.className = "block bg-gray-50 p-6 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 ease-in-out";
-          // Create the title element
-          const title = document.createElement("h3");
-          title.className = "text-2xl font-semibold text-gray-800 mb-2";
-          title.textContent = subtopic.title;
-          // Create the description element
-          const description = document.createElement("p");
-          description.className = "text-gray-500";
-          description.textContent = subtopic.description;
-          // Append title and description to the anchor
-          anchor.appendChild(title);
-          anchor.appendChild(description);
-          // Append the complete box to the container
-          container.appendChild(anchor);
+        physicsSubtopics.forEach((s) => {
+          const a = document.createElement("a");
+          a.className = "card";
+          a.href = s.link;
+          const h3 = document.createElement("h3");
+          h3.textContent = s.title;
+          const p = document.createElement("p");
+          p.textContent = s.description;
+          const more = document.createElement("div");
+          more.className = "arrow";
+          more.innerHTML = 'Buka topik <i class="fa-solid fa-arrow-right-long"></i>';
+          a.append(h3, p, more);
+          container.appendChild(a);
         });
       }
-      // Panggil fungsi renderSubtopics saat DOM selesai dimuat
       document.addEventListener("DOMContentLoaded", renderSubtopics);
+
+      // Emoji theme toggle
+      (function themeToggle() {
+        const key = "pz-theme";
+        const root = document.documentElement;
+        const btn = document.getElementById("theme-toggle");
+        const emoji = document.getElementById("theme-emoji");
+
+        function currentTheme() {
+          return root.getAttribute("data-theme") === "dark" ? "dark" : "light";
+        }
+        function setTheme(mode) {
+          root.setAttribute("data-theme", mode);
+          try { localStorage.setItem(key, mode); } catch (_) {}
+          emoji.textContent = mode === "dark" ? "🌙" : "☀️";
+        }
+        setTheme(currentTheme());
+        btn.addEventListener("click", () => {
+          setTheme(currentTheme() === "dark" ? "light" : "dark");
+        });
+      })();
     </script>
   </body>
 </html>
