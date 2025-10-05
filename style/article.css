@@ -174,7 +174,7 @@ html[data-theme="light"] #content pre {
 #content table {
   width: 100%; border-collapse: collapse; margin: 1em 0;
   border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden;
-  display: block; max-width: 100%; overflow-x: auto;
+  max-width: 100%; overflow-x: auto;
 }
 #content th, #content td {
   padding: .6em .8em; border-bottom: 1px solid var(--border);
