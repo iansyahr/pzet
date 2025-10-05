@@ -181,7 +181,7 @@ html[data-theme="light"] #content pre {
 }
 #content thead th {
   background: color-mix(in oklab, var(--bg) 92%, var(--text) 8%);
-  text-align: left;
+  text-align: center;
 }
 
 /* Images */
