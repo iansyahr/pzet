@@ -1,6 +1,6 @@
 01. Sebuah mikrometer sekrup digunakan untuk mengukur diameter uang logam dan hasil pengukurannya seperti pada gambar di bawah
 
-(Ilustrasi: Diagram mikrometer sekrup. Skala utama menunjukkan bacaan $2 \text{ mm}$ dan satu garis setengah $0,5 \text{ mm}$, sehingga bacaan skala utama adalah $2,5 \text{ mm}$. Skala nonius menunjukkan garis ke-8 berimpit, sehingga bacaan skala nonius adalah $0,08 \text{ mm}$)
+<img src="./media/set-1-1.avif" width="300">
 
 Hasil pengukuran itu adalah
 - (A) $2,07 \text{ mm}$
@@ -13,7 +13,7 @@ Hasil pengukuran itu adalah
 
 02. Pengukuran diameter dalam sebuah pipa dengan jangka sorong hasilnya seperti pada gambar di bawah
 
-(Ilustrasi: Diagram jangka sorong (vernier caliper). Skala utama menunjukkan $5,5 \text{ cm}$ atau $55 \text{ mm}$ lebih sedikit (garis sebelum nol nonius berada setelah $5,5 \text{ cm}$). Garis ke-2 pada skala nonius berimpit dengan garis pada skala utama. Dengan skala nonius $0,01 \text{ cm}$ ($0,1 \text{ mm}$), hasil pengukuran adalah $5,5 \text{ cm} + 0,02 \text{ cm} = 5,52 \text{ cm} = 55,2 \text{ mm}$)
+<img src="./media/set-1-2.avif" width="300">
 
 hasil pengukuran tersebut adalah
 - (A) $5,51 \text{ mm}$
@@ -46,7 +46,7 @@ hasil pengukuran tersebut adalah
 
 05. Budi naik sepeda dengan rute $ABCD$ seperti pada gambar di bawah.
 
-(Ilustrasi: Diagram menunjukkan rute dari $A$ ke $D$. Jarak $AB = 20 \text{ km}$ (horizontal), $BC = 40 \text{ km}$ (vertikal/ke bawah), $CD = 10 \text{ km}$ (horizontal/ke kanan). Rute membentuk siku-siku di $B$ dan $C$)
+<img src="./media/set-1-5.avif" width="300">
 
 Rute $AB$ ditempuh dengan laju tetap $8 \text{ km/jam}$, rute $BC$ dengan laju tetap $10 \text{ km/jam}$, rute $CD$ dengan laju tetap $4 \text{ km/jam}$. Jika selama menempuh rute itu Budi istirahat $40 \text{ menit}$ di $B$ dan $20 \text{ menit}$ di $C$, maka kelajuan rata-rata dan kecepatan rata-rata Budi naik sepeda dari $A$ sampai ke $D$ berturut-turut adalah
 - (A) $7 \text{ km/jam}$ dan $3 \text{ km/jam}$
