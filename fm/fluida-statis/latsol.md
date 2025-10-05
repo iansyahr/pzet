@@ -1,5 +1,9 @@
 **Fluida Statis**
 
+$F = ma$
+
+$$ y = A \sin (\omega t \pm kx)$$
+
 **1.** Air murni (massa jenis 1,0 kg/l) sebanyak 50 liter dicampur dengan 200 liter alkohol hingga keduanya tercampur homogen. Jika massa jenis campuran adalah 0,8 kg/l, maka massa jenis alkohol adalah ....
 
 (A) 700 kg/m³
