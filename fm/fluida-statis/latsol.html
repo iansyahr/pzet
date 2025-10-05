@@ -1,142 +1,169 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/avif" href="https://pzet.pages.dev/etc/media/magnolia-ico.avif">
-  <title>Fluida Statis - Mekanika Fluida - PZ</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <link
+      rel="icon"
+      type="image/avif"
+      href="https://pzet.my.id/etc/media/magnolia-ico.avif"
+    />
+    <title>Fluida Statis — Latihan Soal — PZ</title>
 
-  <!-- Menambahkan Font 'Inter' dari Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Pasang tema awal (anti-FOUC) -->
+    <script>
+      (function () {
+        try {
+          const key = "pz-theme";
+          const saved = localStorage.getItem(key);
+          const root = document.documentElement;
+          if (saved === "light" || saved === "dark") {
+            root.setAttribute("data-theme", saved);
+          } else {
+            const prefersDark = matchMedia("(prefers-color-scheme: dark)").matches;
+            root.setAttribute("data-theme", prefersDark ? "dark" : "light");
+          }
+        } catch (_) {}
+      })();
+    </script>
 
-  <!-- Menambahkan Library Marked.js dari CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Font Inter -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
 
-  <style>
-    /* Style CSS dasar */
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: #FFFBF5;
-      color: #333;
-      line-height: 1.6;
-      margin: 0;
-      padding: 0;
-    }
-    
-    /* Container untuk memusatkan layout */
-    .container {
-      max-width: 800px;
-      margin: 40px auto; /* Posisikan konten di tengah */
-      padding: 0 20px; /* Beri sedikit padding di sisi kiri-kanan */
-    }
+    <!-- KaTeX (CSS) -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"
+    />
 
-    /* === BARU: Style untuk Tombol Kembali === */
-    .back-button {
-      display: inline-block;
-      margin-bottom: 25px; /* Jarak antara tombol dan konten */
-      padding: 10px 18px;
-      background-color: #333;
-      color: #FFFBF5;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: bold;
-      transition: background-color 0.3s ease;
-    }
+    <!-- Styles (punyamu) -->
+    <link rel="stylesheet" href="https://pzet.my.id/style/article.css" />
 
-    .back-button:hover {
-      background-color: #555;
-    }
-    /* ======================================= */
+    <!-- Marked (Markdown parser) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- KaTeX (JS + Auto-render) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  </head>
 
-    /* Style untuk area konten */
-    #content {
-      padding: 25px 30px;
-      background-color: #FFFFFF;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-    }
+  <body>
+    <div class="wrap">
+      <!-- HEADER -->
+      <header class="site-header">
+        <div class="container nav">
+          <a class="brand" href="/">
+            <img class="brand-logo" src="https://pzet.my.id/etc/media/magnolia-hq.avif" alt="PZ" />
+            <div>
+              <h1>PZ</h1>
+              <p class="sub">Mekanika Fluida · Fluida Statis · Latihan Soal</p>
+            </div>
+          </a>
+          <button id="theme-toggle" class="theme-toggle" type="button" aria-live="polite">
+            <span id="theme-emoji" aria-hidden="true">☀️</span>
+          </button>
+        </div>
+      </header>
 
-    /* Style untuk elemen-elemen yang dihasilkan dari Markdown */
-    #content h1, #content h2, #content h3 {
-      color: #1a1a1a;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 0.3em;
-    }
-    
-    #content a {
-      color: #007BFF;
-      text-decoration: none;
-    }
+      <!-- MAIN -->
+      <main class="container">
+        <a class="back" href="https://pzet.pages.dev/">← Kembali ke Home</a>
 
-    #content a:hover {
-      text-decoration: underline;
-    }
+        <article class="article" id="article">
+          <div id="content">
+            <p><em>Memuat konten, harap tunggu…</em></p>
+          </div>
+        </article>
+      </main>
 
-    #content code {
-      background-color: #f0f0f0;
-      padding: 0.2em 0.4em;
-      border-radius: 3px;
-    }
-
-    #content pre {
-      background-color: #2d2d2d;
-      color: #f8f8f2;
-      padding: 1em;
-      border-radius: 5px;
-      overflow-x: auto;
-    }
-    
-    #content blockquote {
-      border-left: 4px solid #ccc;
-      padding-left: 1em;
-      color: #666;
-      margin-left: 0;
-    }
-    
-    #content img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 8px; /* Tambahan agar gambar terlihat lebih modern */
-    }
-  </style>
-</head>
-<body>
-
-  <!-- Container utama untuk layout -->
-  <div class="container">
-    <a href="https://pzet.pages.dev/" class="back-button">← Kembali ke Home</a>
-    
-    <!-- Markdown loading -->
-    <div id="content">
-      <p>Memuat konten, harap tunggu...</p>
+      <!-- FOOTER -->
+      <footer class="site-footer">
+        <div class="container foot">
+          <p>&copy; 2025 PZ. Konten dapat disebarluaskan dengan atribusi.</p>
+          <div class="socials" aria-label="Media sosial">
+            <a href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)">X</a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">Instagram</a>
+          </div>
+        </div>
+      </footer>
     </div>
 
-  </div>
+    <script>
+      // ====== Render Markdown ======
+      document.addEventListener("DOMContentLoaded", async () => {
+        const markdownUrl = "https://pzet.pages.dev/fm/fluida-statis/latsol.md";
+        const contentElement = document.getElementById("content");
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const markdownUrl = 'https://pzet.pages.dev/fm/fluida-statis/latsol.md';
-      const contentElement = document.getElementById('content');
+        try {
+          const res = await fetch(markdownUrl, { cache: "no-store" });
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          const md = await res.text();
 
-      fetch(markdownUrl)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+          // Opsi Marked
+          marked.setOptions({ gfm: true, breaks: false });
+
+          const html = marked.parse(md);
+          contentElement.innerHTML = html;
+
+          // Render KaTeX setelah HTML dipasang
+          if (window.renderMathInElement) {
+            renderMathInElement(contentElement, {
+              delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "\\[", right: "\\]", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false }
+              ],
+              throwOnError: false,
+              strict: "ignore"
+            });
           }
-          return response.text();
-        })
-        .then(markdownText => {
-          const htmlContent = marked.parse(markdownText);
-          contentElement.innerHTML = htmlContent;
-        })
-        .catch(error => {
-          console.error('Gagal mengambil atau memproses markdown:', error);
-          contentElement.innerHTML = `<p style="color: red;"><strong>Error:</strong> Gagal memuat konten. Silakan cek konsol untuk detailnya.</p>`;
-        });
-    });
-  </script>
 
-</body>
+          // Link eksternal buka tab baru
+          for (const a of contentElement.querySelectorAll("a[href^='http']")) {
+            a.target = "_blank"; a.rel = "noopener noreferrer";
+          }
+        } catch (err) {
+          console.error(err);
+          contentElement.innerHTML =
+            '<p style="color:#c62828"><strong>Error:</strong> Gagal memuat konten.</p>';
+        }
+      });
+
+      // ====== Theme Toggle (emoji) ======
+      (function () {
+        const key = "pz-theme";
+        const root = document.documentElement;
+        const btn = document.getElementById("theme-toggle");
+        const emoji = document.getElementById("theme-emoji");
+
+        function current() { return root.getAttribute("data-theme") === "dark" ? "dark" : "light"; }
+        function setTheme(mode) {
+          root.setAttribute("data-theme", mode);
+          try { localStorage.setItem(key, mode); } catch (_) {}
+          emoji.textContent = mode === "dark" ? "🌙" : "☀️";
+        }
+
+        setTheme(current());
+        btn.addEventListener("click", () => setTheme(current() === "dark" ? "light" : "dark"));
+
+        // Sinkron ke OS bila user belum set manual
+        try {
+          const saved = localStorage.getItem(key);
+          if (saved !== "light" && saved !== "dark") {
+            const mq = matchMedia("(prefers-color-scheme: dark)");
+            mq.addEventListener("change", (e) => {
+              setTheme(e.matches ? "dark" : "light");
+              localStorage.removeItem(key);
+            });
+          }
+        } catch (_) {}
+      })();
+    </script>
+  </body>
 </html>
