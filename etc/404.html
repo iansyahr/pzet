@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>404 - Halaman Tidak Ditemukan | PZ</title>
+    <link
+      rel="icon"
+      type="image/avif"
+      href="https://pzet.my.id/etc/media/magnolia-ico.avif"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="https://pzet.my.id/style/article.css" />
+
+    <!-- Tema awal (anti-FOUC) -->
+    <script>
+      (function () {
+        const key = "pz-theme";
+        const saved = localStorage.getItem(key);
+        const root = document.documentElement;
+        if (saved === "light" || saved === "dark") {
+          root.setAttribute("data-theme", saved);
+        } else {
+          const prefersDark = matchMedia("(prefers-color-scheme: dark)").matches;
+          root.setAttribute("data-theme", prefersDark ? "dark" : "light");
+        }
+      })();
+    </script>
+
+    <style>
+      /* Tambahan animasi fade-in */
+      @keyframes fadeInSoft {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .fade-in {
+        opacity: 0;
+        animation: fadeInSoft 0.8s ease forwards;
+      }
+
+      .fade-in-delay {
+        opacity: 0;
+        animation: fadeInSoft 1.2s ease forwards;
+        animation-delay: 0.3s;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrap">
+      <header class="site-header fade-in">
+        <div class="container nav">
+          <a class="brand" href="/">
+            <img
+              class="brand-logo"
+              src="https://pzet.my.id/etc/media/magnolia-hq.avif"
+              alt="Logo PZ"
+            />
+            <div>
+              <h1>PZ</h1>
+              <p class="sub">Halaman tidak ditemukan</p>
+            </div>
+          </a>
+          <button id="theme-toggle" class="theme-toggle" type="button">
+            <span id="theme-emoji" aria-hidden="true">☀️</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="container">
+        <div
+          class="article fade-in-delay"
+          style="text-align: center; padding: 60px 20px;"
+        >
+          <h1
+            style="
+              font-size: clamp(48px, 10vw, 96px);
+              margin: 0;
+              font-weight: 800;
+              letter-spacing: -0.03em;
+            "
+          >
+            404
+          </h1>
+          <p
+            style="
+              font-size: clamp(18px, 4vw, 22px);
+              color: var(--muted);
+              margin: 16px 0;
+            "
+          >
+            Halaman yang kamu cari tidak ditemukan.
+          </p>
+          <a href="/" class="back" style="margin-top: 20px">
+            ← Kembali ke Beranda
+          </a>
+        </div>
+      </main>
+
+      <footer class="site-footer fade-in-delay">
+        <div class="container foot">
+          <p>&copy; 2025 PZ. Konten dapat disebarluaskan dengan atribusi.</p>
+          <div class="socials">
+            <a
+              href="https://x.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="X (Twitter)"
+              >X</a
+            >
+            <a
+              href="https://instagram.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram"
+              >Instagram</a
+            >
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      // Tombol tema emoji
+      (function () {
+        const key = "pz-theme";
+        const root = document.documentElement;
+        const btn = document.getElementById("theme-toggle");
+        const emoji = document.getElementById("theme-emoji");
+
+        const current = () =>
+          root.getAttribute("data-theme") === "dark" ? "dark" : "light";
+        const setTheme = (mode) => {
+          root.setAttribute("data-theme", mode);
+          try {
+            localStorage.setItem(key, mode);
+          } catch (_) {}
+          emoji.textContent = mode === "dark" ? "🌙" : "☀️";
+        };
+
+        setTheme(current());
+        btn.addEventListener("click", () =>
+          setTheme(current() === "dark" ? "light" : "dark")
+        );
+      })();
+    </script>
+  </body>
+</html>
