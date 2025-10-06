@@ -151,9 +151,10 @@ Pernyataan yang benar:
     $$ t = \frac{25 + 55}{4} = \frac{80}{4} = 20 \text{ sekon} $$
     <p><b>(1) setelah bergerak 20 sekon</b> - Pernyataan ini <b>BENAR</b>.</p>
     <p><b>(2) kecepatannya 288 km/jam</b></p>
-    Kecepatan polisi saat itu: $ v_p = v_{0p} + a_pt = 0 + 4(20) = 80 \text{ m/s} $.
-    Konversi ke km/jam: $ 80 \frac{\text{m}}{\text{s}} \times \frac{3600 \text{ s}}{1 \text{ jam}} \times \frac{1 \text{ km}}{1000 \text{ m}} = 80 \times 3,6 = 288 \text{ km/jam} $.
-    Pernyataan ini <b>BENAR</b>.
+    <p>Kecepatan polisi saat itu: $ v_p = v_{0p} + a_pt = 0 + 4(20) = 80 \text{ m/s} $.</p>
+    <p>Konversi ke km/jam:</p> 
+    <p>$$ 80 \frac{\text{m}}{\text{s}} \times \frac{3600 \text{ s}}{1 \text{ jam}} \times \frac{1 \text{ km}}{1000 \text{ m}} \\ = 80 \times 3,6 \\= 288 \text{ km/jam} $$.</p>
+    <p>Pernyataan ini <b>BENAR</b>. </p>
     <p><b>(3) setelah bergerak sejauh 800 m</b></p>
     Jarak yang ditempuh polisi: $ x_p = 2t^2 = 2(20)^2 = 2(400) = 800 \text{ m} $.
     Pernyataan ini <b>BENAR</b>.
@@ -178,6 +179,28 @@ Jika ketiga motor menempuh jarak yang sama, maka kecepatan awal $P$ dan kecepata
 - (C) $65 \text{ m/s}$ dan $70 \text{ m/s}$
 - (D) $70 \text{ m/s}$ dan $65 \text{ m/s}$
 - (E) $75 \text{ m/s}$ dan $75 \text{ m/s}$
+
+<details class="info">
+  <summary>Pembahasan</summary>
+  <div>
+    <p>Ketiga motor menempuh jarak yang sama. Kita bisa menggunakan rumus GLBB $v_t^2 = v_0^2 + 2as$. Jarak (s) sama untuk ketiga motor ($s_A = s_B = s_C$), maka $s = \frac{v_t^2 - v_0^2}{2a}$.</p>
+    <p><b>Motor A:</b></p>
+    $$ s_A = \frac{60^2 - 40^2}{2(1)} = \frac{3600 - 1600}{2} = \frac{2000}{2} = 1000 \text{ m} $$
+    <p>Karena jaraknya sama, maka $s_B = s_C = 1000$ m.</p>
+    <p><b>Motor B:</b></p>
+    $$ s_B = \frac{v_t^2 - v_0^2}{2a} \implies 1000 = \frac{30^2 - P^2}{2(-2)} $$
+    $$ -4000 = 900 - P^2 $$
+    $$ P^2 = 900 + 4000 = 4900 $$
+    $$ P = \sqrt{4900} = 70 \text{ m/s} $$
+    <p><b>Motor C:</b></p>
+    $$ s_C = \frac{v_t^2 - v_0^2}{2a} \implies 1000 = \frac{Q^2 - 15^2}{2(2)} $$
+    $$ 4000 = Q^2 - 225 $$
+    $$ Q^2 = 4000 + 225 = 4225 $$
+    $$ Q = \sqrt{4225} = 65 \text{ m/s} $$
+    <p>Jadi, kecepatan awal P adalah 70 m/s dan kecepatan akhir Q adalah 65 m/s. Jawaban yang benar adalah <b>(D) 70 m/s dan 65 m/s</b>.</p>
+  </div>
+</details>
+
 
 ---
 
