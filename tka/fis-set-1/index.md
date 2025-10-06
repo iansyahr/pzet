@@ -9,6 +9,13 @@ Hasil pengukuran itu adalah
 - (D) $2,58 \text{ mm}$
 - (E) $2,70 \text{ mm}$
 
+<details class="info">
+  <summary>Ringkasan materi (klik untuk buka)</summary>
+  <div>
+    <p>Isi detailnya di sini…</p>
+  </div>
+</details>
+
 ---
 
 02. Pengukuran diameter dalam sebuah pipa dengan jangka sorong hasilnya seperti pada gambar di bawah
