@@ -10,9 +10,15 @@ Hasil pengukuran itu adalah
 - (E) $2,70 \text{ mm}$
 
 <details class="info">
-  <summary>Ringkasan materi (klik untuk buka)</summary>
+  <summary>Pembahasan 01</summary>
   <div>
-    <p>Isi detailnya di sini…</p>
+    <p>Untuk membaca hasil pengukuran mikrometer sekrup, kita perlu menjumlahkan nilai pada skala utama dan skala nonius.</p>
+    <p>1.  <b>Skala Utama:</b> Skala utama menunjukkan angka 2,5 mm (terlihat garis setelah angka 2 dan ada satu garis lagi di bawahnya yang menandakan 0,5 mm).</p>
+    <p>2.  <b>Skala Nonius:</b> Skala nonius menunjukkan garis yang sejajar dengan garis horizontal skala utama. Garis yang sejajar adalah pada angka 8. Nilai ini dikalikan dengan ketelitian mikrometer sekrup, yaitu 0,01 mm. Jadi, $8 \times 0,01 \text{ mm} = 0,08 \text{ mm}$.</p>
+    <p>3.  <b>Hasil Pengukuran:</b> Jumlahkan kedua hasil pembacaan.</p>
+    $$ \text{Hasil} = \text{Skala Utama} + \text{Skala Nonius} $$
+    $$ \text{Hasil} = 2,5 \text{ mm} + 0,08 \text{ mm} = 2,58 \text{ mm} $$
+    <p>Jadi, hasil pengukuran itu adalah <b>(D) 2,58 mm</b>.</p>
   </div>
 </details>
 
