@@ -127,7 +127,7 @@ Jika ketiga motor menempuh jarak yang sama, maka kecepatan awal $P$ dan kecepata
 
 12. Dua balok $A$ dan $B$ masing-masing bermassa $2 \text{ kg}$ dihubungkan melalui tali dan katrol seperti pada gambar.
 
-(Ilustrasi: Diagram dua balok $A$ dan $B$ dengan massa $m_A = m_B = 2 \text{ kg}$. Balok $A$ berada di atas lantai. Balok $B$ digantung melalui katrol licin. Balok $B$ ditarik oleh gaya mendatar $F = 40 \text{ N}$. Tali yang menghubungkan $A$ dan katrol horizontal, tali yang menghubungkan $B$ dan katrol vertikal. Gaya $F$ menarik $B$ ke kanan, menjauhi katrol. Karena tali yang sama terhubung ke $A$ dan $B$, dan $A$ bergerak di atas lantai, maka seharusnya balok $A$ dan $B$ bergerak bersama dengan percepatan yang sama, tetapi diagram ini menyiratkan dua tali dan katrol yang berbeda atau balok $A$ terikat pada balok $B$ yang bergerak vertikal, yang mana berbeda dari deskripsi. Berdasarkan gambar yang ada, balok $A$ terikat ke kiri, dan balok $B$ ditarik ke kanan. Asumsi: $A$ terikat ke dinding, $B$ ditarik $F$. Atau kedua balok tersambung lewat tali yang melewati katrol. Mari asumsikan interpretasi gambar yang paling umum untuk sistem katrol: balok A di meja, tali horizontal, katrol vertikal, dan balok B menggantung. Gaya $F$ adalah gaya eksternal pada B) *Melihat gambar lagi, balok A terikat ke kiri dan $B$ ditarik $F$ ke kanan, dan keduanya dihubungkan oleh katrol. Kita akan mengasumsikan sistem Atwood termodifikasi di mana balok A di atas meja licin, dan B menggantung, tetapi B ditarik secara horizontal. Ini adalah sistem yang tidak standar. Mari kita ikuti deskripsi teks: "Jika balok B ditarik dengan gaya mendatar $F = 40 \text{ N}$". Karena $m_A=m_B=2 \text{ kg}$, dan $B$ ditarik horizontal, maka gaya eksternal $F$ berlaku pada sistem $A+B$. Karena A tidak digantung (berada di atas lantai/meja), maka diasumsikan B juga berada di atas meja/lantai yang sama.* **Asumsi paling masuk akal:** Balok $A$ diam di tempat, dan balok $B$ ditarik oleh $F$. Tali menghubungkan $A$ dan $B$ melalui katrol. Jika A bergerak, maka A bergerak ke kanan dan B bergerak ke kiri (karena katrol di tengah). Jika $F=40 \text{ N}$ menarik $B$ ke kanan, maka $A$ bergerak ke kanan dan $B$ bergerak ke kanan, dan katrol berputar. Ini adalah sistem yang sangat ambigu. **Mari ikuti teks soal:** Balok $A$ dan $B$ dihubungkan. $A$ di meja, $B$ di tali dan katrol. Kita akan mengasumsikan konfigurasi umum di mana $A$ terikat pada tali horizontal di atas meja dan $B$ tergantung vertikal. $F$ adalah gaya pada $B$. **Re-evaluasi Gambar:** Gambar menunjukkan balok $A$ di lantai, balok $B$ dihubungkan ke $A$ melalui katrol, dan $B$ ditarik gaya $F$. Ini adalah sistem $A$ di lantai, $B$ di udara.
+<img src="./media/set-1-katrol-color.avif" width="300">
 
 Katrol licin dan massanya dapat diabaikan. Jika balok $B$ ditarik dengan gaya mendatar $F = 40 \text{ N}$, maka percepatan balok $A$ dan tegangan pada tali berturut-turut adalah ..
 - (A) $10 \text{ m/s}^2, 40 \text{ N}$
@@ -140,7 +140,7 @@ Katrol licin dan massanya dapat diabaikan. Jika balok $B$ ditarik dengan gaya me
 
 13. Pada gambar di bawah, permukaan meja licin dan massa katrol diabaikan.
 
-(Ilustrasi: Diagram menunjukkan balok $A$ di atas meja licin terhubung melalui tali dan katrol ke balok $B$ yang menggantung vertikal. Tegangan tali adalah $T$, dan berat $B$ adalah $W_B$)
+<img src="./media/set-1-katrol-wb.avif" width="300">
 
 Massa benda $A$ adalah $m_A$, massa benda $B$ adalah $m_B$ dan tegangan pada tali adalah $T$. Besar percepatan yang dialami balok $A$ adalah
 - (A) $\frac{m_B g - T}{m_B}$
@@ -153,7 +153,7 @@ Massa benda $A$ adalah $m_A$, massa benda $B$ adalah $m_B$ dan tegangan pada tal
 
 14. Perhatikan gambar di bawah!
 
-(Ilustrasi: Diagram menunjukkan balok berada di atas bidang miring dengan sudut kemiringan $30^\circ$. Balok ditarik ke atas sejajar bidang miring oleh gaya $F$)
+<img src="./media/set-1-bidangmiring.avif" width="300">
 
 Sebuah balok kayu berada pada bidang miring kasar ditarik dengan gaya $F = 200 \text{ N}$. Massa balok $18 \text{ kg}$ dan percepatannya $3 \text{ m/s}^2$, maka gaya gesekan yang dialami balok dari bidang miring adalah
 - (A) $180 \text{ N}$
@@ -166,7 +166,7 @@ Sebuah balok kayu berada pada bidang miring kasar ditarik dengan gaya $F = 200 \
 
 15. Gambar berikut menunjukkan sebuah kereta belanja bermassa $40 \text{ kg}$ terletak pada lantai datar kasar ($\mu_s = 0,4$ dan $\mu_k = 0,2$), didorong dengan gaya $F = 100 \text{ N}$ oleh seorang siswa.
 
-(Ilustrasi: Diagram menunjukkan kereta belanja didorong gaya $F$ pada lantai datar kasar. Di bawahnya terdapat 4 benda dengan massa: (1) $M_1 = 5 \text{ kg}$, (2) $M_2 = 15 \text{ kg}$, (3) $M_3 = 4 \text{ kg}$, (4) $M_4 = 6 \text{ kg}$)
+<img src="./media/set-1-variousmass.avif" width="300">
 
 terdapat empat belanjaan seperti gambar di atas ($g = 10 \text{ m.s}^{-2}$). Agar kereta belanja bergerak tanpa percepatan, maka di dalamnya harus dimasukkan benda
 - (A) (1) dan (2)
@@ -188,7 +188,7 @@ terdapat empat belanjaan seperti gambar di atas ($g = 10 \text{ m.s}^{-2}$). Aga
 
 17. Dua benda bergerak seperti pada gambar
 
-(Ilustrasi: Diagram menunjukkan benda $A$ ($m_A = 20 \text{ kg}$) bergerak ke kanan dengan kecepatan $15 \text{ m.s}^{-1}$ mendekati benda $B$ ($m_B = 10 \text{ kg}$) bergerak ke kiri dengan kecepatan $v$)
+<img src="./media/set-1-impulsmoment.avif" width="300">
 
 Jika kemudian terjadi tumbukan dengan kecepatan benda $A$ dan $B$ setelah tumbukan berturut-turut $9 \text{ m/s}$ dan $18 \text{ m/s}$. Maka ...
 
@@ -203,7 +203,7 @@ Jika kemudian terjadi tumbukan dengan kecepatan benda $A$ dan $B$ setelah tumbuk
 
 18. Dua bola dihubungkan dengan batang kayu (massa batang kayu diabaikan) disusun seperti gambar berikut. Momen inersia saat diputar dengan sumbu $ab$ adalah
 
-(Ilustrasi: Diagram menunjukkan dua bola dengan massa $200 \text{ gr}$ dan $400 \text{ gr}$ dihubungkan oleh batang kayu sepanjang $25 \text{ cm}$. Sumbu putar $ab$ tegak lurus pada batang. Asumsi sumbu $ab$ melewati massa $200 \text{ gr}$)
+<img src="./media/set-1-variousmass.avif" width="300">
 
 - (A) $20 \times 10^{-3} \text{ kg.m}^2$
 - (B) $25 \times 10^{-3} \text{ kg.m}^2$
@@ -289,7 +289,7 @@ Pernyataan yang benar adalah
 
 24. Perhatikan gambar di bawah ini
 
-(Ilustrasi: Diagram menunjukkan sumber bunyi (petasan). Ali berjarak $10 \text{ m}$ dari petasan. Bobi berjarak $90 \text{ m}$ dari Ali, sehingga Bobi berjarak $100 \text{ m}$ dari petasan)
+<img src="./media/set-1-intensbunyi.avif" width="300">
 
 Bunyi sebuah petasan didengar oleh Ali dengan intensitas $8,1 \times 10^2 \text{ W.m}^{-2}$ dan amplitudo bunyi $2 \text{ m}$. Berapakah besar intensitas $(I)$ dan amplitudo $(A)$ yang didengar oleh Bobi?
 - (A) $I = 8,1 \text{ W.m}^{-2}$ dan $A = 20 \text{ cm}$
