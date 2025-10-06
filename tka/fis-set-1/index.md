@@ -10,7 +10,7 @@ Hasil pengukuran itu adalah
 - (E) $2,70 \text{ mm}$
 
 <details class="info">
-  <summary>Pembahasan 01</summary>
+  <summary>Pembahasan</summary>
   <div>
     <p>Untuk membaca hasil pengukuran mikrometer sekrup, kita perlu menjumlahkan nilai pada skala utama dan skala nonius.</p>
     <p>1.  <b>Skala Utama:</b> Skala utama menunjukkan angka 2,5 mm (terlihat garis setelah angka 2 dan ada satu garis lagi di bawahnya yang menandakan 0,5 mm).</p>
@@ -29,11 +29,24 @@ Hasil pengukuran itu adalah
 <img src="./media/set-1-2.avif" width="300">
 
 hasil pengukuran tersebut adalah
-- (A) $5,51 \text{ mm}$
-- (B) $5,52 \text{ mm}$
-- (C) $5,53 \text{ mm}$
-- (D) $5,54 \text{ mm}$
-- (E) $5,55 \text{ mm}$
+- (A) $5,51 \text{ cm}$
+- (B) $5,52 \text{ cm}$
+- (C) $5,53 \text{ cm}$
+- (D) $5,54 \text{ cm}$
+- (E) $5,55 \text{ cm}$
+
+<details class="info">
+  <summary>Pembahasan</summary>
+  <div>
+    <p>Untuk membaca hasil pengukuran jangka sorong, kita perlu menjumlahkan nilai pada skala utama dan skala nonius.</p>
+    <p>1.  <b>Skala Utama:</b> Lihat angka pada skala utama yang berada tepat sebelum angka 0 pada skala nonius. Angka tersebut adalah 5,5 cm.</p>
+    <p>2.  <b>Skala Nonius:</b> Cari garis pada skala nonius yang berimpit atau membentuk satu garis lurus dengan garis pada skala utama. Garis yang berimpit adalah garis ke-2. Nilai ini dikalikan dengan ketelitian jangka sorong, yaitu 0,01 cm. Jadi, $2 \times 0,01 \text{ cm} = 0,02 \text{ cm}$.</p>
+    <p>3.  <b>Hasil Pengukuran:</b> Jumlahkan kedua hasil pembacaan.</p>
+    $$ \text{Hasil} = \text{Skala Utama} + \text{Skala Nonius} $$
+    $$ \text{Hasil} = 5,5 \text{ cm} + 0,02 \text{ cm} = 5,52 \text{ cm} $$
+    <p>Jadi, hasil pengukuran itu adalah <b>(B)  5,52 cm</b>.</p>
+  </div>
+</details>
 
 ---
 
@@ -55,6 +68,22 @@ hasil pengukuran tersebut adalah
 - (D) $2\sqrt{2} \text{ m.s}^{-1}$
 - (E) $4,75 \text{ m.s}^{-1}$
 
+<details class="info">
+  <summary>Pembahasan</summary>
+  <div>
+    <p>Kecepatan rata-rata didefinisikan sebagai total perpindahan dibagi dengan total waktu.</p>
+    <p>1.  <b>Perpindahan total:</b> Benda bergerak dari titik A(0,0) ke titik C(8,6). Perpindahan adalah vektor dari posisi awal ke posisi akhir.</p>
+    $$ \Delta \vec{r} = \vec{r}_C - \vec{r}_A = (8-0)\hat{i} + (6-0)\hat{j} = 8\hat{i} + 6\hat{j} $$
+    Besar perpindahan adalah:
+    $$ |\Delta \vec{r}| = \sqrt{8^2 + 6^2} = \sqrt{64 + 36} = \sqrt{100} = 10 \text{ m} $$
+    <p>2.  <b>Waktu total:</b> Waktu dari A ke B adalah 2 sekon, dan dari B ke C adalah 3 sekon.</p>
+    $$ \Delta t = t_{AB} + t_{BC} = 2 \text{ s} + 3 \text{ s} = 5 \text{ s} $$
+    <p>3.  <b>Kecepatan rata-rata:</b></p>
+    $$ \bar{v} = \frac{\text{Besar Perpindahan}}{\text{Waktu total}} = \frac{10 \text{ m}}{5 \text{ s}} = 2 \text{ m/s} $$
+    <p>Jadi, kecepatan rata-rata gerak benda adalah <b>(C) 2 m.s⁻¹</b>.</p>
+  </div>
+</details>
+
 ---
 
 05. Budi naik sepeda dengan rute $ABCD$ seperti pada gambar di bawah.
@@ -67,6 +96,29 @@ Rute $AB$ ditempuh dengan laju tetap $8 \text{ km/jam}$, rute $BC$ dengan laju t
 - (C) $\frac{70}{9} \text{ km/jam}$ dan $\frac{50}{9} \text{ km/jam}$
 - (D) $5 \text{ km/jam}$ dan $7 \text{ km/jam}$
 - (E) $7 \text{ km/jam}$ dan $5 \text{ km/jam}$
+
+<details class="info">
+  <summary>Pembahasan</summary>
+  <div>
+    <p>Pertama, kita hitung waktu tempuh untuk setiap rute.</p>
+    <p>Waktu AB: $ t_{AB} = \frac{d_{AB}}{v_{AB}} = \frac{20 \text{ km}}{8 \text{ km/jam}} = 2,5 \text{ jam} $</p>
+    <p>Waktu BC: $ t_{BC} = \frac{d_{BC}}{v_{BC}} = \frac{40 \text{ km}}{10 \text{ km/jam}} = 4 \text{ jam} $</p>
+    <p>Waktu CD: $ t_{CD} = \frac{d_{CD}}{v_{CD}} = \frac{10 \text{ km}}{4 \text{ km/jam}} = 2,5 \text{ jam} $</p>
+    <p>Waktu istirahat di B: 40 menit </p>
+    <p>Waktu istirahat di C: 20 menit </p>
+    <p>Total Waktu Istirahat : 60 menit = 1 jam</p>
+    <p><b>Total waktu perjalanan (termasuk istirahat):</b></p>
+    $$ t_{total} = t_{AB} + t_{BC} + t_{CD} + t_{istirahat} = 2,5 + 4 + 2,5 + 1 = 10 \text{ jam} $$
+    <p><b>Kelajuan Rata-rata:</b></p>
+    <p>Jarak total: $ d_{total} = d_{AB} + d_{BC} + d_{CD} = 20 + 40 + 10 = 70 \text{ km} $</p>
+    $$ v_{rata-rata} = \frac{d_{total}}{t_{total}} = \frac{70 \text{ km}}{10 \text{ jam}} = 7 \text{ km/jam} $$
+    <p><b>Kecepatan Rata-rata:</b></p>
+    <p>Perpindahan adalah jarak garis lurus dari A ke D. Dari gambar, kita bisa lihat perpindahan horizontal (timur) adalah $ 20 + 10 = 30 $ km dan perpindahan vertikal (selatan) adalah $ 40 $ km. Maka besar perpindahan adalah:</p>
+    $$ \Delta r = \sqrt{30^2 + 40^2} = \sqrt{900 + 1600} = \sqrt{2500} = 50 \text{ km} $$
+    $$ \text{Kecepatan rata-rata} = \frac{\text{Perpindahan}}{t_{total}} = \frac{50 \text{ km}}{10 \text{ jam}} = 5 \text{ km/jam} $$
+    <p>Jadi, kelajuan rata-rata dan kecepatan rata-rata berturut-turut adalah 7 km/jam dan 5 km/jam. Jawaban yang benar adalah <b>(E) 7 km/jam dan 5 km/jam</b>.</p>
+  </div>
+</details>
 
 ---
 
@@ -82,6 +134,33 @@ Pernyataan yang benar:
 - (C) (1) dan (3)
 - (D) (1) dan (2)
 - (E) (1), (2), dan (3)
+
+<details class="info">
+  <summary>Pembahasan</summary>
+  <div>
+    <p>Kita gunakan konsep Gerak Lurus Berubah Beraturan (GLBB) untuk mobil polisi dan Gerak Lurus Beraturan (GLB) untuk pencuri.</p>
+    <p>Posisi polisi: $ x_p = v_{0p}t + \frac{1}{2}a_pt^2 = 0 \cdot t + \frac{1}{2}(4)t^2 = 2t^2 $</p>
+    <p>Posisi pencuri: $ x_c = x_{0c} + v_ct = 300 + 25t $</p>
+    <p>Polisi menyusul pencuri saat posisi mereka sama ($x_p = x_c$).</p>
+    $$ 2t^2 = 25t + 300 $$
+    $$ 2t^2 - 25t - 300 = 0 $$
+    Gunakan rumus ABC untuk mencari t:
+    $$ t = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a} = \frac{25 \pm \sqrt{(-25)^2 - 4(2)(-300)}}{2(2)} $$
+    $$ t = \frac{25 \pm \sqrt{625 + 2400}}{4} = \frac{25 \pm \sqrt{3025}}{4} = \frac{25 \pm 55}{4} $$
+    Karena waktu tidak mungkin negatif, kita ambil solusi positif:
+    $$ t = \frac{25 + 55}{4} = \frac{80}{4} = 20 \text{ sekon} $$
+    <p><b>(1) setelah bergerak 20 sekon</b> - Pernyataan ini <b>BENAR</b>.</p>
+    <p><b>(2) kecepatannya 288 km/jam</b></p>
+    Kecepatan polisi saat itu: $ v_p = v_{0p} + a_pt = 0 + 4(20) = 80 \text{ m/s} $.
+    Konversi ke km/jam: $ 80 \frac{\text{m}}{\text{s}} \times \frac{3600 \text{ s}}{1 \text{ jam}} \times \frac{1 \text{ km}}{1000 \text{ m}} = 80 \times 3,6 = 288 \text{ km/jam} $.
+    Pernyataan ini <b>BENAR</b>.
+    <p><b>(3) setelah bergerak sejauh 800 m</b></p>
+    Jarak yang ditempuh polisi: $ x_p = 2t^2 = 2(20)^2 = 2(400) = 800 \text{ m} $.
+    Pernyataan ini <b>BENAR</b>.
+    <p>Karena pernyataan (1), (2), dan (3) benar, maka jawaban yang benar adalah <b>(E) (1), (2), dan (3)</b>.</p>
+  </div>
+</details>
+
 
 ---
 
