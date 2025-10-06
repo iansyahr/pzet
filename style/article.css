@@ -213,3 +213,100 @@ html[data-theme="light"] #content pre {
 
 /* Very small screens */
 @media (max-width: 360px) { .brand .sub { display: none; } }
+
+/* Details / Summary — matches the site's vibe */
+#content details {
+  margin: 0.9em 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: color-mix(in oklab, var(--bg-elev) 96%, var(--text) 4%);
+  box-shadow: var(--shadow-1);
+  overflow: clip; /* prevent glow bleed */
+}
+
+/* Remove default marker */
+#content details summary::-webkit-details-marker { display: none; }
+#content details summary { list-style: none; }
+
+/* Summary row */
+#content details > summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  background: var(--bg-elev);
+  transition: background-color 220ms ease, color 220ms ease, box-shadow 220ms ease;
+}
+
+#content details > summary:hover {
+  background: color-mix(in oklab, var(--bg-elev) 92%, var(--text) 8%);
+}
+
+#content details > summary:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--accent) 65%, transparent);
+  outline-offset: 2px;
+  border-radius: calc(var(--radius-md) - 2px);
+}
+
+/* Chevron */
+#content details > summary::before {
+  content: "";
+  flex: 0 0 18px;
+  height: 18px;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+  transform: rotate(-45deg);
+  opacity: 0.65;
+  transition: transform 220ms ease, opacity 220ms ease;
+  margin-right: 2px;
+}
+
+#content details[open] > summary::before {
+  transform: rotate(45deg); /* pointing down */
+  opacity: 0.9;
+}
+
+/* Content area */
+#content details > *:not(summary) {
+  padding: 12px 14px 14px;
+  color: var(--text);
+  background: color-mix(in oklab, var(--bg-elev) 98%, var(--text) 2%);
+  border-top: 1px solid var(--border);
+}
+
+/* Animate open/close (respects reduced-motion) */
+@media (prefers-reduced-motion: no-preference) {
+  #content details[open] > *:not(summary) {
+    animation: details-open 220ms ease;
+  }
+}
+@keyframes details-open {
+  from { opacity: 0; translate: 0 -2px; }
+  to   { opacity: 1; translate: 0 0; }
+}
+
+/* Compact variant (optional) */
+#content details.details-compact > summary { padding: 10px 12px; }
+#content details.details-compact > *:not(summary) { padding: 10px 12px 12px; }
+
+/* Accent variants (optional) */
+#content details.info { border-color: color-mix(in oklab, var(--accent) 45%, var(--border)); }
+#content details.info > summary {
+  background: color-mix(in oklab, var(--accent) 10%, var(--bg-elev));
+}
+#content details.warning { border-color: #e7b84c; }
+html[data-theme="dark"] #content details.warning { border-color: #b6892f; }
+
+/* Nested details spacing */
+#content details details {
+  margin: 0.6em 0 0;
+}
+
+/* Good defaults for code/tables inside details */
+#content details pre { margin: .4em 0 0; }
+#content details table { margin: .6em 0 0; }
