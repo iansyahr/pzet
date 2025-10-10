@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WIP - TKA - FIS - Set 3</title>
+    <style>
+        /* 
+        Aturan CSS untuk memastikan elemen mengisi seluruh layar (viewport) 
+        dan menghilangkan margin atau padding bawaan dari browser.
+        */
+        html, body {
+            height: 100%; /* Mengambil 100% tinggi dari viewport */
+            width: 100%;  /* Mengambil 100% lebar dari viewport */
+            margin: 0;    /* Menghilangkan margin bawaan */
+            padding: 0;   /* Menghilangkan padding bawaan */
+            overflow: hidden; /* Mencegah scroll ganda karena PDF sudah bisa di-scroll */
+        }
+        
+        /* Mengatur iframe untuk mengambil 100% dari body */
+        #pdf-viewer {
+            width: 100%;
+            height: 100%;
+            border: none; /* Menghilangkan border pada iframe */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 
+    <iframe> dimuat untuk mengambil 100% dari body, 
+    yang telah diatur untuk mengambil 100% dari layar.
+    -->
+    <iframe 
+        id="pdf-viewer"
+        src="https://pzet.my.id/tka/set-fis-3/tka.pdf" 
+        title="Dokumen PDF TKA Fisika Full Screen"
+    >
+        <p>Peramban Anda tidak mendukung iframe. Silakan klik tautan di bawah ini untuk melihat PDF.</p>
+        <p><a href="https://pzet.my.id/tka/set-fis-3/tka.pdf">Unduh atau Lihat PDF di sini</a></p>
+    </iframe>
+
+</body>
+</html>
