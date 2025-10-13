@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Copy Dotpaper ke Clipboard</title>
+  <style>
+    :root{
+      --bg:#fffdf8; --card:#ffffff; --text:#1f2328; --muted:#5b6470; --bd:#e7e2da; --accent:#5b8def;
+    }
+    @media (prefers-color-scheme: dark){
+      :root{ --bg:#0f1115; --card:#151923; --text:#e9eef6; --muted:#9aa4b2; --bd:#2a3140; --accent:#7aa2ff; }
+    }
+    body{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial; background:var(--bg); color:var(--text); margin:0; display:grid; place-items:center; min-height:100dvh; padding:16px;}
+    .wrap{max-width:520px; width:100%; background:var(--card); border:1px solid var(--bd); border-radius:16px; box-shadow:0 8px 28px rgba(0,0,0,.08); padding:18px;}
+    h1{margin:0 0 8px; font-size:20px}
+    p{margin:0 0 14px; color:var(--muted); font-size:14px}
+    .imgbox{border:1px dashed var(--bd); border-radius:12px; padding:10px; display:flex; justify-content:center; align-items:center; background:rgba(0,0,0,.02)}
+    img{max-width:100%; height:auto; border-radius:8px}
+    button{
+      appearance:none; border:0; background:var(--accent); color:white; padding:10px 14px; border-radius:12px;
+      font-weight:600; cursor:pointer; margin-top:12px; width:100%;
+      box-shadow:0 1px 2px rgba(0,0,0,.08);
+      transition:transform .08s ease, filter .2s ease;
+    }
+    button:active{ transform:scale(.99); }
+    .status{margin-top:10px; font-size:13px}
+    .ok{color:#1a7f37} .warn{color:#b04}
+    code{background:rgba(127,127,127,.12); padding:.1em .35em; border-radius:6px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Copy Dotpaper ke Clipboard</h1>
+    <p>Klik tombol untuk menyalin gambar berikut ke clipboard. (Perlu <code>HTTPS</code> atau <code>localhost</code>.)</p>
+
+    <div class="imgbox">
+      <img id="preview" alt="Dotpaper" src="https://pzet.my.id/etc/dotpaper/dotpaper.png" loading="lazy">
+    </div>
+
+    <button id="copyBtn">Salin Gambar ke Clipboard</button>
+    <div id="status" class="status" aria-live="polite"></div>
+
+    <details style="margin-top:12px">
+      <summary>Jika gagal?</summary>
+      <ul style="margin:8px 0 0 18px; color:var(--muted); font-size:13px; line-height:1.5">
+        <li>Pastikan membuka file ini melalui HTTPS atau di <code>localhost</code>.</li>
+        <li>Izin clipboard harus diizinkan oleh browser.</li>
+        <li>Jika server gambar tidak mengaktifkan CORS, penyalinan bisa ditolak. Solusi cepat: buka gambar di tab baru, klik kanan &rarr; Copy image.</li>
+      </ul>
+    </details>
+  </div>
+
+  <script>
+    const IMG_URL = "https://pzet.my.id/etc/dotpaper/dotpaper.png";
+    const btn = document.getElementById("copyBtn");
+    const statusEl = document.getElementById("status");
+
+    function say(msg, cls){
+      statusEl.className = "status " + (cls || "");
+      statusEl.textContent = msg;
+    }
+
+    async function copyImageFromURL(url){
+      // Feature detection
+      if (!("clipboard" in navigator) || typeof ClipboardItem === "undefined") {
+        throw new Error("Browser tidak mendukung Clipboard API untuk gambar.");
+      }
+
+      // Ambil gambar sebagai Blob (lebih aman daripada menggambar di canvas karena CORS)
+      // Jika server mengizinkan CORS, ini akan berhasil. Jika tidak, akan melempar error.
+      const res = await fetch(url, {mode: "cors", cache: "no-store"});
+      if (!res.ok) throw new Error("Gagal mengunduh gambar (" + res.status + ").");
+      const blob = await res.blob();
+
+      // Pastikan MIME type benar (fallback jika tidak diketahui)
+      const type = blob.type || "image/png";
+      const item = new ClipboardItem({ [type]: blob });
+      await navigator.clipboard.write([item]);
+    }
+
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      say("Menyalin...", "");
+      try {
+        await copyImageFromURL(IMG_URL);
+        say("Berhasil! Gambar sudah tersalin ke clipboard.", "ok");
+      } catch (err) {
+        console.error(err);
+        say("Gagal menyalin: " + err.message, "warn");
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // Info awal
+    (async () => {
+      try {
+        if (!("clipboard" in navigator) || typeof ClipboardItem === "undefined") {
+          say("Catatan: Browser ini mungkin tidak mendukung salin gambar langsung via Clipboard API.", "warn");
+        }
+      } catch {}
+    })();
+  </script>
+</body>
+</html>
