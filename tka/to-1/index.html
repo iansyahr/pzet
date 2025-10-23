@@ -1,1 +1,143 @@
-test
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TO 1 Fisika - Prosus Inten</title>
+    <style>
+        /* Reset dan pengaturan dasar untuk layar penuh */
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden; /* Mencegah scroll di halaman utama */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+        }
+
+        /* Kontainer untuk PDF, loading, dan fallback */
+        .pdf-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Gaya untuk indikator loading */
+        #loading-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2em;
+            color: #555;
+            z-index: 10;
+            text-align: center;
+        }
+
+        /* Mengatur iframe untuk mengisi seluruh kontainer */
+        #pdf-viewer {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background-color: white;
+        }
+
+        /* Gaya untuk area fallback jika PDF tidak bisa ditampilkan */
+        #pdf-fallback {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none; /* Sembunyikan secara default */
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background-color: #f0f2f5;
+        }
+
+        .pdf-fallback p {
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 1.5em;
+        }
+
+        /* Gaya untuk tombol unduh yang menarik */
+        .download-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .download-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="pdf-container">
+        <!-- Pesan loading yang akan muncul sementara -->
+        <div id="loading-message">
+            <div>Memuat dokumen, harap tunggu...</div>
+        </div>
+
+        <!-- Area fallback yang akan muncul jika PDF gagal dimuat -->
+        <div id="pdf-fallback">
+            <div class="pdf-fallback">
+                <p>Maaf, dokumen tidak dapat dimuat.</p>
+                <a href="https://pzet.my.id/tka/to-1/5.%20(FISIKA)%20SOAL%20TRYOUT%20TKA-1%20PROSUS%20INTEN.pdf" 
+                   target="_blank" 
+                   class="download-button">
+                    Lihat atau Unduh PDF
+                </a>
+            </div>
+        </div>
+
+        <!-- 
+        <iframe> untuk menampilkan PDF.
+        Konten di dalam tag iframe hanya ditampilkan jika browser itu sendiri tidak mendukung iframe.
+        -->
+        <iframe 
+            id="pdf-viewer"
+            src="https://pzet.my.id/tka/to-1/5.%20(FISIKA)%20SOAL%20TRYOUT%20TKA-1%20PROSUS%20INTEN.pdf" 
+            title="Dokumen PDF TKA Fisika Full Screen"
+            aria-label="Dokumen PDF TKA Fisika Set 3"
+        >
+            <p>Peramban Anda tidak mendukung iframe. Silakan klik tautan di bawah ini untuk melihat PDF.</p>
+            <p><a href="https://pzet.my.id/tka/to-1/5.%20(FISIKA)%20SOAL%20TRYOUT%20TKA-1%20PROSUS%20INTEN.pdf">Unduh atau Lihat PDF di sini</a></p>
+        </iframe>
+    </div>
+
+    <script>
+        const pdfViewer = document.getElementById('pdf-viewer');
+        const loadingMessage = document.getElementById('loading-message');
+        const pdfFallback = document.getElementById('pdf-fallback');
+
+        // Jika iframe berhasil memuat kontennya
+        pdfViewer.onload = function() {
+            // Sembunyikan pesan loading
+            loadingMessage.style.display = 'none';
+        };
+
+        // Fallback jika PDF gagal dimuat (misalnya error 404 atau masalah jaringan)
+        // Event 'onerror' pada iframe tidak bisa diandalkan untuk konten eksternal,
+        // jadi kita gunakan setTimeout sebagai pendekatan yang lebih robust.
+        setTimeout(function() {
+            // Jika setelah 5 detik pesan loading masih ada, berarti kemungkinan besar PDF gagal dimuat.
+            if (loadingMessage.style.display !== 'none') {
+                loadingMessage.style.display = 'none';
+                pdfFallback.style.display = 'flex'; // Tampilkan area fallback
+                pdfViewer.style.display = 'none'; // Sembunyikan iframe yang mungkin kosong
+            }
+        }, 5000); // Waktu tunggu 5 detik
+    </script>
+
+</body>
+</html>
