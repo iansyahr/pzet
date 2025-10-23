@@ -5,40 +5,123 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WIP - TKA - FIS - Set 3</title>
     <style>
-        /* 
-        Aturan CSS untuk memastikan elemen mengisi seluruh layar (viewport) 
-        dan menghilangkan margin atau padding bawaan dari browser.
-        */
+        /* Reset dan pengaturan dasar untuk layar penuh */
         html, body {
-            height: 100%; /* Mengambil 100% tinggi dari viewport */
-            width: 100%;  /* Mengambil 100% lebar dari viewport */
-            margin: 0;    /* Menghilangkan margin bawaan */
-            padding: 0;   /* Menghilangkan padding bawaan */
-            overflow: hidden; /* Mencegah scroll ganda karena PDF sudah bisa di-scroll */
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden; /* Mencegah scroll di halaman utama */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
         }
-        
-        /* Mengatur iframe untuk mengambil 100% dari body */
-        #pdf-viewer {
+
+        /* Kontainer untuk PDF dan pesan loading */
+        .pdf-container {
+            position: relative;
             width: 100%;
             height: 100%;
-            border: none; /* Menghilangkan border pada iframe */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Gaya untuk indikator loading */
+        #loading-message {
+            position: absolute;
+            font-size: 1.2em;
+            color: #555;
+            z-index: 10;
+        }
+
+        /* Mengatur object dan embed untuk mengisi seluruh kontainer */
+        .pdf-container object,
+        .pdf-container embed {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background-color: white;
+        }
+
+        /* Gaya untuk area fallback jika PDF tidak bisa ditampilkan */
+        .pdf-fallback {
+            text-align: center;
+            padding: 2em;
+        }
+
+        .pdf-fallback p {
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 1.5em;
+        }
+
+        /* Gaya untuk tombol unduh yang menarik */
+        .download-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .download-button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
 
-    <!-- 
-    <iframe> dimuat untuk mengambil 100% dari body, 
-    yang telah diatur untuk mengambil 100% dari layar.
-    -->
-    <iframe 
-        id="pdf-viewer"
-        src="https://pzet.my.id/tka/fis-set-3/TKA-SET-3-JAW.pdf" 
-        title="Dokumen PDF TKA Fisika Full Screen"
-    >
-        <p>Peramban Anda tidak mendukung iframe. Silakan klik tautan di bawah ini untuk melihat PDF.</p>
-        <p><a href="https://pzet.my.id/tka/set-fis-3/tka.pdf">Unduh atau Lihat PDF di sini</a></p>
-    </iframe>
+    <main class="pdf-container">
+        <!-- Pesan loading yang akan muncul sementara -->
+        <div id="loading-message">Memuat dokumen, harap tunggu...</div>
+
+        <!-- 
+        METODE 1: <object>
+        Dianggap lebih semantik untuk plugin dan memiliki mekanisme fallback yang baik.
+        -->
+        <object 
+            data="https://pzet.my.id/tka/fis-set-3/TKA-SET-3-JAW.pdf" 
+            type="application/pdf"
+            aria-label="Dokumen PDF TKA Fisika Set 3"
+            onload="document.getElementById('loading-message').style.display='none';"
+        >
+            <!-- 
+            METODE 2 (Fallback): <embed>
+            Jika <object> tidak didukung, browser akan mencoba <embed>.
+            -->
+            <embed 
+                src="https://pzet.my.id/tka/fis-set-3/TKA-SET-3-JAW.pdf" 
+                type="application/pdf"
+            >
+                <!-- 
+                METODE 3 (Fallback Akhir): Tautan Unduh
+                Jika kedua metode di atas gagal, tampilkan pesan dan tautan unduh.
+                -->
+                <div class="pdf-fallback">
+                    <p>Peramban Anda tidak dapat menampilkan PDF ini secara langsung.</p>
+                    <a href="https://pzet.my.id/tka/fis-set-3/TKA-SET-3-JAW.pdf" 
+                       target="_blank" 
+                       class="download-button">
+                        Lihat atau Unduh PDF
+                    </a>
+                </div>
+            </embed>
+        </object>
+    </main>
+
+    <script>
+        // Sembunyikan pesan loading setelah beberapa detik sebagai jaga-jaga
+        // jika event 'onload' pada object tidak terpicu (terkadang terjadi di beberapa browser).
+        setTimeout(function() {
+            const loadingMessage = document.getElementById('loading-message');
+            if (loadingMessage) {
+                loadingMessage.style.display = 'none';
+            }
+        }, 5000); // Sembunyikan setelah 5 detik
+    </script>
 
 </body>
 </html>
