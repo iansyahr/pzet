@@ -16,27 +16,27 @@
             background-color: #f0f2f5;
         }
 
-        /* Kontainer untuk PDF dan pesan loading */
+        /* Kontainer untuk PDF, loading, dan fallback */
         .pdf-container {
             position: relative;
             width: 100%;
             height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
 
         /* Gaya untuk indikator loading */
         #loading-message {
             position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             font-size: 1.2em;
             color: #555;
             z-index: 10;
+            text-align: center;
         }
 
-        /* Mengatur object dan embed untuk mengisi seluruh kontainer */
-        .pdf-container object,
-        .pdf-container embed {
+        /* Mengatur iframe untuk mengisi seluruh kontainer */
+        #pdf-viewer {
             width: 100%;
             height: 100%;
             border: none;
@@ -44,9 +44,17 @@
         }
 
         /* Gaya untuk area fallback jika PDF tidak bisa ditampilkan */
-        .pdf-fallback {
+        #pdf-fallback {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none; /* Sembunyikan secara default */
+            justify-content: center;
+            align-items: center;
             text-align: center;
-            padding: 2em;
+            background-color: #f0f2f5;
         }
 
         .pdf-fallback p {
@@ -74,53 +82,61 @@
 </head>
 <body>
 
-    <main class="pdf-container">
+    <div class="pdf-container">
         <!-- Pesan loading yang akan muncul sementara -->
-        <div id="loading-message">Memuat dokumen, harap tunggu...</div>
+        <div id="loading-message">
+            <div>Memuat dokumen, harap tunggu...</div>
+        </div>
+
+        <!-- Area fallback yang akan muncul jika PDF gagal dimuat -->
+        <div id="pdf-fallback">
+            <div class="pdf-fallback">
+                <p>Maaf, dokumen tidak dapat dimuat.</p>
+                <a href="https://pzet.my.id/tka/fis-set-3/TKA-SET-3-JAW.pdf" 
+                   target="_blank" 
+                   class="download-button">
+                    Lihat atau Unduh PDF
+                </a>
+            </div>
+        </div>
 
         <!-- 
-        METODE 1: <object>
-        Dianggap lebih semantik untuk plugin dan memiliki mekanisme fallback yang baik.
+        <iframe> untuk menampilkan PDF.
+        Konten di dalam tag iframe hanya ditampilkan jika browser itu sendiri tidak mendukung iframe.
         -->
-        <object 
-            data="https://pzet.my.id/tka/fis-set-3/TKA-SET-3-JAW.pdf" 
-            type="application/pdf"
+        <iframe 
+            id="pdf-viewer"
+            src="https://pzet.my.id/tka/fis-set-3/TKA-SET-3-JAW.pdf" 
+            title="Dokumen PDF TKA Fisika Full Screen"
             aria-label="Dokumen PDF TKA Fisika Set 3"
-            onload="document.getElementById('loading-message').style.display='none';"
         >
-            <!-- 
-            METODE 2 (Fallback): <embed>
-            Jika <object> tidak didukung, browser akan mencoba <embed>.
-            -->
-            <embed 
-                src="https://pzet.my.id/tka/fis-set-3/TKA-SET-3-JAW.pdf" 
-                type="application/pdf"
-            >
-                <!-- 
-                METODE 3 (Fallback Akhir): Tautan Unduh
-                Jika kedua metode di atas gagal, tampilkan pesan dan tautan unduh.
-                -->
-                <div class="pdf-fallback">
-                    <p>Peramban Anda tidak dapat menampilkan PDF ini secara langsung.</p>
-                    <a href="https://pzet.my.id/tka/fis-set-3/TKA-SET-3-JAW.pdf" 
-                       target="_blank" 
-                       class="download-button">
-                        Lihat atau Unduh PDF
-                    </a>
-                </div>
-            </embed>
-        </object>
-    </main>
+            <p>Peramban Anda tidak mendukung iframe. Silakan klik tautan di bawah ini untuk melihat PDF.</p>
+            <p><a href="https://pzet.my.id/tka/fis-set-3/TKA-SET-3-JAW.pdf">Unduh atau Lihat PDF di sini</a></p>
+        </iframe>
+    </div>
 
     <script>
-        // Sembunyikan pesan loading setelah beberapa detik sebagai jaga-jaga
-        // jika event 'onload' pada object tidak terpicu (terkadang terjadi di beberapa browser).
+        const pdfViewer = document.getElementById('pdf-viewer');
+        const loadingMessage = document.getElementById('loading-message');
+        const pdfFallback = document.getElementById('pdf-fallback');
+
+        // Jika iframe berhasil memuat kontennya
+        pdfViewer.onload = function() {
+            // Sembunyikan pesan loading
+            loadingMessage.style.display = 'none';
+        };
+
+        // Fallback jika PDF gagal dimuat (misalnya error 404 atau masalah jaringan)
+        // Event 'onerror' pada iframe tidak bisa diandalkan untuk konten eksternal,
+        // jadi kita gunakan setTimeout sebagai pendekatan yang lebih robust.
         setTimeout(function() {
-            const loadingMessage = document.getElementById('loading-message');
-            if (loadingMessage) {
+            // Jika setelah 5 detik pesan loading masih ada, berarti kemungkinan besar PDF gagal dimuat.
+            if (loadingMessage.style.display !== 'none') {
                 loadingMessage.style.display = 'none';
+                pdfFallback.style.display = 'flex'; // Tampilkan area fallback
+                pdfViewer.style.display = 'none'; // Sembunyikan iframe yang mungkin kosong
             }
-        }, 5000); // Sembunyikan setelah 5 detik
+        }, 5000); // Waktu tunggu 5 detik
     </script>
 
 </body>
