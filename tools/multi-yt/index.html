@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Multi YouTube Player Pro</title>
+    <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #4CAF50;
+            --warning: #FF9800;
+            --danger: #f44336;
+            --dark: #2d3748;
+            --light: #f7fafc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            min-height: 100vh;
+            padding: 10px;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px 10px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .header-controls {
+            position: absolute;
+            top: 15px;
+            right: 10px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-btn:active {
+            transform: scale(0.9);
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 15px;
+            padding: 18px;
+            margin-bottom: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        @media (min-width: 768px) {
+            .videos-grid.count-2 { grid-template-columns: repeat(2, 1fr); }
+            .videos-grid.count-3 { grid-template-columns: repeat(2, 1fr); }
+            .videos-grid.count-4 { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (min-width: 1024px) {
+            .videos-grid.count-3 { grid-template-columns: repeat(3, 1fr); }
+            .videos-grid.count-4 { grid-template-columns: repeat(2, 1fr); }
+            .videos-grid.count-5,
+            .videos-grid.count-6 { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        .video-card {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: relative;
+            animation: scaleIn 0.3s ease-out;
+        }
+
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .video-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .video-number {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .remove-video-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .remove-video-btn:active {
+            transform: scale(0.9);
+        }
+
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .video-input {
+            width: 100%;
+            padding: 10px 35px 10px 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .video-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .clear-input-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #e0e0e0;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-input:not(:placeholder-shown) ~ .clear-input-btn {
+            display: flex;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(102, 126, 234, 0.1);
+            padding: 4px 8px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+        }
+
+        .volume-control span {
+            font-size: 12px;
+        }
+
+        .volume-control input[type="range"] {
+            width: 100%;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--primary);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .volume-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            background: #000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            z-index: 10;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .controls-section {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, var(--success) 0%, #45a049 100%);
+            color: white;
+            grid-column: 1 / -1;
+        }
+
+        .btn-load {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+        }
+
+        .btn-play {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-pause {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-stop {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-sync {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            grid-column: 1 / -1;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .quick-btn {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px 4px;
+            border-radius: 6px;
+            font-size: 11px;
+            color: var(--primary);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            font-weight: 600;
+        }
+
+        .quick-btn:active {
+            transform: scale(0.95);
+            background: rgba(255, 255, 255, 1);
+        }
+
+        .info-box {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 12px;
+            color: var(--primary);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--dark);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 1000;
+            transition: bottom 0.4s ease;
+            max-width: 90%;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .toast.show {
+            bottom: 20px;
+        }
+
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); }
+        .toast.warning { background: var(--warning); }
+
+        @media (max-width: 480px) {
+            .header h1 { font-size: 20px; }
+            .controls-grid { grid-template-columns: 1fr; }
+            .quick-actions { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-controls">
+                <button class="icon-btn" onclick="toggleDarkMode()" title="Toggle Dark Mode">🌓</button>
+                <button class="icon-btn" onclick="toggleFullscreen()" title="Fullscreen">⛶</button>
+            </div>
+            <h1>🎬 Multi YouTube Player Pro</h1>
+            <p>Putar 3+ video YouTube secara bersamaan</p>
+        </div>
+
+        <div class="card">
+            <div class="controls-section">
+                <div class="controls-grid">
+                    <button class="btn btn-add" onclick="addVideo()">➕ Tambah Video</button>
+                    <button class="btn btn-load" onclick="loadAllVideos()">📥 Muat Semua</button>
+                    <button class="btn btn-play" onclick="playAllVideos()">▶ Putar</button>
+                    <button class="btn btn-pause" onclick="pauseAllVideos()">⏸ Jeda</button>
+                    <button class="btn btn-stop" onclick="stopAllVideos()">⏹ Stop</button>
+                    <button class="btn btn-sync" onclick="syncAllVideos()">🔄 Sinkronkan</button>
+                </div>
+
+                <div class="quick-actions">
+                    <button class="quick-btn" onclick="loadSample()">🎵 Sample</button>
+                    <button class="quick-btn" onclick="loadLast()">📋 Terakhir</button>
+                    <button class="quick-btn" onclick="clearAllInputs()">🗑️ Bersihkan</button>
+                    <button class="quick-btn" onclick="muteAll()">🔇 Mute</button>
+                </div>
+
+                <div class="info-box">
+                    💡 <strong>Tips:</strong> Klik "Tambah Video" untuk menambah player baru. Maksimal 8 video. Gunakan Space untuk play/pause!
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="videos-grid" id="videosContainer">
+                <!-- Videos will be added dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const MAX_VIDEOS = 8;
+        const MIN_VIDEOS = 2;
+        let videoCount = 0;
+        let players = {};
+        let playersReady = {};
+        const STORAGE_KEY = 'multiYoutubePlayer';
+
+        // Load YouTube API
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        document.getElementsByTagName('script')[0].parentNode.insertBefore(tag, document.getElementsByTagName('script')[0]);
+
+        function onYouTubeIframeAPIReady() {
+            initializeVideos();
+        }
+
+        function initializeVideos() {
+            const stored = loadFromStorage();
+            const initialCount = stored ? stored.videos.length : 2;
+            
+            for (let i = 0; i < initialCount; i++) {
+                addVideo(stored ? stored.videos[i] : null);
+            }
+            
+            if (stored) {
+                stored.videos.forEach((data, index) => {
+                    if (data.videoId) {
+                        document.getElementById(`input-${index + 1}`).value = data.videoId;
+                    }
+                });
+                setTimeout(() => loadAllVideos(), 500);
+            }
+        }
+
+        function addVideo(data = null) {
+            if (videoCount >= MAX_VIDEOS) {
+                showToast(`Maksimal ${MAX_VIDEOS} video!`, 'warning');
+                return;
+            }
+
+            videoCount++;
+            const videoId = videoCount;
+            const container = document.getElementById('videosContainer');
+            
+            const videoCard = document.createElement('div');
+            videoCard.className = 'video-card';
+            videoCard.id = `video-card-${videoId}`;
+            videoCard.innerHTML = `
+                <div class="video-card-header">
+                    <div class="video-number">Video ${videoId}</div>
+                    ${videoCount > MIN_VIDEOS ? `<button class="remove-video-btn" onclick="removeVideo(${videoId})">×</button>` : ''}
+                </div>
+                <div class="input-wrapper">
+                    <input type="text" 
+                           class="video-input" 
+                           id="input-${videoId}" 
+                           placeholder="Link atau ID YouTube..."
+                           value="${data?.videoId || ''}">
+                    <button class="clear-input-btn" onclick="clearInput(${videoId})">×</button>
+                </div>
+                <div class="volume-control">
+                    <span>🔊</span>
+                    <input type="range" 
+                           min="0" 
+                           max="100" 
+                           value="${data?.volume || 100}" 
+                           id="volume-${videoId}"
+                           oninput="setVolume(${videoId}, this.value)">
+                </div>
+                <div class="video-wrapper" id="wrapper-${videoId}">
+                    <div id="player-${videoId}"></div>
+                    <div class="loading-overlay" id="loading-${videoId}">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(videoCard);
+            updateGridClass();
+            
+            if (data?.videoId) {
+                setTimeout(() => loadSingleVideo(videoId), 300);
+            }
+        }
+
+        function removeVideo(id) {
+            if (videoCount <= MIN_VIDEOS) {
+                showToast(`Minimal ${MIN_VIDEOS} video!`, 'warning');
+                return;
+            }
+
+            if (players[id]) {
+                players[id].destroy();
+                delete players[id];
+                delete playersReady[id];
+            }
+
+            const card = document.getElementById(`video-card-${id}`);
+            card.style.animation = 'scaleIn 0.3s ease-out reverse';
+            setTimeout(() => {
+                card.remove();
+                renumberVideos();
+            }, 300);
+
+            showToast('Video dihapus! 🗑️', 'success');
+        }
+
+        function renumberVideos() {
+            const cards = document.querySelectorAll('.video-card');
+            const newPlayers = {};
+            const newPlayersReady = {};
+            
+            cards.forEach((card, index) => {
+                const newId = index + 1;
+                const oldId = parseInt(card.id.split('-')[2]);
+                
+                // Update IDs
+                card.id = `video-card-${newId}`;
+                card.querySelector('.video-number').textContent = `Video ${newId}`;
+                card.querySelector('.video-input').id = `input-${newId}`;
+                card.querySelector('.volume-control input').id = `volume-${newId}`;
+                card.querySelector('.volume-control input').setAttribute('oninput', `setVolume(${newId}, this.value)`);
+                card.querySelector('.video-wrapper').id = `wrapper-${newId}`;
+                card.querySelector('[id^="player-"]').id = `player-${newId}`;
+                card.querySelector('[id^="loading-"]').id = `loading-${newId}`;
+                
+                const removeBtn = card.querySelector('.remove-video-btn');
+                if (removeBtn) {
+                    removeBtn.setAttribute('onclick', `removeVideo(${newId})`);
+                }
+                
+                card.querySelector('.clear-input-btn').setAttribute('onclick', `clearInput(${newId})`);
+                
+                // Migrate players
+                if (players[oldId]) {
+                    newPlayers[newId] = players[oldId];
+                    newPlayersReady[newId] = playersReady[oldId];
+                }
+            });
+            
+            players = newPlayers;
+            playersReady = newPlayersReady;
+            videoCount = cards.length;
+            updateGridClass();
+        }
+
+        function loadSingleVideo(id) {
+            const input = document.getElementById(`input-${id}`);
+            const url = input.value.trim();
+            
+            if (!url) return;
+            
+            const videoId = extractVideoId(url);
+            if (!videoId) {
+                showToast(`Video ${id}: Link tidak valid!`, 'error');
+                return;
+            }
+
+            showLoading(id);
+
+            if (players[id]) {
+                players[id].destroy();
+            }
+
+            players[id] = new YT.Player(`player-${id}`, {
+                videoId: videoId,
+                playerVars: {
+                    'playsinline': 1,
+                    'controls': 1,
+                    'modestbranding': 1,
+                    'rel': 0
+                },
+                events: {
+                    'onReady': (e) => {
+                        playersReady[id] = true;
+                        hideLoading(id);
+                        e.target.setVolume(document.getElementById(`volume-${id}`).value);
+                    },
+                    'onError': () => {
+                        hideLoading(id);
+                        showToast(`Video ${id}: Error loading!`, 'error');
+                        playersReady[id] = false;
+                    }
+                }
+            });
+        }
+
+        function loadAllVideos() {
+            let loaded = 0;
+            for (let i = 1; i <= videoCount; i++) {
+                const input = document.getElementById(`input-${i}`);
+                if (input && input.value.trim()) {
+                    loadSingleVideo(i);
+                    loaded++;
+                }
+            }
+            
+            if (loaded > 0) {
+                showToast(`${loaded} video dimuat! 🎉`, 'success');
+                saveToStorage();
+            } else {
+                showToast('Masukkan minimal 1 link video!', 'warning');
+            }
+        }
+
+        function playAllVideos() {
+            let played = 0;
+            Object.keys(players).forEach(id => {
+                if (playersReady[id] && players[id].playVideo) {
+                    players[id].playVideo();
+                    played++;
+                }
+            });
+            
+            if (played > 0) {
+                showToast(`${played} video diputar ▶`, 'success');
+            }
+        }
+
+        function pauseAllVideos() {
+            let paused = 0;
+            Object.keys(players).forEach(id => {
+                if (playersReady[id] && players[id].pauseVideo) {
+                    players[id].pauseVideo();
+                    paused++;
+                }
+            });
+            
+            if (paused > 0) {
+                showToast(`${paused} video dijeda ⏸`, 'warning');
+            }
+        }
+
+        function stopAllVideos() {
+            let stopped = 0;
+            Object.keys(players).forEach(id => {
+                if (playersReady[id] && players[id].stopVideo) {
+                    players[id].stopVideo();
+                    stopped++;
+                }
+            });
+            
+            if (stopped > 0) {
+                showToast(`${stopped} video dihentikan ⏹`, 'error');
+            }
+        }
+
+        function syncAllVideos() {
+            const ids = Object.keys(players).filter(id => playersReady[id]);
+            if (ids.length < 2) {
+                showToast('Minimal 2 video harus siap!', 'warning');
+                return;
+            }
+
+            const firstTime = players[ids[0]].getCurrentTime();
+            ids.slice(1).forEach(id => {
+                players[id].seekTo(firstTime, true);
+            });
+            
+            showToast(`${ids.length} video disinkronkan! 🔄`, 'success');
+        }
+
+        function setVolume(id, volume) {
+            if (playersReady[id] && players[id].setVolume) {
+                players[id].setVolume(volume);
+            }
+        }
+
+        function muteAll() {
+            Object.keys(players).forEach(id => {
+                if (playersReady[id]) {
+                    const currentVolume = players[id].getVolume();
+                    if (currentVolume > 0) {
+                        players[id].setVolume(0);
+                        document.getElementById(`volume-${id}`).value = 0;
+                    } else {
+                        players[id].setVolume(100);
+                        document.getElementById(`volume-${id}`).value = 100;
+                    }
+                }
+            });
+            showToast('Volume toggle! 🔇', 'success');
+        }
+
+        function extractVideoId(url) {
+            if (!url) return null;
+            url = url.trim();
+            
+            if (!url.includes('youtube.com') && !url.includes('youtu.be') && url.length === 11) {
+                return url;
+            }
+
+            let videoId = '';
+            if (url.includes('youtube.com/watch?v=')) {
+                videoId = url.split('v=')[1];
+                const ampersand = videoId.indexOf('&');
+                if (ampersand !== -1) videoId = videoId.substring(0, ampersand);
+            } else if (url.includes('youtu.be/')) {
+                videoId = url.split('youtu.be/')[1];
+                const question = videoId.indexOf('?');
+                if (question !== -1) videoId = videoId.substring(0, question);
+            } else if (url.includes('youtube.com/embed/')) {
+                videoId = url.split('embed/')[1];
+                const question = videoId.indexOf('?');
+                if (question !== -1) videoId = videoId.substring(0, question);
+            }
+            return videoId || null;
+        }
+
+        function showLoading(id) {
+            const loading = document.getElementById(`loading-${id}`);
+            if (loading) loading.style.display = 'flex';
+        }
+
+        function hideLoading(id) {
+            const loading = document.getElementById(`loading-${id}`);
+            if (loading) loading.style.display = 'none';
+        }
+
+        function clearInput(id) {
+            document.getElementById(`input-${id}`).value = '';
+        }
+
+        function clearAllInputs() {
+            for (let i = 1; i <= videoCount; i++) {
+                const input = document.getElementById(`input-${i}`);
+                if (input) input.value = '';
+            }
+            showToast('Semua input dibersihkan! 🗑️', 'success');
+        }
+
+        function updateGridClass() {
+            const container = document.getElementById('videosContainer');
+            container.className = `videos-grid count-${videoCount}`;
+        }
+
+        function saveToStorage() {
+            const videos = [];
+            for (let i = 1; i <= videoCount; i++) {
+                const input = document.getElementById(`input-${i}`);
+                const volume = document.getElementById(`volume-${i}`);
+                if (input) {
+                    videos.push({
+                        videoId: input.value.trim(),
+                        volume: volume ? volume.value : 100
+                    });
+                }
+            }
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ videos }));
+        }
+
+        function loadFromStorage() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            return stored ? JSON.parse(stored) : null;
+        }
+
+        function loadLast() {
+            const stored = loadFromStorage();
+            if (stored && stored.videos.length > 0) {
+                // Clear current
+                while (videoCount > 0) {
+                    const firstCard = document.querySelector('.video-card');
+                    if (firstCard) firstCard.remove();
+                    videoCount--;
+                }
+                
+                players = {};
+                playersReady = {};
+                
+                // Load stored
+                initializeVideos();
+                showToast('Video terakhir dimuat! 📋', 'success');
+            } else {
+                showToast('Tidak ada data tersimpan!', 'warning');
+            }
+        }
+
+        function loadSample() {
+            const samples = ['dQw4w9WgXcQ', 'jNQXAC9IVRw', '9Deg7VrpHbM', 'kJQP7kiw5Fk'];
+            for (let i = 1; i <= Math.min(videoCount, samples.length); i++) {
+                document.getElementById(`input-${i}`).value = samples[i - 1];
+            }
+            showToast('Sample dimuat! Klik "Muat Semua"', 'success');
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDark);
+            showToast(isDark ? 'Dark mode aktif 🌙' : 'Light mode aktif ☀️', 'success');
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+                showToast('Mode fullscreen ⛶', 'success');
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // Load dark mode preference
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT') return;
+            
+            if (e.code === 'Space') {
+                e.preventDefault();
+                playAllVideos();
+            } else if (e.code === 'KeyP') {
+                e.preventDefault();
+                pauseAllVideos();
+            } else if (e.code === 'KeyS') {
+                e.preventDefault();
+                syncAllVideos();
+            } else if (e.code === 'KeyA' && e.ctrlKey) {
+                e.preventDefault();
+                addVideo();
+            } else if (e.code === 'KeyM') {
+                e.preventDefault();
+                muteAll();
+            }
+        });
+
+        // Auto save
+        setInterval(() => {
+            if (Object.keys(playersReady).length > 0) {
+                saveToStorage();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
