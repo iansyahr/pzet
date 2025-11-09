@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Generator Broadcast WhatsApp — Jadwal Mingguan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0c10; --card: #111218; --soft: #1a1c24; --text: #e6e6ea; 
+    --muted: #a7a7b0; --brand: #5ac8fa; --accent: #64d2ff;
+    --ok: #2ecc71; --warn: #ff9f0a; --err: #ff3b30;
+    --radius: 16px; --pad: 14px; --shadow: 0 10px 24px rgba(0,0,0,.35);
+    --gap: 16px; --gap-sm: 12px; --gap-xs: 8px;
+  }
+  
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: Inter, system-ui, Segoe UI, Roboto, Arial, sans-serif;
+    color: var(--text);
+    background: radial-gradient(1200px 800px at 80% -10%, rgba(100,210,255,.12), transparent 60%), linear-gradient(180deg, #0a0b10, #0b0c10);
+    line-height: 1.5;
+  }
+  
+  .wrap {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
+  
+  h1 {
+    font-size: clamp(1.5rem, 4vw, 2.25rem);
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.5px;
+  }
+  
+  .sub {
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+  }
+  
+  .grid {
+    display: grid;
+    gap: var(--gap);
+  }
+  
+  .cols {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  }
+  
+  .card {
+    background: var(--card);
+    border: 1px solid #202331;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    min-width: 0;
+  }
+  
+  .card .hd {
+    padding: 12px var(--pad);
+    border-bottom: 1px solid #202331;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--gap-xs);
+  }
+  
+  .card .bd {
+    padding: var(--pad);
+    overflow-x: auto;
+  }
+  
+  .row {
+    display: flex;
+    gap: var(--gap-xs);
+    flex-wrap: wrap;
+  }
+  
+  label {
+    font-size: 0.85rem;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 6px;
+  }
+  
+  input, select, textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #2a2e3f;
+    background: #12141c;
+    color: var(--text);
+    outline: none;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+  }
+  
+  input:focus, select:focus, textarea:focus {
+    border-color: #3a84ff;
+  }
+  
+  textarea {
+    min-height: 250px;
+    resize: vertical;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+  
+  .btn {
+    appearance: none; border: 0;
+    background: linear-gradient(180deg, var(--brand), var(--accent));
+    color: #001018; font-weight: 700;
+    padding: 12px 18px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    transition: transform 0.1s, opacity 0.2s;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  
+  .btn:active { transform: scale(0.98); }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  
+  .btn.ghost {
+    background: #171923; color: var(--text);
+    border: 1px solid #2a2e3f;
+  }
+  
+  .btn.warn {
+    background: linear-gradient(180deg, #ff9f0a, #ff3b30);
+    color: #220;
+  }
+  
+  .tag {
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    background: #171923;
+    border: 1px solid #2a2e3f;
+    color: var(--muted);
+  }
+  
+  .tag.ok { border-color: rgba(46,204,113,.35); color: #cfeede; }
+  
+  .muted { color: var(--muted); }
+  
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #12141c;
+    border: 1px solid #2a2e3f;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  .pill:hover { background: #1a1c24; }
+  
+  .pill input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+    accent-color: var(--brand);
+  }
+  
+  .list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-xs);
+  }
+  
+  .day {
+    padding: 12px;
+    background: #0f1219;
+    border: 1px dashed #2a2e3f;
+    border-radius: 12px;
+    min-width: 0;
+  }
+  
+  .day + .day { margin-top: 14px; }
+  
+  .day h4 {
+    margin: 0 0 8px;
+    font-size: 1.1rem;
+  }
+  
+  .sesi {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  
+  .sesi .del {
+    background: #1a1c24; border: 1px solid #2a2e3f;
+    border-radius: 10px;
+    width: 36px; height: 36px;
+    display: grid; place-items: center;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  .sesi .del:hover { background: #211; }
+  
+  .help {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  
+  .footer {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  
+  .sticky {
+    position: sticky;
+    top: 16px;
+    align-self: start;
+  }
+  
+  .kbd {
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    background: #0f1322; color: #bcd;
+    border: 1px solid #26314a;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 0.85em;
+  }
+  
+  .small { font-size: 0.85rem; }
+  
+  hr {
+    border: 0;
+    border-top: 1px solid #202331;
+    margin: 1rem 0;
+  }
+  
+  @media (max-width: 768px) {
+    .wrap { margin: 1rem auto; }
+    .card .bd { padding: 12px; }
+    .sesi { grid-template-columns: 1fr; }
+    .footer { justify-content: stretch; }
+    .footer .btn { flex: 1; justify-content: center; }
+    .day h4 { font-size: 1rem; }
+    textarea { min-height: 200px; }
+  }
+  
+  @media (max-width: 480px) {
+    .wrap { padding: 0 0.5rem; }
+    h1 { font-size: 1.5rem; }
+    .card .hd { padding: 10px 12px; }
+    .card .bd { padding: 10px; }
+    .btn { padding: 10px 14px; font-size: 0.9rem; }
+    .pill { padding: 6px 10px; font-size: 0.9rem; }
+    :root { --pad: 12px; --gap: 12px; }
+  }
+  
+  @media (hover: none) {
+    .btn:hover { transform: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Generator Broadcast WhatsApp — Jadwal Mingguan</h1>
+    <div class="sub">Buat template jadwal mingguan (otomatis hitung tanggal berdasarkan hari yang dipilih) lalu <span class="kbd">Salin</span> ke WhatsApp. <span id="testStatus" class="tag" title="Status unit test">Test: belum jalan</span></div>
+
+    <div class="grid cols">
+      <!-- Pengaturan Utama -->
+      <section class="card main-settings">
+        <div class="hd">
+          <strong>Pengaturan Minggu</strong>
+          <div class="tag" id="weekLabel">—</div>
+        </div>
+        <div class="bd">
+          <div class="row" style="align-items: flex-end;">
+            <div style="flex: 1 1 240px; min-width: 200px;">
+              <label>Tanggal acuan (pilih tanggal apa saja dalam minggu tsb)</label>
+              <input type="date" id="anchorDate" />
+            </div>
+            <div style="flex: 1 1 180px; min-width: 160px;">
+              <label>Kelas / Kode</label>
+              <input type="text" id="kelas" placeholder="Mis. ITA 3550" />
+            </div>
+            <div style="flex: 1 1 180px; min-width: 160px;">
+              <label>Pilih Preset Kelas</label>
+              <select id="classPreset">
+                <option value="">— Pilih —</option>
+                <option value="ita3550">ITA 3550 (Default)</option>
+                <option value="ita3556">ITA 3556 (Rabu & Jumat)</option>
+              </select>
+            </div>
+          </div>
+          <hr>
+          <div>
+            <label>Hari aktif (checklist)</label>
+            <div class="list" id="daysList"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Preview Output -->
+      <aside class="card sticky preview-panel">
+        <div class="hd"><strong>Preview Teks WhatsApp</strong> <span class="small muted">Otomatis ter-update</span></div>
+        <div class="bd">
+          <textarea id="output" spellcheck="false" readonly></textarea>
+          <div class="footer" style="margin-top: 10px;">
+            <button class="btn" id="copyBtn">Salin ke Clipboard</button>
+            <button class="btn ghost" id="resetBtn">Reset</button>
+          </div>
+          <div class="help" style="margin-top: 8px;">Tip: Setelah menyalin, tempel langsung di WhatsApp. Format tebal <span class="kbd">*...*</span> sudah disiapkan.</div>
+        </div>
+      </aside>
+
+      <!-- Editor Sesi per Hari -->
+      <section class="card editor-panel" style="grid-column: 1 / -1;">
+        <div class="hd">
+          <strong>Detail Per Hari & Sesi</strong>
+          <div class="row">
+            <button class="btn ghost" id="addSessionAll">+ Tambah 1 Sesi ke Semua Hari</button>
+            <button class="btn ghost" id="clearAll">Bersihkan Semua Sesi</button>
+            <button class="btn warn" id="deleteAll">Hapus Semua Hari</button>
+          </div>
+        </div>
+        <div class="bd">
+          <div id="daysEditor" class="days-editor"></div>
+        </div>
+      </section>
+
+      <!-- Preset & Penyimpanan Lokal -->
+      <section class="card storage-panel" style="grid-column: 1 / -1;">
+        <div class="hd"><strong>Preset & Simpanan</strong><span class="small muted">Simpan setelanmu sebagai preset lokal</span></div>
+        <div class="bd">
+          <div class="row" style="align-items: flex-end;">
+            <div style="flex: 1 1 240px; min-width: 200px;">
+              <label>Nama Preset</label>
+              <input id="presetName" placeholder="Mis. Jadwal reguler" />
+            </div>
+            <div class="row" style="flex: 1 1 auto; min-width: 300px;">
+              <button class="btn" id="savePreset">Simpan Preset</button>
+              <button class="btn ghost" id="loadPreset">Muat Preset</button>
+              <button class="btn ghost" id="exportJson">Export JSON</button>
+              <input type="file" id="importJson" accept="application/json" style="display:none" />
+              <button class="btn ghost" id="importBtn">Import JSON</button>
+            </div>
+          </div>
+          <div class="help" style="margin-top: 6px;">Preset disimpan di <em>localStorage</em> browser ini.</div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+<script>
+(function() {
+  // --- Utilitas DOM ---
+  const $ = (sel, el = document) => el.querySelector(sel);
+  const $$ = (sel, el = document) => Array.from(el.querySelectorAll(sel));
+  const id = (x) => document.getElementById(x);
+
+  // --- Konstanta & Data Default ---
+  const DAYS = [
+    { key: '1', name: 'Senin' }, { key: '2', name: 'Selasa' }, { key: '3', name: 'Rabu' },
+    { key: '4', name: 'Kamis' }, { key: '5', name: 'Jumat' }, { key: '6', name: 'Sabtu' }
+  ];
+
+  const CLASS_PRESETS = {
+    'ita3550': {
+      kelas: 'ITA 3550',
+      activeDays: ['2', '4', '6'],
+      days: {
+        '2': { sessions: [{ start: '16:30', end: '18:00', mapel: 'Biologi', tutor: 'Kak DF' }, { start: '18:30', end: '20:00', mapel: 'Matematika', tutor: 'Kak RU' }] },
+        '4': { sessions: [{ start: '16:30', end: '18:00', mapel: 'Aljabar Fisika', tutor: 'Kak PZ' }, { start: '18:30', end: '20:00', mapel: 'Kimia', tutor: 'Kak JF' }] },
+        '6': { sessions: [{ start: '14:00', end: '15:30', mapel: 'Aljabar Matematika', tutor: 'Kak CA' }, { start: '16:00', end: '17:30', mapel: 'Bahasa Inggris', tutor: 'Kak OG' }] },
+      }
+    },
+    'ita3556': {
+      kelas: 'ITA 3556',
+      activeDays: ['3', '5'],
+      days: {
+        '3': { sessions: [{ start: '16:00', end: '17:30', mapel: 'Pemrograman Web', tutor: 'Kak AB' }, { start: '18:30', end: '20:00', mapel: 'Basis Data', tutor: 'Kak CD' }] },
+        '5': { sessions: [{ start: '16:00', end: '17:30', mapel: 'Jaringan Komputer', tutor: 'Kak EF' }] },
+      }
+    }
+  };
+
+  const defaultConfig = CLASS_PRESETS['ita3550'];
+
+  // --- State Aplikasi ---
+  let state = loadState() || JSON.parse(JSON.stringify(defaultConfig));
+
+  // --- Inisialisasi & Event Listener ---
+
+  const daysList = id('daysList');
+  DAYS.forEach(d => {
+    const pill = document.createElement('label');
+    pill.className = 'pill';
+    pill.innerHTML = `<input type="checkbox" data-day="${d.key}" ${state.activeDays.includes(d.key) ? 'checked' : ''}/> ${escapeHtml(d.name)}`;
+    daysList.appendChild(pill);
+  });
+  
+  id('anchorDate').value = state.anchorDate || toISODate(new Date());
+  id('kelas').value = state.kelas;
+
+  daysList.addEventListener('change', e => {
+    if (e.target?.matches('input[type="checkbox"]')) {
+      const k = e.target.dataset.day;
+      if (e.target.checked) { if (!state.activeDays.includes(k)) state.activeDays.push(k); }
+      else { state.activeDays = state.activeDays.filter(x => x !== k); }
+      state.activeDays.sort((a, b) => dayOrder(a) - dayOrder(b));
+      renderUI();
+    }
+  });
+
+  id('anchorDate').addEventListener('change', e => { state.anchorDate = e.target.value; renderUI(); });
+  id('kelas').addEventListener('input', e => { state.kelas = e.target.value; renderUI(false); });
+  
+  id('classPreset').addEventListener('change', e => {
+      const presetKey = e.target.value;
+      if (CLASS_PRESETS[presetKey]) {
+          const presetData = CLASS_PRESETS[presetKey];
+          state = { ...state, ...JSON.parse(JSON.stringify(presetData)) };
+          syncUIFromState();
+          renderUI();
+      }
+  });
+
+  id('addSessionAll').addEventListener('click', () => {
+    state.activeDays.forEach(k => {
+      state.days[k] = state.days[k] || { sessions: [] };
+      state.days[k].sessions.push({ start: '', end: '', mapel: '', tutor: '' });
+    });
+    renderUI();
+  });
+
+  id('clearAll').addEventListener('click', () => {
+    if (!confirm('Anda yakin ingin membersihkan semua isian sesi?')) return;
+    state.activeDays.forEach(k => { state.days[k] = { sessions: [] }; });
+    renderUI();
+  });
+
+  id('deleteAll').addEventListener('click', () => {
+    if (!confirm('Anda yakin ingin menghapus SEMUA hari dari jadwal?')) return;
+    state.activeDays = [];
+    $$('#daysList input').forEach(c => c.checked = false);
+    renderUI();
+  });
+
+  id('copyBtn').addEventListener('click', async () => {
+    const ok = await copyText(id('output').value);
+    if (!ok) {
+      id('output').select();
+      toast('Gagal menyalin. Teks sudah dipilih, silakan salin manual (Ctrl/Cmd+C).');
+    }
+  });
+
+  id('resetBtn').addEventListener('click', () => {
+    if (!confirm('Anda yakin ingin mengembalikan semua pengaturan ke contoh awal?')) return;
+    state = JSON.parse(JSON.stringify(defaultConfig));
+    syncUIFromState();
+    renderUI();
+  });
+
+  // --- Fungsi Render ---
+  
+  function renderUI(rerenderEditor = true) {
+    if (rerenderEditor) renderDaysEditor();
+    updatePreview();
+    saveState();
+  }
+  
+  function renderDaysEditor() {
+    const root = id('daysEditor');
+    root.innerHTML = '';
+    state.activeDays.sort((a, b) => dayOrder(a) - dayOrder(b));
+
+    for (const k of state.activeDays) {
+      const dayData = DAYS.find(x => x.key === k);
+      const dayElement = document.createElement('div');
+      dayElement.className = 'day';
+      const dateStr = formatDateHuman(getDateForWeekday(k));
+      
+      dayElement.innerHTML = `
+        <h4>${escapeHtml(dayData.name)} · <span class="muted">${dateStr}</span></h4>
+        <div class="sessions"></div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn ghost addOne">+ Tambah Sesi</button>
+          <button class="btn ghost removeDay">Hapus Hari</button>
+        </div>
+      `;
+
+      const sessionsWrap = $('.sessions', dayElement);
+      state.days[k] = state.days[k] || { sessions: [] };
+      let sessions = state.days[k].sessions;
+
+      if (sessions.length === 0) {
+        sessions.push({ start: '', end: '', mapel: '', tutor: '' });
+      }
+
+      sessions.forEach((s, i) => {
+        sessionsWrap.appendChild(renderSessionRow(k, i, s));
+      });
+
+      $('.addOne', dayElement).addEventListener('click', () => {
+        state.days[k].sessions.push({ start: '', end: '', mapel: '', tutor: '' });
+        renderUI();
+      });
+
+      $('.removeDay', dayElement).addEventListener('click', () => {
+        if (!confirm(`Hapus hari ${dayData.name} dari jadwal?`)) return;
+        state.activeDays = state.activeDays.filter(x => x !== k);
+        $(`#daysList input[data-day="${k}"]`).checked = false;
+        renderUI();
+      });
+
+      root.appendChild(dayElement);
+    }
+  }
+
+  function renderSessionRow(dayKey, idx, session) {
+    const row = document.createElement('div');
+    row.className = 'sesi';
+    row.innerHTML = `
+      <input aria-label="Jam mulai" type="time" value="${session.start || ''}" data-k="start"/>
+      <input aria-label="Jam selesai" type="time" value="${session.end || ''}" data-k="end"/>
+      <input aria-label="Mata Pelajaran" placeholder="Mata Pelajaran" value="${escapeHtml(session.mapel || '')}" data-k="mapel"/>
+      <input aria-label="Tutor / Pengajar" placeholder="Tutor / Pengajar" value="${escapeHtml(session.tutor || '')}" data-k="tutor"/>
+      <button class="del" title="Hapus sesi">✕</button>
+    `;
+
+    row.addEventListener('input', e => {
+      const k = e.target.dataset.k;
+      if (!k) return;
+      state.days[dayKey].sessions[idx][k] = e.target.value;
+      renderUI(false);
+    });
+
+    $('.del', row).addEventListener('click', () => {
+      state.days[dayKey].sessions.splice(idx, 1);
+      renderUI();
+    });
+
+    return row;
+  }
+  
+  function updatePreview() {
+    const anchor = new Date(state.anchorDate || new Date());
+    const [weekStart, weekEnd] = getWeekRange(anchor);
+    id('weekLabel').textContent = `${formatDateHuman(weekStart)} – ${formatDateHuman(weekEnd)}`;
+    
+    const title = `🗓️ Jadwal Belajar ${state.kelas} (${formatDateHuman(weekStart)} – ${formatDateHuman(weekEnd)})`;
+    let blocks = [];
+
+    state.activeDays.sort((a, b) => dayOrder(a) - dayOrder(b)).forEach(k => {
+      const dayName = DAYS.find(x => x.key === k).name;
+      const dayDate = formatDateHuman(getDateForWeekday(k));
+      const sessions = (state.days[k]?.sessions || [])
+        .filter(s => s.mapel || s.tutor || s.start || s.end)
+        .map((s, idx) => {
+          const jam = (s.start && s.end) ? `${fmtHM(s.start)} – ${fmtHM(s.end)}` : (s.start ? fmtHM(s.start) : '');
+          const mapel = s.mapel ? `*${s.mapel}*` : '*—*';
+          const tutor = s.tutor ? `(${s.tutor})` : '';
+          return `Sesi ${idx + 1} (${jam}) : ${mapel} ${tutor}`.trim();
+        });
+
+      if (sessions.length > 0) {
+        blocks.push(`📌 *${dayName}, ${dayDate}*\n${sessions.join('\n')}`);
+      }
+    });
+
+    id('output').value = [title, '', ...blocks].join('\n').trim();
+  }
+  
+  function syncUIFromState() {
+    id('anchorDate').value = state.anchorDate || toISODate(new Date());
+    id('kelas').value = state.kelas;
+    $$('#daysList input[type="checkbox"]').forEach(ch => {
+      ch.checked = state.activeDays.includes(ch.dataset.day);
+    });
+  }
+
+  // --- Helpers ---
+
+  function fmtHM(v) { return v ? v.split(':').join('.') : ''; }
+  function formatDateHuman(d) { return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long' }); }
+
+  function getWeekRange(anchor) {
+    const a = new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate());
+    const day = a.getDay();
+    const mondayOffset = (day === 0 ? -6 : 1 - day);
+    const start = new Date(a); start.setDate(a.getDate() + mondayOffset);
+    const end = new Date(start); end.setDate(start.getDate() + 5);
+    return [start, end];
+  }
+
+  function getDateForWeekday(weekdayStr) {
+    const wd = Number(weekdayStr);
+    const [start] = getWeekRange(new Date(state.anchorDate || new Date()));
+    const targetOffset = wd - 1;
+    start.setDate(start.getDate() + targetOffset);
+    return start;
+  }
+
+  function dayOrder(key) { return Number(key); }
+
+  function toISODate(d) { return d.toISOString().split('T')[0]; }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[m]));
+  }
+
+  async function copyText(text) {
+    if (window.isSecureContext && navigator.clipboard) {
+      try { await navigator.clipboard.writeText(text); toast('Tersalin!'); return true; } catch (e) { return false; }
+    }
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch (e) { /* ignore */ }
+    document.body.removeChild(ta);
+    if (ok) toast('Tersalin!');
+    return ok;
+  }
+
+  function toast(msg) {
+    const t = document.createElement('div');
+    t.textContent = msg;
+    Object.assign(t.style, {
+        position: 'fixed', inset: 'auto 16px 16px auto', background: '#111218',
+        border: '1px solid #2a2e3f', padding: '10px 14px', borderRadius: '10px',
+        boxShadow: 'var(--shadow)', zIndex: '9999'
+    });
+    document.body.appendChild(t);
+    setTimeout(() => { t.remove(); }, 1800);
+  }
+
+  // --- Manajemen State ---
+  function saveState() { localStorage.setItem('broadcast_state', JSON.stringify(state)); }
+  function loadState() { try { return JSON.parse(localStorage.getItem('broadcast_state')); } catch { return null; } }
+  
+  id('savePreset').addEventListener('click', () => {
+    const name = id('presetName').value.trim() || `Preset ${new Date().toLocaleString('id-ID')}`;
+    const presets = JSON.parse(localStorage.getItem('broadcast_presets') || '{}');
+    presets[name] = state;
+    localStorage.setItem('broadcast_presets', JSON.stringify(presets));
+    toast('Preset disimpan: ' + name);
+  });
+
+  id('loadPreset').addEventListener('click', () => {
+    const presets = JSON.parse(localStorage.getItem('broadcast_presets') || '{}');
+    const names = Object.keys(presets);
+    if (names.length === 0) { toast('Belum ada preset yang disimpan.'); return; }
+    const name = prompt('Pilih preset untuk dimuat:\n\n' + names.join('\n'));
+    if (name && presets[name]) {
+      state = JSON.parse(JSON.stringify(presets[name]));
+      syncUIFromState();
+      renderUI();
+      toast('Preset dimuat: ' + name);
+    }
+  });
+
+  id('exportJson').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `jadwal-${state.kelas.replace(/\s/g, '-')}-${toISODate(new Date())}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  id('importBtn').addEventListener('click', () => id('importJson').click());
+  id('importJson').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const data = JSON.parse(await file.text());
+      if (data?.activeDays && data.days) {
+        state = data;
+        syncUIFromState();
+        renderUI();
+        toast('Preset berhasil diimpor.');
+      } else {
+        throw new Error('Format file tidak valid.');
+      }
+    } catch (err) {
+      alert('Gagal mengimpor file: ' + err.message);
+    }
+    e.target.value = '';
+  });
+
+  // --- Inisialisasi Aplikasi ---
+  syncUIFromState();
+  renderUI();
+  
+  (function runTests() {
+      const tag = id('testStatus');
+      try {
+          const [ws, we] = getWeekRange(new Date('2025-09-10'));
+          if (ws.getDay() !== 1 || we.getDay() !== 6) throw new Error("Kalkulasi minggu gagal.");
+          tag.textContent = 'Test: OK';
+          tag.classList.add('ok');
+      } catch (e) {
+          tag.textContent = 'Test: GAGAL';
+          console.error("Unit test gagal:", e.message);
+      }
+  })();
+
+})();
+</script>
+</body>
+</html>
