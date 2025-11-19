@@ -42,7 +42,7 @@ Fluks magnetik yang memotong sebuah kumparan berkurang dari $8 \times 10^{-2} \t
 ### **3. Indikator: Menentukan Arus dari Persamaan Fluks ($\Phi(t)$)**
 
 **Soal:**
-Fluks magnetik dinyatakan dengan persamaan $$\Phi = (2t^2 + 4t - 5)$$ Weber. Jika hambatan kawat kumparan adalah 20 Ohm, berapakah kuat arus yang mengalir saat $$t = 2$$ detik?
+Fluks magnetik dinyatakan dengan persamaan $\Phi = (2t^2 + 4t - 5)$ Weber. Jika hambatan kawat kumparan adalah 20 Ohm, berapakah kuat arus yang mengalir saat $t = 2$ detik?
 
 **Pembahasan:**
 *   **Turunan Fluks ($\frac{d\Phi}{dt}$):**
