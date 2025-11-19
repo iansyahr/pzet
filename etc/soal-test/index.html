@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <link
+      rel="icon"
+      type="image/avif"
+      href="https://pzet.my.id/etc/media/magnolia-ico.avif"
+    />
+    <title>Soal-test</title>
+
+    <!-- Pasang tema awal (anti-FOUC) -->
+    <script>
+      (function () {
+        try {
+          const key = "pz-theme";
+          const saved = localStorage.getItem(key);
+          const root = document.documentElement;
+          if (saved === "light" || saved === "dark") {
+            root.setAttribute("data-theme", saved);
+          } else {
+            const prefersDark = matchMedia("(prefers-color-scheme: dark)").matches;
+            root.setAttribute("data-theme", prefersDark ? "dark" : "light");
+          }
+        } catch (_) {}
+      })();
+    </script>
+
+    <!-- Font Inter -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- KaTeX (CSS) -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"
+    />
+
+    <!-- Styles (punyamu) -->
+    <link rel="stylesheet" href="https://pzet.my.id/style/article.css" />
+
+    <!-- Marked (Markdown parser) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- KaTeX (JS + Auto-render) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  </head>
+
+  <body>
+    <div class="wrap">
+      <!-- HEADER -->
+      <header class="site-header">
+        <div class="container nav">
+          <a class="brand" href="/">
+            <img class="brand-logo" src="https://pzet.my.id/etc/media/magnolia-hq.avif" alt="PZ" />
+            <div>
+              <h1>PZ</h1>
+              <p class="sub">Soal test · test soal · Latihan Soal</p>
+            </div>
+          </a>
+          <button id="theme-toggle" class="theme-toggle" type="button" aria-live="polite">
+            <span id="theme-emoji" aria-hidden="true">☀️</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- MAIN -->
+      <main class="container">
+        <a class="back" href="https://pzet.pages.dev/">← Kembali ke Home</a>
+
+        <article class="article" id="article">
+          <div id="content">
+            <p><em>Memuat konten, harap tunggu…</em></p>
+          </div>
+        </article>
+      </main>
+
+      <!-- FOOTER -->
+      <footer class="site-footer">
+        <div class="container foot">
+          <p>&copy; 2025 PZ. Konten dapat disebarluaskan dengan atribusi.</p>
+          <div class="socials" aria-label="Media sosial">
+            <a href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)">X</a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">Instagram</a>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      // ====== Render Markdown ======
+      document.addEventListener("DOMContentLoaded", async () => {
+        const markdownUrl = "https://pzet.pages.dev/etc/soal-test/index.md";
+        const contentElement = document.getElementById("content");
+
+        try {
+          const res = await fetch(markdownUrl, { cache: "no-store" });
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          const md = await res.text();
+
+          // Opsi Marked
+          marked.setOptions({ gfm: true, breaks: false });
+
+          const html = marked.parse(md);
+          contentElement.innerHTML = html;
+
+          // Render KaTeX setelah HTML dipasang
+          if (window.renderMathInElement) {
+            renderMathInElement(contentElement, {
+              delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "\\[", right: "\\]", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false }
+              ],
+              throwOnError: false,
+              strict: "ignore"
+            });
+          }
+
+          // Link eksternal buka tab baru
+          for (const a of contentElement.querySelectorAll("a[href^='http']")) {
+            a.target = "_blank"; a.rel = "noopener noreferrer";
+          }
+        } catch (err) {
+          console.error(err);
+          contentElement.innerHTML =
+            '<p style="color:#c62828"><strong>Error:</strong> Gagal memuat konten.</p>';
+        }
+      });
+
+      // ====== Theme Toggle (emoji) ======
+      (function () {
+        const key = "pz-theme";
+        const root = document.documentElement;
+        const btn = document.getElementById("theme-toggle");
+        const emoji = document.getElementById("theme-emoji");
+
+        function current() { return root.getAttribute("data-theme") === "dark" ? "dark" : "light"; }
+        function setTheme(mode) {
+          root.setAttribute("data-theme", mode);
+          try { localStorage.setItem(key, mode); } catch (_) {}
+          emoji.textContent = mode === "dark" ? "🌙" : "☀️";
+        }
+
+        setTheme(current());
+        btn.addEventListener("click", () => setTheme(current() === "dark" ? "light" : "dark"));
+
+        // Sinkron ke OS bila user belum set manual
+        try {
+          const saved = localStorage.getItem(key);
+          if (saved !== "light" && saved !== "dark") {
+            const mq = matchMedia("(prefers-color-scheme: dark)");
+            mq.addEventListener("change", (e) => {
+              setTheme(e.matches ? "dark" : "light");
+              localStorage.removeItem(key);
+            });
+          }
+        } catch (_) {}
+      })();
+    </script>
+  </body>
+</html>
