@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Kamera Web Sederhana</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 640px;
+            width: 95%;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        /* Area Video */
+        #video-container {
+            width: 100%;
+            height: auto;
+            background-color: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            position: relative;
+            aspect-ratio: 16/9; /* Rasio standar */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* Efek Cermin */
+        }
+
+        /* Placeholder saat kamera mati */
+        .placeholder-text {
+            color: #666;
+            position: absolute;
+            font-size: 14px;
+            z-index: 0;
+        }
+
+        /* Tombol */
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        #startBtn {
+            background-color: #28a745;
+            color: white;
+        }
+        #startBtn:hover { background-color: #218838; }
+        #startBtn:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        #stopBtn {
+            background-color: #dc3545;
+            color: white;
+        }
+        #stopBtn:hover { background-color: #c82333; }
+        #stopBtn:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        #status {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #555;
+        }
+        
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>🎥 Test Kamera Web</h2>
+        
+        <div id="video-container">
+            <span class="placeholder-text">Kamera belum aktif. Klik "Mulai Kamera".</span>
+            <video id="video" autoplay playsinline></video>
+        </div>
+
+        <div class="controls">
+            <button id="startBtn" onclick="startCamera()">Mulai Kamera</button>
+            <button id="stopBtn" onclick="stopCamera()" disabled>Matikan</button>
+        </div>
+
+        <p id="status">Menunggu izin akses kamera...</p>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const statusText = document.getElementById('status');
+        let stream = null;
+
+        async function startCamera() {
+            try {
+                statusText.innerText = "Meminta izin akses kamera...";
+                statusText.className = "";
+
+                // Meminta akses ke video
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        facingMode: "user" // Kamera depan (default)
+                    }, 
+                    audio: false 
+                });
+
+                video.srcObject = stream;
+                
+                // Update UI
+                statusText.innerText = "✅ Kamera aktif!";
+                statusText.className = "success";
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                document.querySelector('.placeholder-text').style.display = 'none';
+
+            } catch (err) {
+                console.error("Error akses kamera:", err);
+                statusText.innerText = "❌ Gagal: " + err.message + ". Pastikan Anda mengizinkan akses kamera.";
+                statusText.className = "error";
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                // Menghentikan semua track (video)
+                const tracks = stream.getTracks();
+                tracks.forEach(track => track.stop());
+                
+                video.srcObject = null;
+                stream = null;
+
+                // Update UI
+                statusText.innerText = "Kamera dimatikan.";
+                statusText.className = "";
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+                document.querySelector('.placeholder-text').style.display = 'block';
+            }
+        }
+    </script>
+
+</body>
+</html>
