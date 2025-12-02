@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Fisika Kelas XII - Induksi Magnetik & RLC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- KaTeX CSS & JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" xintegrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" xintegrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" xintegrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f8fafc;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .option-btn {
+            transition: all 0.2s ease;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            transform: translateX(5px);
+            background: rgba(59, 130, 246, 0.15);
+            border-color: #3b82f6;
+        }
+
+        .option-btn.correct {
+            background: rgba(34, 197, 94, 0.2) !important;
+            border-color: #22c55e !important;
+            color: #4ade80;
+        }
+
+        .option-btn.wrong {
+            background: rgba(239, 68, 68, 0.2) !important;
+            border-color: #ef4444 !important;
+            color: #f87171;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Scrollbar custom */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569; 
+            border-radius: 4px;
+        }
+        
+        /* KaTeX Font Fix */
+        .katex { font-size: 1.1em; }
+        .katex-display { margin: 0.5em 0; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <!-- Container Utama -->
+    <div class="w-full max-w-4xl glass-panel rounded-2xl shadow-2xl overflow-hidden relative min-h-[700px] flex flex-col">
+        
+        <!-- Header -->
+        <div class="p-6 border-b border-gray-700 flex justify-between items-center bg-gray-900/50">
+            <div>
+                <h1 class="text-xl font-bold text-blue-400"><i class="fas fa-atom mr-2"></i>Fisika Fase F</h1>
+                <p class="text-xs text-gray-400">Medan Magnet, Induksi & RLC</p>
+            </div>
+            <div id="score-badge" class="hidden px-4 py-1 rounded-full bg-blue-600/20 text-blue-400 text-sm font-semibold border border-blue-500/30">
+                Skor: <span id="current-score-display">0</span>
+            </div>
+        </div>
+
+        <!-- Halaman Mulai -->
+        <div id="start-screen" class="flex-1 flex flex-col items-center justify-center p-8 text-center fade-in">
+            <div class="mb-6 p-6 bg-blue-500/10 rounded-full text-blue-400 border border-blue-500/20 shadow-[0_0_30px_rgba(59,130,246,0.3)]">
+                <i class="fas fa-bolt text-7xl"></i>
+            </div>
+            <h2 class="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">Uji Kompetensi Fisika</h2>
+            <p class="text-gray-300 mb-8 max-w-lg leading-relaxed">
+                Kuis interaktif ini berisi 20 soal latihan mendalam tentang Induksi Magnetik, Hukum Lorentz, Faraday, dan Rangkaian RLC. 
+                <br><span class="text-sm text-gray-400 mt-2 block">(Dilengkapi render persamaan matematika & pembahasan detail)</span>
+            </p>
+            <button onclick="startQuiz()" class="group relative px-8 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-bold shadow-lg transition transform hover:-translate-y-1 overflow-hidden">
+                <span class="relative z-10">Mulai Kuis Sekarang</span>
+                <div class="absolute inset-0 h-full w-full bg-gradient-to-r from-blue-400 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            </button>
+        </div>
+
+        <!-- Halaman Kuis -->
+        <div id="quiz-screen" class="hidden flex-1 flex-col p-6 fade-in relative overflow-y-auto">
+            <!-- Progress Bar -->
+            <div class="w-full bg-gray-800 h-2 rounded-full mb-6 relative overflow-hidden">
+                <div id="progress-bar" class="bg-gradient-to-r from-blue-500 to-emerald-400 h-2 rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+            </div>
+
+            <!-- Pertanyaan -->
+            <div class="mb-8">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-xs font-bold text-emerald-400 px-2 py-1 bg-emerald-400/10 rounded uppercase tracking-wider">Soal <span id="current-question-num">1</span> dari 20</span>
+                </div>
+                <h3 id="question-text" class="text-lg md:text-xl font-medium leading-relaxed text-gray-100">
+                    <!-- Soal akan muncul di sini -->
+                </h3>
+            </div>
+
+            <!-- Area Scrollable untuk Konten -->
+            <div class="flex-1 grid md:grid-cols-1 gap-6">
+                <!-- Opsi Jawaban -->
+                <div id="options-container" class="space-y-3">
+                    <!-- Tombol opsi akan digenerate via JS -->
+                </div>
+
+                <!-- Pembahasan (Hidden by default) -->
+                <div id="explanation-box" class="hidden mt-2 p-5 bg-gray-800/60 border border-yellow-500/30 rounded-xl text-sm text-gray-300 shadow-inner">
+                    <div class="flex items-center gap-2 mb-3 text-yellow-500 border-b border-gray-700 pb-2">
+                        <i class="fas fa-lightbulb text-lg"></i>
+                        <h4 class="font-bold text-base">Pembahasan Lengkap</h4>
+                    </div>
+                    <div id="explanation-text" class="leading-relaxed space-y-2 text-gray-200"></div>
+                    <div class="mt-6 flex justify-end">
+                        <button onclick="nextQuestion()" class="px-6 py-2 bg-gray-100 text-gray-900 font-bold rounded-lg hover:bg-gray-200 transition shadow-lg flex items-center gap-2">
+                            Lanjut <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Halaman Hasil -->
+        <div id="result-screen" class="hidden flex-1 flex-col items-center justify-center p-8 text-center fade-in">
+            <h2 class="text-3xl font-bold mb-2 text-white">Hasil Akhir</h2>
+            <p class="text-gray-400 mb-8">Ringkasan performa pengerjaan soal Anda</p>
+            
+            <div class="relative w-48 h-48 mb-8 flex items-center justify-center">
+                <svg class="w-full h-full transform -rotate-90">
+                    <circle cx="96" cy="96" r="88" stroke="#334155" stroke-width="12" fill="transparent"/>
+                    <circle id="score-circle" cx="96" cy="96" r="88" stroke="#3b82f6" stroke-width="12" fill="transparent" stroke-linecap="round" stroke-dasharray="552" stroke-dashoffset="552" class="transition-all duration-1000 ease-out"/>
+                </svg>
+                <div class="absolute flex flex-col items-center">
+                    <span class="text-5xl font-bold text-white" id="final-score">0</span>
+                    <span class="text-sm text-gray-400 uppercase tracking-widest mt-1">Poin</span>
+                </div>
+            </div>
+
+            <div id="feedback-message" class="text-lg mb-8 font-medium px-6 py-3 rounded-lg bg-gray-800/50 border border-gray-700"></div>
+
+            <div class="flex gap-4">
+                <button onclick="location.reload()" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition font-semibold flex items-center gap-2 text-white border border-gray-600">
+                    <i class="fas fa-redo"></i> Coba Lagi
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script Logika Kuis -->
+    <script>
+        // Konfigurasi Render KaTeX Otomatis
+        const renderMath = (element) => {
+            renderMathInElement(element, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "\\(", right: "\\)", display: false},
+                    {left: "$", right: "$", display: false} // Support single $ for inline
+                ],
+                throwOnError: false
+            });
+        };
+
+        // Data Soal dengan format LaTeX
+        // Gunakan \\ untuk backslash dalam string JS
+        const quizData = [
+            // A. Induksi magnetik di sekitar dua penghantar lurus
+            {
+                q: "Dua kawat lurus sejajar dialiri arus $I_1 = 4$ A dan $I_2 = 6$ A yang searah. Kedua kawat terpisah sejauh $10$ cm. Berapakah besar induksi magnetik di titik yang terletak tepat di tengah-tengah kedua kawat tersebut?",
+                options: ["$2.4 \\times 10^{-5}$ T", "$1.6 \\times 10^{-5}$ T", "$0.8 \\times 10^{-5}$ T", "$4.0 \\times 10^{-5}$ T"],
+                correct: 2,
+                explanation: `
+                    <p><strong>Analisis:</strong> Titik $P$ berada di tengah, jarak ke kawat 1 ($a_1$) = 5 cm = $0.05$ m, jarak ke kawat 2 ($a_2$) = 5 cm = $0.05$ m.</p>
+                    <p>Karena arus searah, medan magnet di antara kawat saling berlawanan arah.</p>
+                    $$ B_1 = \\frac{\\mu_0 I_1}{2\\pi a_1} = \\frac{4\\pi \cdot 10^{-7} \cdot 4}{2\\pi \cdot 0.05} = 1.6 \\times 10^{-5} \\text{ T} $$
+                    $$ B_2 = \\frac{\\mu_0 I_2}{2\\pi a_2} = \\frac{4\\pi \cdot 10^{-7} \cdot 6}{2\\pi \cdot 0.05} = 2.4 \\times 10^{-5} \\text{ T} $$
+                    $$ B_{total} = |B_2 - B_1| = (2.4 - 1.6) \\times 10^{-5} = \\mathbf{0.8 \\times 10^{-5} \\text{ T}} $$
+                `
+            },
+            {
+                q: "Dua kawat lurus panjang terpisah sejauh $20$ cm. Kawat pertama dialiri arus $2$ A ke atas, dan kawat kedua dialiri arus $2$ A ke bawah. Tentukan besar induksi magnetik di titik yang berjarak $10$ cm di sebelah kanan kawat kedua (segaris dengan kedua kawat).",
+                options: ["$5.33 \\times 10^{-6}$ T", "$2.33 \\times 10^{-6}$ T", "$1.33 \\times 10^{-6}$ T", "$0$ T"],
+                correct: 0,
+                explanation: `
+                    <p><strong>Analisis Posisi:</strong> Titik berada 10 cm di kanan kawat 2. <br> Jarak dari kawat 2 ($a_2$) = 0.1 m. <br> Jarak dari kawat 1 ($a_1$) = $0.2 + 0.1$ = 0.3 m.</p>
+                    <p><strong>Arah Medan:</strong> Di kanan kawat 2 (arus bawah), $B_2$ masuk bidang. Dari kawat 1 (arus atas), $B_1$ juga masuk bidang (kaidah tangan kanan). Maka medan dijumlahkan.</p>
+                    $$ B_{total} = \\frac{\\mu_0}{2\\pi} \\left( \\frac{I_1}{a_1} + \\frac{I_2}{a_2} \\right) $$
+                    $$ B_{total} = 2 \cdot 10^{-7} \\left( \\frac{2}{0.3} + \\frac{2}{0.1} \\right) $$
+                    $$ B_{total} = 2 \cdot 10^{-7} (6.67 + 20) = 2 \cdot 10^{-7} (26.67) \\approx \\mathbf{5.33 \\times 10^{-6} \\text{ T}} $$
+                `
+            },
+            // B. Menentukan lokasi yg induksi medan magnetiknya nol
+            {
+                q: "Dua kawat sejajar $A$ dan $B$ berjarak $15$ cm satu sama lain. Kawat $A$ dialiri arus $4$ A dan kawat $B$ dialiri arus $8$ A dengan arah yang sama. Di manakah letak titik dari kawat $A$ agar induksi magnetik di titik tersebut nol?",
+                options: ["3 cm", "5 cm", "7.5 cm", "10 cm"],
+                correct: 1,
+                explanation: `
+                    <p>Syarat medan nol ($B_A = B_B$). Karena arus searah, titik berada <strong>di antara</strong> kedua kawat. Misal jarak dari A adalah $x$.</p>
+                    $$ \\frac{\\mu_0 I_A}{2\\pi x} = \\frac{\\mu_0 I_B}{2\\pi (15-x)} $$
+                    $$ \\frac{4}{x} = \\frac{8}{15-x} \\Rightarrow \\frac{1}{x} = \\frac{2}{15-x} $$
+                    $$ 15 - x = 2x \\Rightarrow 3x = 15 \\Rightarrow x = \\mathbf{5 \\text{ cm}} $$
+                `
+            },
+            {
+                q: "Kawat $X$ dialiri arus $2$ A dan kawat $Y$ dialiri arus $6$ A. Keduanya terpisah sejauh $8$ cm dengan arah arus <strong>berlawanan</strong>. Di manakah letak titik yang medan magnetnya nol?",
+                options: ["2 cm dari X (di antara kawat)", "4 cm dari X (di luar kawat)", "4 cm dari Y (di luar kawat)", "Tepat di tengah"],
+                correct: 1,
+                explanation: `
+                    <p>Karena arus berlawanan, titik nol berada <strong>di luar</strong> kawat, pada sisi kawat yang arusnya lebih kecil (dekat X). Misal jarak dari X adalah $x$.</p>
+                    $$ \\frac{I_X}{x} = \\frac{I_Y}{x + 8} $$
+                    $$ \\frac{2}{x} = \\frac{6}{x + 8} \\Rightarrow \\frac{1}{x} = \\frac{3}{x + 8} $$
+                    $$ x + 8 = 3x \\Rightarrow 2x = 8 \\Rightarrow x = \\mathbf{4 \\text{ cm}} $$
+                    <p>Posisi: 4 cm di sebelah kiri kawat X.</p>
+                `
+            },
+            // C. Induksi magnetik di sekitar penghantar melingkar
+            {
+                q: "Sebuah kawat melingkar dengan jari-jari $10$ cm dialiri arus listrik sebesar $5$ A. Jika kawat tersebut terdiri dari satu lilitan, tentukan besar induksi magnetik di pusat lingkaran!",
+                options: ["$\\pi \\times 10^{-5}$ T", "$2\\pi \\times 10^{-5}$ T", "$5\\pi \\times 10^{-5}$ T", "$10^{-5}$ T"],
+                correct: 0,
+                explanation: `
+                    <p>Rumus medan magnet di pusat kawat melingkar:</p>
+                    $$ B = \\frac{\\mu_0 N I}{2a} $$
+                    <p>Diketahui: $N=1, I=5, a=0.1$ m.</p>
+                    $$ B = \\frac{4\\pi \cdot 10^{-7} \cdot 1 \cdot 5}{2 \cdot 0.1} = \\frac{20\\pi \cdot 10^{-7}}{0.2} $$
+                    $$ B = 100\\pi \cdot 10^{-7} = \\mathbf{\\pi \\times 10^{-5} \\text{ T}} $$
+                `
+            },
+            {
+                q: "Sebuah kumparan kawat melingkar memiliki $40$ lilitan dan jari-jari $20$ cm. Agar induksi magnetik di pusat kumparan bernilai $4\\pi \\times 10^{-4}$ T, berapakah kuat arus yang harus dialirkan?",
+                options: ["5 A", "10 A", "15 A", "20 A"],
+                correct: 1,
+                explanation: `
+                    $$ B = \\frac{\\mu_0 N I}{2a} $$
+                    $$ 4\\pi \cdot 10^{-4} = \\frac{4\\pi \cdot 10^{-7} \cdot 40 \cdot I}{2 \cdot 0.2} $$
+                    <p>Coret $4\\pi$ di kedua ruas:</p>
+                    $$ 10^{-4} = \\frac{10^{-7} \cdot 40 \cdot I}{0.4} = 100 \cdot 10^{-7} \cdot I $$
+                    $$ 10^{-4} = 10^{-5} \cdot I \\Rightarrow I = \\frac{10^{-4}}{10^{-5}} = \\mathbf{10 \\text{ A}} $$
+                `
+            },
+            // D. Gaya magnetik pada partikel bermuatan listrik
+            {
+                q: "Sebuah proton ($q = 1.6 \\times 10^{-19}$ C) bergerak dengan kecepatan $2 \\times 10^6$ m/s memotong tegak lurus medan magnet homogen sebesar $0.5$ T. Hitunglah besar gaya Lorentz yang dialami proton tersebut!",
+                options: ["$1.6 \\times 10^{-13}$ N", "$3.2 \\times 10^{-13}$ N", "$0.8 \\times 10^{-13}$ N", "$1.6 \\times 10^{-19}$ N"],
+                correct: 0,
+                explanation: `
+                    <p>Karena tegak lurus, $\\theta = 90^\\circ$, $\\sin 90^\\circ = 1$.</p>
+                    $$ F = Bqv \\sin\\theta $$
+                    $$ F = 0.5 \cdot (1.6 \cdot 10^{-19}) \cdot (2 \cdot 10^6) \cdot 1 $$
+                    $$ F = 0.5 \cdot 3.2 \cdot 10^{-13} = \\mathbf{1.6 \\times 10^{-13} \\text{ N}} $$
+                `
+            },
+            {
+                q: "Sebuah elektron ($m=9 \\times 10^{-31}$ kg, $q=1.6 \\times 10^{-19}$ C) bergerak melingkar di dalam medan magnet homogen $2 \\times 10^{-4}$ T dengan kecepatan $4 \\times 10^5$ m/s. Tentukan jari-jari lintasan elektron!",
+                options: ["5.25 mm", "11.25 mm", "22.50 mm", "45.00 mm"],
+                correct: 1,
+                explanation: `
+                    <p>Jari-jari lintasan siklotron:</p>
+                    $$ R = \\frac{mv}{Bq} $$
+                    $$ R = \\frac{9 \cdot 10^{-31} \cdot 4 \cdot 10^5}{2 \cdot 10^{-4} \cdot 1.6 \cdot 10^{-19}} $$
+                    $$ R = \\frac{36 \cdot 10^{-26}}{3.2 \cdot 10^{-23}} = 11.25 \cdot 10^{-3} \\text{ m} = \\mathbf{11.25 \\text{ mm}} $$
+                `
+            },
+            // E. Gaya Lorentz pada penghantar lurus sejajar
+            {
+                q: "Dua kawat lurus sejajar dialiri arus masing-masing $2$ A dan $5$ A dengan arah <strong>berlawanan</strong>. Jika jarak antar kawat $2$ cm, tentukan besar gaya Lorentz per satuan panjang dan jenis interaksinya!",
+                options: ["$10^{-4}$ N/m, Tarik-menarik", "$10^{-4}$ N/m, Tolak-menolak", "$2 \cdot 10^{-4}$ N/m, Tarik-menarik", "$4 \cdot 10^{-4}$ N/m, Tolak-menolak"],
+                correct: 1,
+                explanation: `
+                    <p><strong>Sifat Gaya:</strong> Arus berlawanan arah = <strong>Tolak-menolak</strong>.</p>
+                    <p><strong>Besar Gaya:</strong></p>
+                    $$ \\frac{F}{L} = \\frac{\\mu_0 I_1 I_2}{2\\pi a} = \\frac{4\\pi \cdot 10^{-7} \cdot 2 \cdot 5}{2\\pi \cdot 0.02} $$
+                    $$ \\frac{F}{L} = \\frac{2 \cdot 10^{-7} \cdot 10}{2 \cdot 10^{-2}} = \\frac{20 \cdot 10^{-7}}{2 \cdot 10^{-2}} = \\mathbf{10^{-4} \\text{ N/m}} $$
+                `
+            },
+            {
+                q: "Dua kawat sejajar panjangnya 2 meter terpisah sejauh 1 meter. Kedua kawat mengalami gaya <strong>tarik-menarik</strong> sebesar $4 \\times 10^{-7}$ N. Jika arus pada kawat pertama $1$ A, berapakah arus pada kawat kedua?",
+                options: ["0.5 A", "1.0 A", "2.0 A", "4.0 A"],
+                correct: 1,
+                explanation: `
+                    $$ F = \\frac{\\mu_0 I_1 I_2 L}{2\\pi a} $$
+                    $$ 4 \cdot 10^{-7} = \\frac{4\\pi \cdot 10^{-7} \cdot 1 \cdot I_2 \cdot 2}{2\\pi \cdot 1} $$
+                    $$ 4 \cdot 10^{-7} = 2 \cdot 10^{-7} \cdot 2 \cdot I_2 $$
+                    $$ 4 = 4 I_2 \\Rightarrow I_2 = \\mathbf{1 \\text{ A}} $$
+                `
+            },
+            // F. GGL Induksi
+            {
+                q: "Sebuah kumparan dengan $100$ lilitan mengalami perubahan fluks magnetik dari $5 \\times 10^{-3}$ Wb menjadi $2 \\times 10^{-3}$ Wb dalam waktu $0.1$ detik. Hitunglah besar GGL induksi rata-rata yang dihasilkan!",
+                options: ["1.5 Volt", "3.0 Volt", "4.5 Volt", "6.0 Volt"],
+                correct: 1,
+                explanation: `
+                    $$ \\varepsilon = -N \\frac{\\Delta \\Phi}{\\Delta t} $$
+                    $$ \\varepsilon = -100 \cdot \\frac{(2 \cdot 10^{-3} - 5 \cdot 10^{-3})}{0.1} $$
+                    $$ \\varepsilon = -100 \cdot \\frac{-3 \cdot 10^{-3}}{0.1} = -100 \cdot (-0.03) = \\mathbf{3 \\text{ Volt}} $$
+                `
+            },
+            {
+                q: "Pesawat terbang dengan bentang sayap $40$ m melaju horizontal dengan kecepatan $900$ km/jam ($250$ m/s) memotong medan magnet bumi $B = 5 \\times 10^{-5}$ T secara tegak lurus. Hitung beda potensial di ujung sayap!",
+                options: ["0.25 V", "0.50 V", "1.00 V", "1.25 V"],
+                correct: 1,
+                explanation: `
+                    <p>Menggunakan rumus GGL kawat bergerak:</p>
+                    $$ \\varepsilon = B \cdot l \cdot v $$
+                    $$ \\varepsilon = 5 \cdot 10^{-5} \cdot 40 \cdot 250 $$
+                    $$ \\varepsilon = 5 \cdot 10^{-5} \cdot 10000 = 5 \cdot 10^{-5} \cdot 10^4 = \\mathbf{0.5 \\text{ Volt}} $$
+                `
+            },
+            // G. Hk Faraday & Lenz
+            {
+                q: "Fluks magnetik pada kumparan $N=50$ lilitan dinyatakan dengan $\\Phi = (2t^2 + 4t + 1)$ Weber. Tentukan besar GGL induksi saat $t = 2$ detik!",
+                options: ["300 V", "450 V", "600 V", "750 V"],
+                correct: 2,
+                explanation: `
+                    $$ \\varepsilon = -N \\frac{d\\Phi}{dt} $$
+                    <p>Turunan fluks:</p>
+                    $$ \\frac{d\\Phi}{dt} = 4t + 4 $$
+                    <p>Saat $t = 2$:</p>
+                    $$ \\frac{d\\Phi}{dt} = 4(2) + 4 = 12 \\text{ Wb/s} $$
+                    $$ \\varepsilon = 50 \cdot 12 = \\mathbf{600 \\text{ Volt}} $$
+                    <p>(Besar GGL diambil nilai mutlaknya)</p>
+                `
+            },
+            {
+                q: "Sebuah kutub Utara magnet batang digerakkan <strong>masuk</strong> ke dalam kumparan kawat. Bagaimana arah arus induksi pada kumparan jika dilihat dari sisi magnet yang masuk?",
+                options: ["Searah jarum jam", "Berlawanan arah jarum jam", "Tidak ada arus", "Bolak-balik"],
+                correct: 1,
+                explanation: `
+                    <p><strong>Hukum Lenz:</strong> Arah arus induksi selalu melawan penyebab perubahan fluks.</p>
+                    <p>1. Penyebab: Kutub Utara (U) mendekat/masuk.</p>
+                    <p>2. Reaksi: Kumparan harus menolak magnet dengan membentuk kutub Utara juga di ujung yang didekati.</p>
+                    <p>3. Aturan Tangan Kanan: Untuk menghasilkan kutub Utara, putaran arus harus <strong>Berlawanan Arah Jarum Jam</strong>.</p>
+                `
+            },
+            // H. Osiloskop
+            {
+                q: "Pada layar osiloskop, tombol <em>Volt/div</em> disetel pada 2 Volt/div. Jika gelombang memiliki tinggi puncak ke puncak (peak-to-peak) sebanyak 6 kotak, berapakah tegangan maksimum ($V_{max}$)?",
+                options: ["6 V", "12 V", "24 V", "3 V"],
+                correct: 0,
+                explanation: `
+                    <p>1. Hitung tegangan puncak-ke-puncak ($V_{pp}$):</p>
+                    $$ V_{pp} = \\text{divisi vertikal} \\times \\text{Volt/div} = 6 \\times 2 = 12 \\text{ Volt} $$
+                    <p>2. Hitung $V_{max}$ (amplitudo):</p>
+                    $$ V_{max} = \\frac{1}{2} V_{pp} = \\frac{1}{2} (12) = \\mathbf{6 \\text{ Volt}} $$
+                `
+            },
+            {
+                q: "Tombol <em>Time/div</em> disetel pada 5 ms/div. Jika satu gelombang penuh menempati lebar 4 kotak (divisi), berapakah frekuensi gelombang tersebut?",
+                options: ["25 Hz", "50 Hz", "100 Hz", "200 Hz"],
+                correct: 1,
+                explanation: `
+                    <p>1. Hitung Periode ($T$):</p>
+                    $$ T = \\text{divisi horizontal} \\times \\text{Time/div} = 4 \\times 5 \\text{ ms} = 20 \\text{ ms} = 0.02 \\text{ s} $$
+                    <p>2. Hitung Frekuensi ($f$):</p>
+                    $$ f = \\frac{1}{T} = \\frac{1}{0.02} = \\frac{100}{2} = \\mathbf{50 \\text{ Hz}} $$
+                `
+            },
+            // I. Rangkaian RLC
+            {
+                q: "Rangkaian seri RLC memiliki resistor $R = 80 \\, \\Omega$, reaktansi induktif $X_L = 100 \\, \\Omega$, dan reaktansi kapasitif $X_C = 40 \\, \\Omega$. Hitunglah impedansi total ($Z$) rangkaian!",
+                options: ["60 $\\Omega$", "80 $\\Omega$", "100 $\\Omega$", "140 $\\Omega$"],
+                correct: 2,
+                explanation: `
+                    <p>Rumus Impedansi:</p>
+                    $$ Z = \\sqrt{R^2 + (X_L - X_C)^2} $$
+                    $$ Z = \\sqrt{80^2 + (100 - 40)^2} $$
+                    $$ Z = \\sqrt{6400 + 60^2} = \\sqrt{6400 + 3600} $$
+                    $$ Z = \\sqrt{10000} = \\mathbf{100 \\, \\Omega} $$
+                `
+            },
+            {
+                q: "Sebuah rangkaian resonansi memiliki induktansi $L = \\frac{1}{\\pi^2}$ H dan kapasitansi $C = 25 \\, \\mu$F. Tentukan frekuensi resonansi rangkaian tersebut!",
+                options: ["50 Hz", "100 Hz", "150 Hz", "200 Hz"],
+                correct: 1,
+                explanation: `
+                    <p>Syarat Resonansi: $X_L = X_C$. Rumus frekuensi:</p>
+                    $$ f = \\frac{1}{2\\pi \\sqrt{LC}} $$
+                    $$ f = \\frac{1}{2\\pi \\sqrt{\\frac{1}{\\pi^2} \cdot 25 \cdot 10^{-6}}} $$
+                    <p>Keluarkan $\\pi^2$ dan $25$ dari akar:</p>
+                    $$ f = \\frac{1}{2\\pi \cdot \\frac{1}{\\pi} \cdot 5 \cdot 10^{-3}} = \\frac{1}{2 \cdot 5 \cdot 10^{-3}} $$
+                    $$ f = \\frac{1}{10^{-2}} = \\mathbf{100 \\text{ Hz}} $$
+                `
+            },
+            // J. Tegangan RLC
+            {
+                q: "Dalam rangkaian seri RLC, beda potensial resistor $V_R = 30$ V, induktor $V_L = 60$ V, dan kapasitor $V_C = 20$ V. Hitunglah tegangan total sumber ($V$)!",
+                options: ["50 V", "70 V", "90 V", "110 V"],
+                correct: 0,
+                explanation: `
+                    <p>Tegangan total pada AC adalah penjumlahan fasor:</p>
+                    $$ V = \\sqrt{V_R^2 + (V_L - V_C)^2} $$
+                    $$ V = \\sqrt{30^2 + (60 - 20)^2} $$
+                    $$ V = \\sqrt{30^2 + 40^2} = \\sqrt{900 + 1600} = \\sqrt{2500} = \\mathbf{50 \\text{ V}} $$
+                `
+            },
+            {
+                q: "Rangkaian seri RLC memiliki impedansi $Z=100 \\, \\Omega$ dan dihubungkan ke tegangan sumber $V=200$ V. Jika reaktansi induktifnya $X_L=50 \\, \\Omega$, berapakah beda potensial pada ujung-ujung induktor ($V_L$)?",
+                options: ["50 V", "100 V", "150 V", "200 V"],
+                correct: 1,
+                explanation: `
+                    <p>1. Hitung arus total ($I$):</p>
+                    $$ I = \\frac{V}{Z} = \\frac{200}{100} = 2 \\text{ A} $$
+                    <p>2. Hitung tegangan pada induktor ($V_L$):</p>
+                    $$ V_L = I \cdot X_L = 2 \cdot 50 = \\mathbf{100 \\text{ Volt}} $$
+                `
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let isAnswered = false;
+
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const progressBar = document.getElementById('progress-bar');
+        const currentQNum = document.getElementById('current-question-num');
+        const explanationBox = document.getElementById('explanation-box');
+        const explanationText = document.getElementById('explanation-text');
+        const currentScoreDisplay = document.getElementById('current-score-display');
+        const scoreBadge = document.getElementById('score-badge');
+
+        function startQuiz() {
+            startScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            quizScreen.classList.add('flex');
+            scoreBadge.classList.remove('hidden');
+            scoreBadge.classList.add('flex');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            isAnswered = false;
+            explanationBox.classList.add('hidden');
+            const data = quizData[currentQuestion];
+            
+            // Set konten teks (belum dirender KaTeX)
+            questionText.innerHTML = data.q;
+            currentQNum.textContent = currentQuestion + 1;
+            progressBar.style.width = `${((currentQuestion) / quizData.length) * 100}%`;
+
+            // Reset options
+            optionsContainer.innerHTML = '';
+
+            data.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = `option-btn w-full text-left p-5 rounded-xl border border-gray-600 bg-gray-800/50 hover:bg-gray-700 focus:outline-none flex items-center justify-between group`;
+                btn.innerHTML = `
+                    <div class="font-medium text-gray-200 text-lg">${opt}</div>
+                    <div class="w-8 h-8 rounded-full border-2 border-gray-500 flex items-center justify-center group-hover:border-blue-400 transition-colors">
+                        <div class="w-4 h-4 rounded-full bg-blue-400 opacity-0 transform scale-0 transition-all duration-200 check-dot"></div>
+                    </div>
+                `;
+                btn.onclick = () => checkAnswer(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+
+            // PENTING: Render KaTeX setelah konten dimasukkan ke DOM
+            renderMath(quizScreen);
+        }
+
+        function checkAnswer(selectedIndex, btnElement) {
+            if (isAnswered) return;
+            isAnswered = true;
+
+            const data = quizData[currentQuestion];
+            const allBtns = optionsContainer.children;
+            const correctIndex = data.correct;
+
+            // Update Style
+            if (selectedIndex === correctIndex) {
+                score++;
+                currentScoreDisplay.textContent = score * 5; // Asumsi poin per soal
+                btnElement.classList.add('correct');
+                btnElement.querySelector('.check-dot').classList.remove('opacity-0', 'scale-0');
+                btnElement.querySelector('.check-dot').classList.add('bg-green-500');
+                btnElement.querySelector('.w-8').classList.add('border-green-500');
+            } else {
+                btnElement.classList.add('wrong');
+                btnElement.querySelector('.w-8').classList.add('border-red-500');
+                
+                // Highlight jawaban benar
+                const correctBtn = allBtns[correctIndex];
+                correctBtn.classList.add('correct');
+                correctBtn.querySelector('.check-dot').classList.remove('opacity-0', 'scale-0');
+                correctBtn.querySelector('.check-dot').classList.add('bg-green-500');
+                correctBtn.querySelector('.w-8').classList.add('border-green-500');
+            }
+
+            // Disable buttons
+            for (let btn of allBtns) {
+                btn.disabled = true;
+                btn.classList.add('opacity-70');
+                if(btn.classList.contains('correct') || btn.classList.contains('wrong')) {
+                    btn.classList.remove('opacity-70');
+                }
+            }
+
+            // Tampilkan Pembahasan & Render KaTeX di dalamnya
+            explanationText.innerHTML = data.explanation;
+            explanationBox.classList.remove('hidden');
+            explanationBox.classList.add('fade-in');
+            renderMath(explanationBox);
+            
+            // Scroll ke pembahasan di mobile
+            explanationBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < quizData.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            quizScreen.classList.add('hidden');
+            scoreBadge.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            resultScreen.classList.add('flex');
+
+            const finalScore = Math.round((score / quizData.length) * 100);
+            
+            // Animasi Lingkaran
+            const circle = document.getElementById('score-circle');
+            const radius = circle.r.baseVal.value;
+            const circumference = radius * 2 * Math.PI;
+            const offset = circumference - (finalScore / 100) * circumference;
+            
+            setTimeout(() => {
+                circle.style.strokeDashoffset = offset;
+                // Warna dinamis berdasarkan skor
+                if(finalScore >= 80) circle.style.stroke = "#4ade80"; // Green
+                else if(finalScore >= 60) circle.style.stroke = "#60a5fa"; // Blue
+                else circle.style.stroke = "#facc15"; // Yellow
+
+                // Counter animation
+                let currentNum = 0;
+                const interval = setInterval(() => {
+                    if (currentNum >= finalScore) {
+                        clearInterval(interval);
+                        document.getElementById('final-score').textContent = finalScore;
+                    } else {
+                        currentNum++;
+                        document.getElementById('final-score').textContent = currentNum;
+                    }
+                }, 20);
+            }, 100);
+
+            // Pesan feedback
+            const feedbackEl = document.getElementById('feedback-message');
+            if (finalScore >= 85) {
+                feedbackEl.innerHTML = "<i class='fas fa-trophy text-yellow-400 mr-2'></i>Luar Biasa! Fisikawan masa depan.";
+                feedbackEl.className = "text-lg mb-8 font-medium px-6 py-3 rounded-lg bg-green-500/20 border border-green-500 text-green-300";
+            } else if (finalScore >= 70) {
+                feedbackEl.innerHTML = "<i class='fas fa-thumbs-up text-blue-400 mr-2'></i>Kerja Bagus! Tingkatkan sedikit lagi.";
+                feedbackEl.className = "text-lg mb-8 font-medium px-6 py-3 rounded-lg bg-blue-500/20 border border-blue-500 text-blue-300";
+            } else {
+                feedbackEl.innerHTML = "<i class='fas fa-book-reader text-yellow-400 mr-2'></i>Jangan menyerah! Pelajari lagi konsep dasarnya.";
+                feedbackEl.className = "text-lg mb-8 font-medium px-6 py-3 rounded-lg bg-yellow-500/20 border border-yellow-500 text-yellow-300";
+            }
+        }
+    </script>
+</body>
+</html>
