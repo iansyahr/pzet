@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kuis Fisika Kelas XII - Induksi Magnetik & RLC</title>
+    <title>Kuis Fisika Kelas XII SMAN 77 - Induksi Magnetik & RLC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
@@ -98,8 +98,7 @@
             </div>
             <h2 class="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">Uji Kompetensi Fisika</h2>
             <p class="text-gray-300 mb-8 max-w-lg leading-relaxed">
-                Kuis interaktif ini berisi 20 soal latihan mendalam tentang Induksi Magnetik, Hukum Lorentz, Faraday, dan Rangkaian RLC. 
-                <br><span class="text-sm text-gray-400 mt-2 block">(Dilengkapi render persamaan matematika & pembahasan detail)</span>
+                Kuis interaktif ini berisi 20 soal latihan mendalam tentang Induksi Magnetik, Hukum Lorentz, Faraday, dan Rangkaian RLC.
             </p>
             <button onclick="startQuiz()" class="group relative px-8 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-bold shadow-lg transition transform hover:-translate-y-1 overflow-hidden">
                 <span class="relative z-10">Mulai Kuis Sekarang</span>
@@ -199,8 +198,8 @@
                 explanation: `
                     <p><strong>Analisis:</strong> Titik $P$ berada di tengah, jarak ke kawat 1 ($a_1$) = 5 cm = $0.05$ m, jarak ke kawat 2 ($a_2$) = 5 cm = $0.05$ m.</p>
                     <p>Karena arus searah, medan magnet di antara kawat saling berlawanan arah.</p>
-                    $$ B_1 = \\frac{\\mu_0 I_1}{2\\pi a_1} = \\frac{4\\pi \cdot 10^{-7} \cdot 4}{2\\pi \cdot 0.05} = 1.6 \\times 10^{-5} \\text{ T} $$
-                    $$ B_2 = \\frac{\\mu_0 I_2}{2\\pi a_2} = \\frac{4\\pi \cdot 10^{-7} \cdot 6}{2\\pi \cdot 0.05} = 2.4 \\times 10^{-5} \\text{ T} $$
+                    $$ B_1 = \\frac{\\mu_0 I_1}{2\\pi a_1} = \\frac{4\\pi \\cdot 10^{-7} \\cdot 4}{2\\pi \\cdot 0.05} = 1.6 \\times 10^{-5} \\text{ T} $$
+                    $$ B_2 = \\frac{\\mu_0 I_2}{2\\pi a_2} = \\frac{4\\pi \\cdot 10^{-7} \\cdot 6}{2\\pi \\cdot 0.05} = 2.4 \\times 10^{-5} \\text{ T} $$
                     $$ B_{total} = |B_2 - B_1| = (2.4 - 1.6) \\times 10^{-5} = \\mathbf{0.8 \\times 10^{-5} \\text{ T}} $$
                 `
             },
@@ -212,8 +211,8 @@
                     <p><strong>Analisis Posisi:</strong> Titik berada 10 cm di kanan kawat 2. <br> Jarak dari kawat 2 ($a_2$) = 0.1 m. <br> Jarak dari kawat 1 ($a_1$) = $0.2 + 0.1$ = 0.3 m.</p>
                     <p><strong>Arah Medan:</strong> Di kanan kawat 2 (arus bawah), $B_2$ masuk bidang. Dari kawat 1 (arus atas), $B_1$ juga masuk bidang (kaidah tangan kanan). Maka medan dijumlahkan.</p>
                     $$ B_{total} = \\frac{\\mu_0}{2\\pi} \\left( \\frac{I_1}{a_1} + \\frac{I_2}{a_2} \\right) $$
-                    $$ B_{total} = 2 \cdot 10^{-7} \\left( \\frac{2}{0.3} + \\frac{2}{0.1} \\right) $$
-                    $$ B_{total} = 2 \cdot 10^{-7} (6.67 + 20) = 2 \cdot 10^{-7} (26.67) \\approx \\mathbf{5.33 \\times 10^{-6} \\text{ T}} $$
+                    $$ B_{total} = 2 \\cdot 10^{-7} \\left( \\frac{2}{0.3} + \\frac{2}{0.1} \\right) $$
+                    $$ B_{total} = 2 \\cdot 10^{-7} (6.67 + 20) = 2 \\cdot 10^{-7} (26.67) \\approx \\mathbf{5.33 \\times 10^{-6} \\text{ T}} $$
                 `
             },
             // B. Menentukan lokasi yg induksi medan magnetiknya nol
@@ -249,8 +248,8 @@
                     <p>Rumus medan magnet di pusat kawat melingkar:</p>
                     $$ B = \\frac{\\mu_0 N I}{2a} $$
                     <p>Diketahui: $N=1, I=5, a=0.1$ m.</p>
-                    $$ B = \\frac{4\\pi \cdot 10^{-7} \cdot 1 \cdot 5}{2 \cdot 0.1} = \\frac{20\\pi \cdot 10^{-7}}{0.2} $$
-                    $$ B = 100\\pi \cdot 10^{-7} = \\mathbf{\\pi \\times 10^{-5} \\text{ T}} $$
+                    $$ B = \\frac{4\\pi \\cdot 10^{-7} \\cdot 1 \\cdot 5}{2 \\cdot 0.1} = \\frac{20\\pi \\cdot 10^{-7}}{0.2} $$
+                    $$ B = 100\\pi \\cdot 10^{-7} = \\mathbf{\\pi \\times 10^{-5} \\text{ T}} $$
                 `
             },
             {
@@ -259,7 +258,7 @@
                 correct: 1,
                 explanation: `
                     $$ B = \\frac{\\mu_0 N I}{2a} $$
-                    $$ 4\\pi \cdot 10^{-4} = \\frac{4\\pi \cdot 10^{-7} \cdot 40 \cdot I}{2 \cdot 0.2} $$
+                    $$ 4\\pi \\cdot 10^{-4} = \\frac{4\\pi \\cdot 10^{-7} \\cdot 40 \\cdot I}{2 \\cdot 0.2} $$
                     <p>Coret $4\\pi$ di kedua ruas:</p>
                     $$ 10^{-4} = \\frac{10^{-7} \cdot 40 \cdot I}{0.4} = 100 \cdot 10^{-7} \cdot I $$
                     $$ 10^{-4} = 10^{-5} \cdot I \\Rightarrow I = \\frac{10^{-4}}{10^{-5}} = \\mathbf{10 \\text{ A}} $$
@@ -273,8 +272,8 @@
                 explanation: `
                     <p>Karena tegak lurus, $\\theta = 90^\\circ$, $\\sin 90^\\circ = 1$.</p>
                     $$ F = Bqv \\sin\\theta $$
-                    $$ F = 0.5 \cdot (1.6 \cdot 10^{-19}) \cdot (2 \cdot 10^6) \cdot 1 $$
-                    $$ F = 0.5 \cdot 3.2 \cdot 10^{-13} = \\mathbf{1.6 \\times 10^{-13} \\text{ N}} $$
+                    $$ F = 0.5 \\cdot (1.6 \\cdot 10^{-19}) \\cdot (2 \\cdot 10^6) \\cdot 1 $$
+                    $$ F = 0.5 \\cdot 3.2 \\cdot 10^{-13} = \\mathbf{1.6 \\times 10^{-13} \\text{ N}} $$
                 `
             },
             {
@@ -284,20 +283,20 @@
                 explanation: `
                     <p>Jari-jari lintasan siklotron:</p>
                     $$ R = \\frac{mv}{Bq} $$
-                    $$ R = \\frac{9 \cdot 10^{-31} \cdot 4 \cdot 10^5}{2 \cdot 10^{-4} \cdot 1.6 \cdot 10^{-19}} $$
-                    $$ R = \\frac{36 \cdot 10^{-26}}{3.2 \cdot 10^{-23}} = 11.25 \cdot 10^{-3} \\text{ m} = \\mathbf{11.25 \\text{ mm}} $$
+                    $$ R = \\frac{9 \\cdot 10^{-31} \\cdot 4 \\cdot 10^5}{2 \\cdot 10^{-4} \\cdot 1.6 \\cdot 10^{-19}} $$
+                    $$ R = \\frac{36 \\cdot 10^{-26}}{3.2 \\cdot 10^{-23}} = 11.25 \\cdot 10^{-3} \\text{ m} = \\mathbf{11.25 \\text{ mm}} $$
                 `
             },
             // E. Gaya Lorentz pada penghantar lurus sejajar
             {
                 q: "Dua kawat lurus sejajar dialiri arus masing-masing $2$ A dan $5$ A dengan arah <strong>berlawanan</strong>. Jika jarak antar kawat $2$ cm, tentukan besar gaya Lorentz per satuan panjang dan jenis interaksinya!",
-                options: ["$10^{-4}$ N/m, Tarik-menarik", "$10^{-4}$ N/m, Tolak-menolak", "$2 \cdot 10^{-4}$ N/m, Tarik-menarik", "$4 \cdot 10^{-4}$ N/m, Tolak-menolak"],
+                options: ["$10^{-4}$ N/m, Tarik-menarik", "$10^{-4}$ N/m, Tolak-menolak", "$2 \\cdot 10^{-4}$ N/m, Tarik-menarik", "$4 \\cdot 10^{-4}$ N/m, Tolak-menolak"],
                 correct: 1,
                 explanation: `
                     <p><strong>Sifat Gaya:</strong> Arus berlawanan arah = <strong>Tolak-menolak</strong>.</p>
                     <p><strong>Besar Gaya:</strong></p>
-                    $$ \\frac{F}{L} = \\frac{\\mu_0 I_1 I_2}{2\\pi a} = \\frac{4\\pi \cdot 10^{-7} \cdot 2 \cdot 5}{2\\pi \cdot 0.02} $$
-                    $$ \\frac{F}{L} = \\frac{2 \cdot 10^{-7} \cdot 10}{2 \cdot 10^{-2}} = \\frac{20 \cdot 10^{-7}}{2 \cdot 10^{-2}} = \\mathbf{10^{-4} \\text{ N/m}} $$
+                    $$ \\frac{F}{L} = \\frac{\\mu_0 I_1 I_2}{2\\pi a} = \\frac{4\\pi \\cdot 10^{-7} \\cdot 2 \\cdot 5}{2\\pi \\cdot 0.02} $$
+                    $$ \\frac{F}{L} = \\frac{2 \\cdot 10^{-7} \\cdot 10}{2 \\cdot 10^{-2}} = \\frac{20 \\cdot 10^{-7}}{2 \\cdot 10^{-2}} = \\mathbf{10^{-4} \\text{ N/m}} $$
                 `
             },
             {
@@ -306,8 +305,8 @@
                 correct: 1,
                 explanation: `
                     $$ F = \\frac{\\mu_0 I_1 I_2 L}{2\\pi a} $$
-                    $$ 4 \cdot 10^{-7} = \\frac{4\\pi \cdot 10^{-7} \cdot 1 \cdot I_2 \cdot 2}{2\\pi \cdot 1} $$
-                    $$ 4 \cdot 10^{-7} = 2 \cdot 10^{-7} \cdot 2 \cdot I_2 $$
+                    $$ 4 \\cdot 10^{-7} = \\frac{4\\pi \\cdot 10^{-7} \\cdot 1 \\cdot I_2 \\cdot 2}{2\\pi \\cdot 1} $$
+                    $$ 4 \\cdot 10^{-7} = 2 \\cdot 10^{-7} \\cdot 2 \\cdot I_2 $$
                     $$ 4 = 4 I_2 \\Rightarrow I_2 = \\mathbf{1 \\text{ A}} $$
                 `
             },
@@ -318,8 +317,8 @@
                 correct: 1,
                 explanation: `
                     $$ \\varepsilon = -N \\frac{\\Delta \\Phi}{\\Delta t} $$
-                    $$ \\varepsilon = -100 \cdot \\frac{(2 \cdot 10^{-3} - 5 \cdot 10^{-3})}{0.1} $$
-                    $$ \\varepsilon = -100 \cdot \\frac{-3 \cdot 10^{-3}}{0.1} = -100 \cdot (-0.03) = \\mathbf{3 \\text{ Volt}} $$
+                    $$ \\varepsilon = -100 \\cdot \\frac{(2 \\cdot 10^{-3} - 5 \\cdot 10^{-3})}{0.1} $$
+                    $$ \\varepsilon = -100 \\cdot \\frac{-3 \\cdot 10^{-3}}{0.1} = -100 \\cdot (-0.03) = \\mathbf{3 \\text{ Volt}} $$
                 `
             },
             {
@@ -328,9 +327,9 @@
                 correct: 1,
                 explanation: `
                     <p>Menggunakan rumus GGL kawat bergerak:</p>
-                    $$ \\varepsilon = B \cdot l \cdot v $$
-                    $$ \\varepsilon = 5 \cdot 10^{-5} \cdot 40 \cdot 250 $$
-                    $$ \\varepsilon = 5 \cdot 10^{-5} \cdot 10000 = 5 \cdot 10^{-5} \cdot 10^4 = \\mathbf{0.5 \\text{ Volt}} $$
+                    $$ \\varepsilon = B \\cdot l \\cdot v $$
+                    $$ \\varepsilon = 5 \\cdot 10^{-5} \\cdot 40 \\cdot 250 $$
+                    $$ \\varepsilon = 5 \\cdot 10^{-5} \\cdot 10000 = 5 \\cdot 10^{-5} \\cdot 10^4 = \\mathbf{0.5 \\text{ Volt}} $$
                 `
             },
             // G. Hk Faraday & Lenz
@@ -344,7 +343,7 @@
                     $$ \\frac{d\\Phi}{dt} = 4t + 4 $$
                     <p>Saat $t = 2$:</p>
                     $$ \\frac{d\\Phi}{dt} = 4(2) + 4 = 12 \\text{ Wb/s} $$
-                    $$ \\varepsilon = 50 \cdot 12 = \\mathbf{600 \\text{ Volt}} $$
+                    $$ \\varepsilon = 50 \\cdot 12 = \\mathbf{600 \\text{ Volt}} $$
                     <p>(Besar GGL diambil nilai mutlaknya)</p>
                 `
             },
@@ -402,9 +401,9 @@
                 explanation: `
                     <p>Syarat Resonansi: $X_L = X_C$. Rumus frekuensi:</p>
                     $$ f = \\frac{1}{2\\pi \\sqrt{LC}} $$
-                    $$ f = \\frac{1}{2\\pi \\sqrt{\\frac{1}{\\pi^2} \cdot 25 \cdot 10^{-6}}} $$
+                    $$ f = \\frac{1}{2\\pi \\sqrt{\\frac{1}{\\pi^2} \\cdot 25 \\cdot 10^{-6}}} $$
                     <p>Keluarkan $\\pi^2$ dan $25$ dari akar:</p>
-                    $$ f = \\frac{1}{2\\pi \cdot \\frac{1}{\\pi} \cdot 5 \cdot 10^{-3}} = \\frac{1}{2 \cdot 5 \cdot 10^{-3}} $$
+                    $$ f = \\frac{1}{2\\pi \\cdot \\frac{1}{\\pi} \\cdot 5 \\cdot 10^{-3}} = \\frac{1}{2 \\cdot 5 \\cdot 10^{-3}} $$
                     $$ f = \\frac{1}{10^{-2}} = \\mathbf{100 \\text{ Hz}} $$
                 `
             },
@@ -428,7 +427,7 @@
                     <p>1. Hitung arus total ($I$):</p>
                     $$ I = \\frac{V}{Z} = \\frac{200}{100} = 2 \\text{ A} $$
                     <p>2. Hitung tegangan pada induktor ($V_L$):</p>
-                    $$ V_L = I \cdot X_L = 2 \cdot 50 = \\mathbf{100 \\text{ Volt}} $$
+                    $$ V_L = I \\cdot X_L = 2 \\cdot 50 = \\mathbf{100 \\text{ Volt}} $$
                 `
             }
         ];
