@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Masih ada waktu kok, Ayo Belajar!</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-deep: #050511;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --primary: #00f2ff;
+            --text-main: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+        }
+
+        #particle-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background: radial-gradient(circle at center, #0f1026 0%, #000000 100%);
+        }
+
+        .container {
+            width: 100%; max-width: 500px; padding: 20px; z-index: 10;
+            display: flex; flex-direction: column; gap: 16px;
+            /* Mencegah layout shifting berlebihan */
+            transform: translateZ(0); 
+        }
+
+        .header { text-align: center; margin-bottom: 10px; }
+        .header h1 {
+            font-size: 28px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;
+            background: linear-gradient(to right, #fff, var(--primary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .header p { font-size: 14px; color: #666; margin-top: 5px; }
+
+        .tilt-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px); /* Dikurangi sedikit agar ringan */
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 20px 24px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out, box-shadow 0.3s ease;
+            cursor: pointer;
+            overflow: hidden;
+            
+            /* Optimasi GPU: Memberitahu browser elemen ini akan berubah */
+            will-change: transform, height; 
+        }
+
+        .card-content { position: relative; z-index: 2; transform: translateZ(20px); pointer-events: none; }
+
+        .event-title { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #aaa; margin-bottom: 4px; }
+        .event-date { font-size: 12px; color: var(--primary); margin-bottom: 10px; display: inline-block; border: 1px solid rgba(0, 242, 255, 0.2); padding: 2px 8px; border-radius: 50px; }
+
+        .main-count { display: flex; align-items: baseline; }
+        .number { font-size: 52px; font-weight: 900; line-height: 1; color: white; font-variant-numeric: tabular-nums; }
+        .unit { font-size: 14px; margin-left: 8px; font-weight: 300; color: #ccc; }
+
+        /* DETAIL ANIMATION */
+        .details {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            /* Transisi height sering bikin lag, kita gunakan cubic-bezier halus */
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+        }
+
+        .tilt-card.active .details {
+            max-height: 100px;
+            opacity: 1;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .detail-grid { display: flex; justify-content: space-between; text-align: center; }
+        .detail-item span:first-child { display: block; font-size: 18px; font-weight: 700; color: var(--primary); }
+        .detail-item span:last-child { font-size: 10px; text-transform: uppercase; color: #666; }
+
+        .tap-hint {
+            position: absolute; right: 20px; top: 20px; font-size: 9px; color: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.1); padding: 2px 5px; border-radius: 4px;
+        }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .grid-2 .number { font-size: 38px; }
+
+    </style>
+</head>
+<body>
+
+    <canvas id="particle-canvas"></canvas>
+
+    <div class="container">
+        <div class="header">
+            <h1>Ἀνέχου καὶ ἀπέχου</h1>
+            <p>"Bertahanlah dan menahan dirilah." - Epictetus</p>
+        </div>
+
+        <div class="tilt-card" onclick="toggleDetails(this)">
+            <div class="tap-hint">TAP ME</div>
+            <div class="card-content">
+                <div class="event-title">Pembukaan SNBP</div>
+                <div class="event-date">3 Feb 2026</div>
+                <div class="main-count"><span class="number" id="num-snbp">0</span><span class="unit">Days</span></div>
+                <div class="details"><div class="detail-grid" id="detail-snbp"></div></div>
+            </div>
+        </div>
+
+        <div class="tilt-card" onclick="toggleDetails(this)">
+            <div class="tap-hint">TAP ME</div>
+            <div class="card-content">
+                <div class="event-title">Pendaftaran UTBK</div>
+                <div class="event-date">25 Mar 2026</div>
+                <div class="main-count"><span class="number" id="num-utbk-reg">0</span><span class="unit">Days</span></div>
+                <div class="details"><div class="detail-grid" id="detail-utbk-reg"></div></div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="tilt-card" onclick="toggleDetails(this)">
+                <div class="card-content">
+                    <div class="event-title">Pelaksanaan UTBK</div>
+                    <div class="event-date">21 Apr 2026</div>
+                    <div class="main-count"><span class="number" id="num-utbk-exe">0</span></div>
+                    <div class="details"><div class="detail-grid" id="detail-utbk-exe"></div></div>
+                </div>
+            </div>
+            <div class="tilt-card" onclick="toggleDetails(this)">
+                <div class="card-content">
+                    <div class="event-title">Pengumuman SNBT</div>
+                    <div class="event-date">25 May 2026</div>
+                    <div class="main-count"><span class="number" id="num-snbt">0</span></div>
+                    <div class="details"><div class="detail-grid" id="detail-snbt"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* --- OPTIMIZED CANVAS --- */
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Resize optimization
+        let width, height;
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        let particlesArray;
+        
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.dx = (Math.random() - 0.5) * 0.5; // Kecepatan dikurangi
+                this.dy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 2;
+                this.opacity = Math.random() * 0.5;
+            }
+            update() {
+                if (this.x > width || this.x < 0) this.dx = -this.dx;
+                if (this.y > height || this.y < 0) this.dy = -this.dy;
+                this.x += this.dx;
+                this.y += this.dy;
+                
+                // Draw simple circle
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,255,255,${this.opacity})`;
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particlesArray = [];
+            // OPTIMASI 1: Kurangi jumlah partikel drastis (Divisor diperbesar dari 15000 ke 35000)
+            // Semakin besar angka pembagi, semakin sedikit partikel -> Semakin ringan
+            let numberOfParticles = (width * height) / 35000; 
+            for (let i = 0; i < numberOfParticles; i++) {
+                particlesArray.push(new Particle());
+            }
+        }
+
+        // OPTIMASI 2: Limit jarak koneksi
+        // Menghitung koneksi adalah bagian terberat (O(N^2)). 
+        // Kita kurangi radius koneksi agar loop lebih cepat selesai.
+        const connectDistance = (width/9) * (height/9); 
+
+        function animateParticles() {
+            requestAnimationFrame(animateParticles);
+            ctx.clearRect(0, 0, width, height);
+            
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+            }
+            
+            // Loop Koneksi Garis
+            for (let a = 0; a < particlesArray.length; a++) {
+                for (let b = a; b < particlesArray.length; b++) {
+                    let dx = particlesArray[a].x - particlesArray[b].x;
+                    let dy = particlesArray[a].y - particlesArray[b].y;
+                    let distance = dx * dx + dy * dy;
+
+                    if (distance < connectDistance) {
+                        // Perhitungan opacity lebih sederhana
+                        let opacityValue = 1 - (distance / 25000);
+                        if(opacityValue > 0) {
+                            ctx.strokeStyle = `rgba(0, 242, 255, ${opacityValue * 0.15})`;
+                            ctx.lineWidth = 1;
+                            ctx.beginPath();
+                            ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                            ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+        }
+        initParticles();
+        animateParticles();
+
+
+        /* --- COUNTDOWN & INTERACTION --- */
+        const targets = {
+            'snbp': new Date('2026-02-03T00:00:00'),
+            'utbk-reg': new Date('2026-03-25T00:00:00'),
+            'utbk-exe': new Date('2026-04-21T00:00:00'),
+            'snbt': new Date('2026-05-25T00:00:00')
+        };
+
+        function updateTime() {
+            const now = new Date();
+            for (const [key, tDate] of Object.entries(targets)) {
+                const diff = tDate - now;
+                if (diff > 0) {
+                    const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const s = Math.floor((diff % (1000 * 60)) / 1000);
+                    
+                    // DOM Update
+                    const numEl = document.getElementById(`num-${key}`);
+                    if(numEl.innerText != d) numEl.innerText = d; // Cek dulu biar gak repaint kalau angka sama
+
+                    // Detail Update (Hanya jika detail grid terlihat/active untuk hemat resource)
+                    // Tapi untuk simplisitas, kita update terus, namun DOM string buildnya efisien
+                    const detailEl = document.getElementById(`detail-${key}`);
+                    if(document.querySelector('.tilt-card.active')) {
+                         detailEl.innerHTML = `
+                            <div class="detail-item"><span>${h}</span><span>Hr</span></div>
+                            <div class="detail-item"><span>${m}</span><span>Min</span></div>
+                            <div class="detail-item"><span>${s}</span><span>Sec</span></div>
+                        `;
+                    }
+                }
+            }
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        function toggleDetails(el) {
+            // Tutup yang lain dulu biar rapi
+            document.querySelectorAll('.tilt-card').forEach(c => {
+                if(c !== el) c.classList.remove('active');
+            });
+            el.classList.toggle('active');
+        }
+
+        /* --- OPTIMIZED 3D TILT --- */
+        // Menggunakan requestAnimationFrame untuk update visual, bukan event listener langsung
+        let mouseX = 0, mouseY = 0;
+        let targetX = 0, targetY = 0;
+        const windowHalfX = window.innerWidth / 2;
+        const windowHalfY = window.innerHeight / 2;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX - windowHalfX);
+            mouseY = (e.clientY - windowHalfY);
+        });
+
+        function animateTilt() {
+            // Smooth easing (lerp)
+            targetX += (mouseX - targetX) * 0.05;
+            targetY += (mouseY - targetY) * 0.05;
+
+            const cards = document.querySelectorAll('.tilt-card');
+            // Batasi rotasi max 5 derajat agar tidak pusing/berat
+            const rotateX = (targetY / windowHalfY) * 5; 
+            const rotateY = -(targetX / windowHalfX) * 5;
+
+            cards.forEach(card => {
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            });
+
+            requestAnimationFrame(animateTilt);
+        }
+        
+        // Jalankan tilt hanya di desktop (lebar > 768px) untuk hemat baterai HP
+        if(window.innerWidth > 768) {
+            animateTilt();
+        }
+
+    </script>
+</body>
+</html>
