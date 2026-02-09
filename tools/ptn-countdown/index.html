@@ -157,17 +157,6 @@
       color: rgba(255,255,255,0.7);
     }
 
-    .status {
-      margin-top: 10px;
-      font-size: 11px;
-      display: inline-block;
-      color: var(--text-dim);
-      border: 1px solid rgba(255,255,255,0.12);
-      padding: 3px 8px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.03);
-    }
-
     .details {
       max-height: 0;
       opacity: 0;
@@ -327,9 +316,7 @@
     }
 
     class Particle {
-      constructor() {
-        this.reset();
-      }
+      constructor() { this.reset(); }
       reset() {
         this.x = Math.random() * width;
         this.y = Math.random() * height;
@@ -415,7 +402,6 @@
         card,
         date: new Date(card.dataset.date),
         num: document.getElementById(`num-${key}`),
-        status: document.getElementById(`status-${key}`),
         h: detailGrid.querySelector('[data-unit="h"]'),
         m: detailGrid.querySelector('[data-unit="m"]'),
         s: detailGrid.querySelector('[data-unit="s"]')
@@ -425,22 +411,18 @@
     function updateTime() {
       const now = new Date();
 
-      for (const [key, item] of data.entries()) {
+      for (const [, item] of data.entries()) {
         const diff = item.date - now;
 
         let d = 0, h = 0, m = 0, s = 0;
-        let statusText = "Sudah dimulai";
-
         if (diff > 0) {
           d = Math.floor(diff / 86400000);
           h = Math.floor((diff / 3600000) % 24);
           m = Math.floor((diff / 60000) % 60);
           s = Math.floor((diff / 1000) % 60);
-          statusText = d === 0 ? "Mulai hari ini" : "Masih ada waktu";
         }
 
         if (item.num.textContent !== String(d)) item.num.textContent = d;
-        item.status.textContent = statusText;
 
         if (item.card.classList.contains("active")) {
           item.h.textContent = h;
