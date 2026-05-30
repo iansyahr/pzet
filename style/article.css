@@ -301,3 +301,52 @@ html[data-theme="dark"] #content details.warning { border-color: #b6892f; }
 #content details details {
   margin: 0.6em 0 0;
 }
+
+/* Header Shrink */
+
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  transition: all 0.3s ease-in-out;
+  background-color: var(--bg-color, #ffffff); /* Pastikan ada background agar konten tidak tembus */
+}
+
+/* --- Efek saat class .scrolled aktif --- */
+.site-header.scrolled {
+  padding-top: 8px;    /* Kurangi padding atas */
+  padding-bottom: 8px; /* Kurangi padding bawah */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Tambahkan bayangan (opsional) */
+}
+
+/* Transisi untuk logo */
+.site-header .brand-logo {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Logo mengecil */
+.site-header.scrolled .brand-logo {
+  width: 32px;  /* Sesuaikan ukuran kecilnya */
+  height: 32px;
+}
+
+/* Transisi untuk teks judul */
+.site-header h1 {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Judul mengecil */
+.site-header.scrolled h1 {
+  font-size: 1.2rem; /* Sesuaikan ukuran kecilnya */
+  margin: 0;
+}
+
+/* Opsional: Sembunyikan teks sub-judul (TKA · Set-1) agar lebih ringkas */
+.site-header .sub {
+  transition: all 0.3s ease-in-out;
+}
+
+.site-header.scrolled .sub {
+  display: none; 
+}
