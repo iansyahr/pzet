@@ -33,7 +33,14 @@ html[data-theme="dark"] {
 
 /* Base */
 * { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; }
+html, body { 
+  margin: 0; 
+  padding: 0;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overflow-x: hidden;
+  width: 100%; 
+}
 body {
   font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial;
   background: var(--bg);
@@ -129,6 +136,11 @@ main { padding-block: clamp(18px, 5vw, 48px); }
 .back:hover { box-shadow: var(--shadow-2); }
 
 /* Markdown content */
+#content {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
 #content :is(h1,h2,h3,h4,h5,h6) { scroll-margin-top: 84px; }
 #content h1 {
   font-size: clamp(26px, 6.4vw, 34px);
@@ -174,6 +186,7 @@ html[data-theme="light"] #content pre {
 #content table {
   width: 100%; border-collapse: collapse; margin: 1em 0;
   border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden;
+  display: block;
   max-width: 100%; overflow-x: auto;
 }
 #content th, #content td {
@@ -301,6 +314,14 @@ html[data-theme="dark"] #content details.warning { border-color: #b6892f; }
 #content details details {
   margin: 0.6em 0 0;
 }
+
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  padding-bottom: 4px; /* Mencegah scrollbar menutupi bagian bawah rumus */
+}
+
 
 /* =========================================
    HEADER SHRINK ANIMATION
