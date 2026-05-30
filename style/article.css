@@ -647,7 +647,9 @@ html[data-theme="dark"] #content details.warning {
   }
 
   .brand .sub {
-    display: none;
+    display: block;
+    font-size: 11px;
+    white-space: nowrap;
   }
 
   .theme-toggle {
