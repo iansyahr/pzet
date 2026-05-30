@@ -302,51 +302,47 @@ html[data-theme="dark"] #content details.warning { border-color: #b6892f; }
   margin: 0.6em 0 0;
 }
 
-/* Header Shrink */
-
-
+/* =========================================
+   HEADER SHRINK ANIMATION
+========================================= */
 .site-header {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  transition: all 0.3s ease-in-out;
-  background-color: var(--bg-color, #ffffff); /* Pastikan ada background agar konten tidak tembus */
+  position: sticky; top: 0; z-index: 50;
+  /* Pakai color-mix agar background ngikutin tema dan agak transparan (efek kaca) */
+  background: color-mix(in srgb, var(--bg-elev) 85%, transparent);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: saturate(160%) blur(8px);
+  padding-top: max(8px, var(--safe-top));
+  padding-bottom: 8px;
+  transition: padding 0.3s ease, box-shadow 0.3s ease, background-color 220ms ease;
 }
 
-/* --- Efek saat class .scrolled aktif --- */
+/* Saat discroll: padding mengecil & muncul bayangan */
 .site-header.scrolled {
-  padding-top: 8px;    /* Kurangi padding atas */
-  padding-bottom: 8px; /* Kurangi padding bawah */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Tambahkan bayangan (opsional) */
+  padding-top: max(4px, var(--safe-top));
+  padding-bottom: 4px;
+  box-shadow: var(--shadow-2); 
 }
 
-/* Transisi untuk logo */
-.site-header .brand-logo {
-  transition: all 0.3s ease-in-out;
+/* Animasi ukuran menggunakan transform: scale agar sangat mulus */
+.brand {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: left center;
 }
 
-/* Logo mengecil */
-.site-header.scrolled .brand-logo {
-  width: 32px;  /* Sesuaikan ukuran kecilnya */
-  height: 32px;
+/* Keseluruhan logo dan teks mengecil 15% */
+.site-header.scrolled .brand {
+  transform: scale(0.85);
 }
 
-/* Transisi untuk teks judul */
-.site-header h1 {
-  transition: all 0.3s ease-in-out;
+/* Animasi menyembunyikan teks sub-judul secara mulus */
+.brand .sub {
+  transition: opacity 0.25s ease, max-height 0.3s ease;
+  max-height: 20px;
+  opacity: 1;
+  overflow: hidden;
 }
 
-/* Judul mengecil */
-.site-header.scrolled h1 {
-  font-size: 1.2rem; /* Sesuaikan ukuran kecilnya */
-  margin: 0;
-}
-
-/* Opsional: Sembunyikan teks sub-judul (TKA · Set-1) agar lebih ringkas */
-.site-header .sub {
-  transition: all 0.3s ease-in-out;
-}
-
-.site-header.scrolled .sub {
-  display: none; 
+.site-header.scrolled .brand .sub {
+  opacity: 0;
+  max-height: 0;
 }

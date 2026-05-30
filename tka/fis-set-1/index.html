@@ -169,11 +169,9 @@
         const header = document.querySelector(".site-header");
         
         window.addEventListener("scroll", () => {
-          // Jika scroll lebih dari 50px ke bawah, tambahkan class 'scrolled'
           if (window.scrollY > 50) {
             header.classList.add("scrolled");
           } else {
-            // Jika kembali ke paling atas, hapus class 'scrolled'
             header.classList.remove("scrolled");
           }
         });
