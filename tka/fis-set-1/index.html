@@ -6,11 +6,13 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
+
     <link
       rel="icon"
       type="image/avif"
       href="https://pzet.my.id/etc/media/magnolia-ico.avif"
     />
+
     <title>TKA — Fisika Set-1 — PZ</title>
 
     <!-- Pasang tema awal (anti-FOUC) -->
@@ -20,6 +22,7 @@
           const key = "pz-theme";
           const saved = localStorage.getItem(key);
           const root = document.documentElement;
+
           if (saved === "light" || saved === "dark") {
             root.setAttribute("data-theme", saved);
           } else {
@@ -32,24 +35,31 @@
 
     <!-- Font Inter -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap"
       rel="stylesheet"
     />
 
-    <!-- KaTeX (CSS) -->
+    <!-- KaTeX CSS -->
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"
     />
 
-    <!-- Styles (punyamu) -->
+    <!-- CSS utama -->
     <link rel="stylesheet" href="https://pzet.my.id/style/article.css" />
 
-    <!-- Marked (Markdown parser) -->
+    <!-- Marked -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- KaTeX (JS + Auto-render) -->
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+
+    <!-- KaTeX JS + Auto Render -->
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+    ></script>
   </head>
 
   <body>
@@ -58,13 +68,27 @@
       <header class="site-header">
         <div class="container nav">
           <a class="brand" href="/">
-            <img class="brand-logo" src="https://pzet.my.id/etc/media/magnolia-hq.avif" alt="PZ" />
-            <div>
+            <img
+              class="brand-logo"
+              src="https://pzet.my.id/etc/media/magnolia-hq.avif"
+              alt="PZ"
+              width="77"
+              height="77"
+            />
+
+            <div class="brand-text">
               <h1>PZ</h1>
               <p class="sub">TKA · Set-1</p>
             </div>
           </a>
-          <button id="theme-toggle" class="theme-toggle" type="button" aria-live="polite">
+
+          <button
+            id="theme-toggle"
+            class="theme-toggle"
+            type="button"
+            aria-label="Ganti tema"
+            aria-live="polite"
+          >
             <span id="theme-emoji" aria-hidden="true">☀️</span>
           </button>
         </div>
@@ -85,9 +109,25 @@
       <footer class="site-footer">
         <div class="container foot">
           <p>&copy; 2025 PZ. Konten dapat disebarluaskan dengan atribusi.</p>
+
           <div class="socials" aria-label="Media sosial">
-            <a href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)">X</a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">Instagram</a>
+            <a
+              href="https://x.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="X (Twitter)"
+            >
+              X
+            </a>
+
+            <a
+              href="https://instagram.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram"
+            >
+              Instagram
+            </a>
           </div>
         </div>
       </footer>
@@ -102,13 +142,29 @@
         try {
           const res = await fetch(markdownUrl, { cache: "no-store" });
           if (!res.ok) throw new Error("HTTP " + res.status);
+
           const md = await res.text();
 
-          // Opsi Marked
-          marked.setOptions({ gfm: true, breaks: false });
+          marked.setOptions({
+            gfm: true,
+            breaks: false
+          });
 
           const html = marked.parse(md);
           contentElement.innerHTML = html;
+
+          // Bungkus tabel Markdown agar tidak bikin halaman melebar di HP
+          for (const table of contentElement.querySelectorAll("table")) {
+            if (table.parentElement?.classList.contains("table-scroll")) {
+              continue;
+            }
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "table-scroll";
+
+            table.parentNode.insertBefore(wrapper, table);
+            wrapper.appendChild(table);
+          }
 
           // Render KaTeX setelah HTML dipasang
           if (window.renderMathInElement) {
@@ -126,7 +182,8 @@
 
           // Link eksternal buka tab baru
           for (const a of contentElement.querySelectorAll("a[href^='http']")) {
-            a.target = "_blank"; a.rel = "noopener noreferrer";
+            a.target = "_blank";
+            a.rel = "noopener noreferrer";
           }
         } catch (err) {
           console.error(err);
@@ -135,46 +192,91 @@
         }
       });
 
-      // ====== Theme Toggle (emoji) ======
+      // ====== Theme Toggle ======
       (function () {
         const key = "pz-theme";
         const root = document.documentElement;
         const btn = document.getElementById("theme-toggle");
         const emoji = document.getElementById("theme-emoji");
 
-        function current() { return root.getAttribute("data-theme") === "dark" ? "dark" : "light"; }
+        if (!btn || !emoji) return;
+
+        function current() {
+          return root.getAttribute("data-theme") === "dark" ? "dark" : "light";
+        }
+
         function setTheme(mode) {
           root.setAttribute("data-theme", mode);
-          try { localStorage.setItem(key, mode); } catch (_) {}
+
+          try {
+            localStorage.setItem(key, mode);
+          } catch (_) {}
+
           emoji.textContent = mode === "dark" ? "🌙" : "☀️";
         }
 
         setTheme(current());
-        btn.addEventListener("click", () => setTheme(current() === "dark" ? "light" : "dark"));
+
+        btn.addEventListener("click", () => {
+          setTheme(current() === "dark" ? "light" : "dark");
+        });
 
         // Sinkron ke OS bila user belum set manual
         try {
           const saved = localStorage.getItem(key);
+
           if (saved !== "light" && saved !== "dark") {
             const mq = matchMedia("(prefers-color-scheme: dark)");
+
             mq.addEventListener("change", (e) => {
-              setTheme(e.matches ? "dark" : "light");
-              localStorage.removeItem(key);
+              root.setAttribute("data-theme", e.matches ? "dark" : "light");
+              emoji.textContent = e.matches ? "🌙" : "☀️";
             });
           }
         } catch (_) {}
       })();
-      // ====== Header Shrink on Scroll ======
+
+      // ====== Header Shrink Anti-Jitter ======
       document.addEventListener("DOMContentLoaded", () => {
         const header = document.querySelector(".site-header");
-        
-        window.addEventListener("scroll", () => {
-          if (window.scrollY > 50) {
-            header.classList.add("scrolled");
-          } else {
-            header.classList.remove("scrolled");
+        if (!header) return;
+
+        let isScrolled = false;
+        let ticking = false;
+
+        function updateHeader() {
+          const y = window.scrollY || document.documentElement.scrollTop || 0;
+
+          /*
+            Anti-jitter:
+            - Header mengecil setelah scroll melewati 72px
+            - Header membesar lagi hanya kalau balik ke bawah 24px
+
+            Jadi class scrolled tidak bolak-balik aktif/nonaktif
+            saat scroll kecil-kecil.
+          */
+          const shouldBeScrolled = isScrolled ? y > 24 : y > 72;
+
+          if (shouldBeScrolled !== isScrolled) {
+            isScrolled = shouldBeScrolled;
+            header.classList.toggle("scrolled", isScrolled);
           }
-        });
+
+          ticking = false;
+        }
+
+        window.addEventListener(
+          "scroll",
+          () => {
+            if (!ticking) {
+              ticking = true;
+              requestAnimationFrame(updateHeader);
+            }
+          },
+          { passive: true }
+        );
+
+        updateHeader();
       });
     </script>
   </body>
