@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <link
       rel="icon"
@@ -42,7 +42,7 @@
       href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"
     />
 
-    <!-- Styles -->
+    <!-- Styles (punyamu) -->
     <link rel="stylesheet" href="https://pzet.my.id/style/article.css" />
 
     <!-- Marked (Markdown parser) -->
@@ -104,18 +104,11 @@
           if (!res.ok) throw new Error("HTTP " + res.status);
           const md = await res.text();
 
+          // Opsi Marked
           marked.setOptions({ gfm: true, breaks: false });
 
           const html = marked.parse(md);
           contentElement.innerHTML = html;
-
-          // Bungkus semua tabel dengan div.table-wrap agar bisa scroll horizontal
-          contentElement.querySelectorAll("table").forEach((table) => {
-            const wrapper = document.createElement("div");
-            wrapper.className = "table-wrap";
-            table.parentNode.insertBefore(wrapper, table);
-            wrapper.appendChild(table);
-          });
 
           // Render KaTeX setelah HTML dipasang
           if (window.renderMathInElement) {
@@ -159,6 +152,7 @@
         setTheme(current());
         btn.addEventListener("click", () => setTheme(current() === "dark" ? "light" : "dark"));
 
+        // Sinkron ke OS bila user belum set manual
         try {
           const saved = localStorage.getItem(key);
           if (saved !== "light" && saved !== "dark") {
@@ -170,10 +164,10 @@
           }
         } catch (_) {}
       })();
-
       // ====== Header Shrink on Scroll ======
       document.addEventListener("DOMContentLoaded", () => {
         const header = document.querySelector(".site-header");
+        
         window.addEventListener("scroll", () => {
           if (window.scrollY > 50) {
             header.classList.add("scrolled");
