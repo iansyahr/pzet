@@ -3,166 +3,482 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Database Skor UTBK 2026</title>
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- CSS Bootstrap 5 -->
+    <title>Data Skor UTBK 2026</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- CSS DataTables & Extensions (Responsive + Buttons) -->
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-    <link href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
-    <link href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css" rel="stylesheet">
-    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
+        :root {
+            --primary: #1a56db;
+            --primary-dark: #1e429f;
+            --primary-light: #ebf0ff;
+            --accent: #f59e0b;
+            --surface: #ffffff;
+            --bg: #f0f4ff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --radius: 14px;
+            --shadow: 0 4px 24px rgba(26,86,219,0.08);
+        }
+
+        * { box-sizing: border-box; }
+
         body {
-            background-color: #f4f6f9;
             font-family: 'Inter', sans-serif;
-            color: #333;
+            background: var(--bg);
+            min-height: 100vh;
+            color: var(--text-main);
         }
-        .hero-section {
-            background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
-            color: white;
-            padding: 40px 0;
-            margin-bottom: 30px;
-            border-radius: 0 0 20px 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+
+        /* ── NAVBAR ── */
+        .top-nav {
+            background: linear-gradient(90deg, var(--primary-dark) 0%, var(--primary) 100%);
+            padding: 0 2rem;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 12px rgba(26,86,219,0.18);
         }
-        .card {
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        .top-nav .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.05rem;
+            text-decoration: none;
         }
-        .table-custom thead {
-            background-color: #f8f9fa;
-        }
-        .table-custom th {
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.5px;
-            color: #495057;
-        }
-        /* Styling untuk tombol export */
-        .dt-buttons .btn {
+        .top-nav .brand i { font-size: 1.3rem; }
+        .top-nav .badge-year {
+            background: var(--accent);
+            color: #fff;
+            font-size: 0.72rem;
+            font-weight: 700;
             border-radius: 6px;
-            font-size: 0.875rem;
-            margin-bottom: 15px;
+            padding: 2px 8px;
+            letter-spacing: 0.05em;
         }
-        .badge-saintek { background-color: #0d6efd; }
-        .badge-soshum { background-color: #fd7e14; }
-        .badge-campuran { background-color: #198754; }
+
+        /* ── HERO HEADER ── */
+        .hero {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 60%, #4f8ef7 100%);
+            color: #fff;
+            padding: 3rem 2rem 4.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 500px; height: 500px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            top: -180px; right: -120px;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            width: 300px; height: 300px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            bottom: -100px; left: -80px;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: #fff;
+            border-radius: 999px;
+            padding: 5px 16px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            margin-bottom: 1rem;
+            backdrop-filter: blur(4px);
+        }
+        .hero h1 {
+            font-size: clamp(1.6rem, 4vw, 2.4rem);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+        .hero p {
+            color: rgba(255,255,255,0.82);
+            font-size: 0.97rem;
+            max-width: 520px;
+            margin: 0 auto;
+        }
+
+        /* ── STAT CARDS ── */
+        .stats-row {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(8px);
+            border-radius: 12px;
+            padding: 0.9rem 1.5rem;
+            text-align: center;
+            min-width: 130px;
+        }
+        .stat-card .stat-val {
+            font-size: 1.55rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1;
+        }
+        .stat-card .stat-lbl {
+            font-size: 0.73rem;
+            color: rgba(255,255,255,0.75);
+            margin-top: 4px;
+            font-weight: 500;
+            letter-spacing: 0.03em;
+        }
+
+        /* ── MAIN CONTENT ── */
+        .main-content {
+            max-width: 1300px;
+            margin: -2rem auto 2rem;
+            padding: 0 1.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ── TABLE CARD ── */
+        .table-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        .table-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        .table-card-header .title {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .table-card-header .title i {
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+        .table-card-body { padding: 1rem 1.5rem 1.5rem; }
+
+        /* ── DATATABLE OVERRIDES ── */
+        table.dataTable thead th {
+            background: var(--primary) !important;
+            color: #fff !important;
+            font-weight: 600;
+            font-size: 0.82rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            border-color: var(--primary-dark) !important;
+            padding: 12px 14px;
+            white-space: nowrap;
+        }
+        table.dataTable tbody tr {
+            transition: background 0.15s;
+        }
+        table.dataTable tbody tr:hover td {
+            background-color: var(--primary-light) !important;
+        }
+        table.dataTable tbody td {
+            font-size: 0.875rem;
+            vertical-align: middle;
+            padding: 10px 14px;
+            border-color: var(--border);
+            color: var(--text-main);
+        }
+        table.dataTable.table-striped tbody tr:nth-of-type(odd) > * {
+            background-color: #f8faff;
+        }
+
+        /* Score badges */
+        .score-min { color: #dc2626; font-weight: 600; }
+        .score-avg { color: var(--primary); font-weight: 700; }
+        .score-max { color: #059669; font-weight: 600; }
+
+        /* Jenis badge */
+        .badge-jenis {
+            font-size: 0.72rem;
+            font-weight: 600;
+            border-radius: 6px;
+            padding: 3px 9px;
+            white-space: nowrap;
+        }
+        .badge-saintek {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .badge-soshum {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .badge-campuran {
+            background: #f0fdf4;
+            color: #166534;
+        }
+
+        /* PTN cell */
+        .ptn-name {
+            font-weight: 600;
+            color: var(--primary-dark);
+            white-space: nowrap;
+        }
+
+        /* Daya tampung pill */
+        .pill-jumlah {
+            display: inline-block;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: 999px;
+            padding: 2px 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        /* DataTable wrapper controls */
+        div.dataTables_wrapper div.dataTables_filter input {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            outline: none;
+            transition: border 0.2s;
+        }
+        div.dataTables_wrapper div.dataTables_filter input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26,86,219,0.1);
+        }
+        div.dataTables_wrapper div.dataTables_length select {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 0.85rem;
+        }
+        div.dataTables_wrapper div.dataTables_info {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            border-radius: 7px !important;
+            font-size: 0.83rem !important;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+            background: var(--primary) !important;
+            border-color: var(--primary) !important;
+            color: #fff !important;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: var(--primary-light) !important;
+            border-color: var(--border) !important;
+            color: var(--primary) !important;
+        }
+
+        /* Loading overlay */
+        #loading-overlay {
+            position: fixed; inset: 0;
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            transition: opacity 0.3s;
+        }
+        #loading-overlay .spinner-border { color: var(--primary); width: 2.5rem; height: 2.5rem; }
+        #loading-overlay p { color: var(--primary); font-weight: 600; font-size: 0.95rem; }
+
+        /* ── FOOTER ── */
+        .site-footer {
+            text-align: center;
+            padding: 1.5rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .site-footer a { color: var(--primary); text-decoration: none; }
+
+        @media (max-width: 576px) {
+            .hero { padding: 2rem 1rem 3.5rem; }
+            .table-card-body { padding: 0.75rem; }
+            .table-card-header { padding: 1rem; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- Header Section -->
-    <div class="hero-section text-center">
-        <div class="container">
-            <h1 class="fw-bold">Database Statistik UTBK 2026</h1>
-            <p class="lead mb-0">Platform pencarian referensi skor UTBK untuk seluruh PTN di Indonesia</p>
+<!-- Loading Overlay -->
+<div id="loading-overlay">
+    <div class="spinner-border" role="status"></div>
+    <p>Memuat data UTBK 2026…</p>
+</div>
+
+<!-- Navbar -->
+<nav class="top-nav">
+    <a href="#" class="brand">
+        <i class="bi bi-mortarboard-fill"></i>
+        UTBK Analytics
+    </a>
+    <span class="badge-year">2026</span>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+    <div class="hero-badge">
+        <i class="bi bi-bar-chart-line-fill"></i>
+        Statistik Resmi UTBK-SNBT
+    </div>
+    <h1>Data Skor UTBK 2026</h1>
+    <p>Referensi skor minimum, rata-rata, dan maksimum seluruh program studi PTN se-Indonesia.</p>
+
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-val" id="stat-ptn">–</div>
+            <div class="stat-lbl">Perguruan Tinggi</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val" id="stat-prodi">–</div>
+            <div class="stat-lbl">Program Studi</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val" id="stat-kursi">–</div>
+            <div class="stat-lbl">Total Kursi</div>
         </div>
     </div>
+</div>
 
-    <!-- Main Content -->
-    <div class="container mb-5">
-        <div class="card">
-            <div class="card-body p-4">
-                <table id="tabel-utbk" class="table table-hover table-custom nowrap" style="width:100%">
+<!-- Main Content -->
+<div class="main-content">
+    <div class="table-card">
+        <div class="table-card-header">
+            <div class="title">
+                <i class="bi bi-table"></i>
+                Tabel Data Skor Program Studi
+            </div>
+        </div>
+        <div class="table-card-body">
+            <div class="table-responsive">
+                <table id="tabel-utbk" class="table table-striped table-bordered" style="width:100%">
                     <thead>
                         <tr>
                             <th>PTN</th>
                             <th>Program Studi</th>
                             <th>Jenis</th>
-                            <th>Jumlah Lulus</th>
-                            <th>Min. Skor</th>
-                            <th>Rata-rata Skor</th>
-                            <th>Max. Skor</th>
+                            <th>Daya Tampung</th>
+                            <th>Skor Minimum</th>
+                            <th>Skor Rata-Rata</th>
+                            <th>Skor Maksimum</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <!-- Data dimuat dari JSON -->
-                    </tbody>
+                    <tbody></tbody>
                 </table>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    
-    <!-- JS DataTables Core & Bootstrap -->
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-    
-    <!-- JS DataTables Responsive (Untuk HP) -->
-    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
-    
-    <!-- JS DataTables Buttons (Untuk Export Excel/CSV) -->
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+<!-- Footer -->
+<footer class="site-footer">
+    Data bersumber dari <a href="https://pzet.my.id/skor-utbk/2026.json" target="_blank">pzet.my.id</a> &bull; UTBK Analytics &copy; 2026
+</footer>
 
-    <script>
-        $(document).ready(function() {
-            var table = $('#tabel-utbk').DataTable({
-                responsive: true, // Mengaktifkan fitur mobile responsive
-                ajax: {
-                    url: 'https://pzet.my.id/skor-utbk/2026.json',
-                    dataSrc: 'data'
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+    function badgeJenis(jenis) {
+        const j = (jenis || '').toLowerCase();
+        if (j.includes('saintek')) return `<span class="badge-jenis badge-saintek">${jenis}</span>`;
+        if (j.includes('soshum')) return `<span class="badge-jenis badge-soshum">${jenis}</span>`;
+        return `<span class="badge-jenis badge-campuran">${jenis}</span>`;
+    }
+
+    $(document).ready(function () {
+        const table = $('#tabel-utbk').DataTable({
+            ajax: {
+                url: 'https://pzet.my.id/skor-utbk/2026.json',
+                dataSrc: 'data'
+            },
+            columns: [
+                {
+                    data: 'nama_singkat',
+                    render: d => `<span class="ptn-name">${d}</span>`
                 },
-                // Menambahkan layout tombol Export di atas pencarian
-                dom: "<'row'<'col-sm-12 col-md-6'B><'col-sm-12 col-md-6'f>>" +
-                     "<'row'<'col-sm-12'tr>>" +
-                     "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-                buttons: [
-                    { extend: 'excelHtml5', className: 'btn btn-success btn-sm', text: '📥 Export Excel' },
-                    { extend: 'csvHtml5', className: 'btn btn-info btn-sm text-white', text: '📄 Export CSV' },
-                    { extend: 'print', className: 'btn btn-secondary btn-sm', text: '🖨️ Print' }
-                ],
-                columns: [
-                    { data: 'nama_singkat', className: 'fw-bold' },
-                    { data: 'nama_prodi_ptn' },
-                    { 
-                        data: 'jenis',
-                        // Render label warna untuk kolom Jenis
-                        render: function (data) {
-                            let jenis = data.toUpperCase();
-                            if (jenis === 'SAINTEK') {
-                                return `<span class="badge badge-saintek">SAINTEK</span>`;
-                            } else if (jenis === 'SOSHUM') {
-                                return `<span class="badge badge-soshum">SOSHUM</span>`;
-                            } else {
-                                return `<span class="badge badge-campuran">${jenis}</span>`;
-                            }
-                        }
-                    },
-                    { data: 'jumlah', className: 'text-center' },
-                    { 
-                        data: 'minimum_utbk',
-                        render: function (data) { return parseFloat(data).toFixed(2); }
-                    },
-                    { 
-                        data: 'average_utbk',
-                        className: 'fw-bold text-primary', // Memberi warna khusus pada rata-rata
-                        render: function (data) { return parseFloat(data).toFixed(2); }
-                    },
-                    { 
-                        data: 'maximum_utbk',
-                        render: function (data) { return parseFloat(data).toFixed(2); }
-                    }
-                ],
-                order: [[0, 'asc']],
-                language: {
-                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json'
+                { data: 'nama_prodi_ptn' },
+                {
+                    data: 'jenis',
+                    render: d => badgeJenis(d)
+                },
+                {
+                    data: 'jumlah',
+                    className: 'text-center',
+                    render: d => `<span class="pill-jumlah">${d}</span>`
+                },
+                {
+                    data: 'minimum_utbk',
+                    className: 'text-end',
+                    render: d => `<span class="score-min">${parseFloat(d).toFixed(2)}</span>`
+                },
+                {
+                    data: 'average_utbk',
+                    className: 'text-end',
+                    render: d => `<span class="score-avg">${parseFloat(d).toFixed(2)}</span>`
+                },
+                {
+                    data: 'maximum_utbk',
+                    className: 'text-end',
+                    render: d => `<span class="score-max">${parseFloat(d).toFixed(2)}</span>`
                 }
-            });
+            ],
+            order: [[0, 'asc']],
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json'
+            },
+            initComplete: function () {
+                // Sembunyikan loading overlay
+                $('#loading-overlay').fadeOut(300);
+
+                // Hitung statistik ringkasan
+                const data = this.api().data().toArray();
+                const ptnSet = new Set(data.map(r => r.nama_singkat));
+                const totalKursi = data.reduce((s, r) => s + (parseInt(r.jumlah) || 0), 0);
+
+                $('#stat-ptn').text(ptnSet.size);
+                $('#stat-prodi').text(data.length.toLocaleString('id-ID'));
+                $('#stat-kursi').text(totalKursi.toLocaleString('id-ID'));
+            }
         });
-    </script>
+    });
+</script>
 </body>
 </html>
