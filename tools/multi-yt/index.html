@@ -1,935 +1,1969 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Multi YouTube Player Pro</title>
-    <style>
-        :root {
-            --primary: #667eea;
-            --secondary: #764ba2;
-            --success: #4CAF50;
-            --warning: #FF9800;
-            --danger: #f44336;
-            --dark: #2d3748;
-            --light: #f7fafc;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Multi YouTube Player &mdash; Putar Banyak Video Sekaligus</title>
+  <meta name="description" content="Putar, jeda, dan sinkronkan hingga 8 video YouTube secara bersamaan. Ringan, hemat memori, dengan pratinjau thumbnail, kontrol volume per video, dan mode gelap.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#0f172a" id="metaThemeColor">
+  <meta property="og:title" content="Multi YouTube Player">
+  <meta property="og:description" content="Putar hingga 8 video YouTube secara bersamaan. Sinkron, hemat memori, modern.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23e11d48'/%3E%3Cpath d='M13 10.5v11l9.5-5.5z' fill='white'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://www.youtube.com">
+  <link rel="preconnect" href="https://www.youtube-nocookie.com">
+  <link rel="preconnect" href="https://i.ytimg.com">
+  <link rel="preconnect" href="https://img.youtube.com">
+  <style>
+/* Multi YouTube Player â€” tema minimalis ala YouTube Studio.
+   Flat, satu warna aksen, hierarki netral. Struktur HTML/JS tidak diubah. */
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+:root {
+  --radius: 12px;
+  --radius-sm: 8px;
+  --font: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --yt-red: #ff0000;
+}
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            min-height: 100vh;
-            padding: 10px;
-            color: #fff;
-            overflow-x: hidden;
-        }
+[data-theme="light"] {
+  --bg: #f9f9f9;
+  --surface: #ffffff;
+  --surface-2: #f2f2f2;
+  --text: #0f0f0f;
+  --muted: #606060;
+  --border: #e5e5e5;
+  --border-strong: #cccccc;
+  --input-bg: #ffffff;
+  --header-bg: #ffffff;
+  --hover: #e8e8e8;
+  --accent: #065fd4;
+  --accent-solid: #065fd4;
+  --accent-solid-hover: #0550b3;
+  --on-accent: #ffffff;
+  --accent-soft: rgba(6, 95, 212, 0.08);
+  --selection: rgba(6, 95, 212, 0.18);
+  --btn-bg: #f2f2f2;
+  --btn-bg-hover: #e5e5e5;
+  --btn-text: #0f0f0f;
+  --chip-bg: #f2f2f2;
+  --chip-bg-hover: #e5e5e5;
+  --chip-active-bg: #0f0f0f;
+  --chip-active-text: #ffffff;
+  --kbd-bg: #f2f2f2;
+  --danger: #c00;
+  --danger-soft: rgba(204, 0, 0, 0.08);
+  --success: #107516;
+  --warn: #e37400;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.18);
+  --placeholder-bg: #f2f2f2;
+  --placeholder-fg: #909090;
+  --toast-bg: #323232;
+  --toast-text: #ffffff;
+}
 
-        body.dark-mode {
-            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
-        }
+[data-theme="dark"] {
+  --bg: #0f0f0f;
+  --surface: #212121;
+  --surface-2: #282828;
+  --text: #f1f1f1;
+  --muted: #aaaaaa;
+  --border: #3d3d3d;
+  --border-strong: #4d4d4d;
+  --input-bg: #121212;
+  --header-bg: #0f0f0f;
+  --hover: #3d3d3d;
+  --accent: #3ea6ff;
+  --accent-solid: #3ea6ff;
+  --accent-solid-hover: #65b8ff;
+  --on-accent: #0f0f0f;
+  --accent-soft: rgba(62, 166, 255, 0.12);
+  --selection: rgba(62, 166, 255, 0.28);
+  --btn-bg: #3d3d3d;
+  --btn-bg-hover: #4d4d4d;
+  --btn-text: #f1f1f1;
+  --chip-bg: #3d3d3d;
+  --chip-bg-hover: #4d4d4d;
+  --chip-active-bg: #f1f1f1;
+  --chip-active-text: #0f0f0f;
+  --kbd-bg: #3d3d3d;
+  --danger: #ff4e45;
+  --danger-soft: rgba(255, 78, 69, 0.12);
+  --success: #2ba640;
+  --warn: #f5a623;
+  --shadow-sm: none;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.5);
+  --placeholder-bg: #181818;
+  --placeholder-fg: #717171;
+  --toast-bg: #f1f1f1;
+  --toast-text: #0f0f0f;
+}
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            animation: fadeIn 0.5s ease-in;
-        }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.5;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: var(--selection); }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+@media (min-width: 720px) { .wrap { padding: 0 24px; } }
 
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-            padding: 15px 10px;
-            position: relative;
-        }
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.skip-link {
+  position: absolute; left: 12px; top: -60px; z-index: 200;
+  background: var(--accent-solid); color: var(--on-accent);
+  padding: 10px 16px; border-radius: 8px;
+  text-decoration: none; font-weight: 500;
+  transition: top 0.2s;
+}
+.skip-link:focus { top: 12px; }
 
-        .header h1 {
-            font-size: 22px;
-            margin-bottom: 5px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
 
-        .header p {
-            font-size: 13px;
-            opacity: 0.9;
-        }
+/* Atribut hidden harus selalu menang atas display komponen
+   (tanpa ini, .loading/.placeholder yang display:flex tetap tampil). */
+[hidden] {
+  display: none !important;
+}
 
-        .header-controls {
-            position: absolute;
-            top: 15px;
-            right: 10px;
-            display: flex;
-            gap: 8px;
-        }
+/* ---- App bar ala YouTube: solid, tipis, ikon bulat ---- */
+.site-header {
+  position: sticky; top: 0; z-index: 60;
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--border);
+}
+.header-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; min-height: 60px; padding-top: 8px; padding-bottom: 8px;
+}
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.brand-logo { flex-shrink: 0; display: grid; place-items: center; }
+.brand-text h1 {
+  font-size: 16px; font-weight: 500; margin: 0;
+  letter-spacing: 0; white-space: nowrap;
+}
+.header-actions { display: flex; gap: 4px; }
 
-        .icon-btn {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 20px;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+.icon-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: none; background: transparent; color: var(--text);
+  cursor: pointer; display: grid; place-items: center;
+  transition: background 0.15s, transform 0.12s;
+}
+.icon-btn:hover { background: var(--hover); }
+.icon-btn:active { transform: scale(0.92); }
+[data-theme="dark"] .icon-sun { display: block; }
+[data-theme="dark"] .icon-moon { display: none; }
+[data-theme="light"] .icon-sun { display: none; }
+[data-theme="light"] .icon-moon { display: block; }
 
-        .icon-btn:active {
-            transform: scale(0.9);
-        }
+/* ---- Kartu ---- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 16px;
+}
+@media (min-width: 720px) { .card { padding: 20px; } }
+.toolbar { margin-top: 16px; margin-bottom: 20px; }
+.toolbar-status {
+  display: flex; align-items: center; gap: 10px;
+  flex-wrap: wrap; margin-bottom: 12px;
+}
+.count-pill {
+  background: var(--surface-2); color: var(--text);
+  font-weight: 500; font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  padding: 6px 12px; border-radius: 999px;
+}
+.save-state {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12.5px; color: var(--muted);
+}
+.save-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); }
+.save-state.saving .save-dot { background: var(--warn); animation: pulse 1s infinite; }
+.ready-pill {
+  margin-left: auto; font-size: 12.5px; color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  background: var(--surface-2); border-radius: 999px; padding: 6px 12px;
+}
+.ready-pill b { color: var(--text); font-weight: 600; }
+@keyframes pulse { 50% { opacity: 0.35; } }
 
-        .card {
-            background: rgba(255, 255, 255, 0.98);
-            border-radius: 15px;
-            padding: 18px;
-            margin-bottom: 15px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-            animation: slideUp 0.4s ease-out;
-        }
+/* ---- Tombol: netral semua, kecuali 1 aksi primer (biru) ---- */
+.btn-grid {
+  display: grid; gap: 8px;
+  grid-template-columns: repeat(2, 1fr);
+}
+@media (min-width: 720px) { .btn-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1080px) { .btn-grid { grid-template-columns: repeat(6, 1fr); } }
 
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 40px; padding: 9px 12px;
+  border: none; border-radius: var(--radius-sm);
+  background: var(--btn-bg); color: var(--btn-text);
+  font-family: var(--font);
+  font-size: 13.5px; font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.btn svg { flex-shrink: 0; }
+.btn:hover { background: var(--btn-bg-hover); }
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn kbd {
+  font-size: 10.5px; font-weight: 400;
+  background: var(--kbd-bg); color: var(--muted);
+  border: none; border-radius: 4px; padding: 2px 6px;
+}
+/* Satu-satunya tombol berwarna: aksi primer */
+.btn-primary { background: var(--accent-solid); color: var(--on-accent); }
+.btn-primary:hover { background: var(--accent-solid-hover); }
+.btn-primary kbd { background: rgba(128, 128, 128, 0.25); color: inherit; opacity: 0.85; }
+/* Stop: tetap netral, hanya teksnya merah (subtle destructive) */
+.btn-danger { color: var(--danger); }
 
-        .videos-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 15px;
-            margin-bottom: 15px;
-        }
+/* ---- Chips ala filter YouTube ---- */
+.quick-grid {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin-top: 12px; padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.chip {
+  border: none; background: var(--chip-bg); color: var(--text);
+  padding: 7px 14px; border-radius: 999px;
+  font-family: var(--font);
+  font-size: 12.5px; font-weight: 500;
+  cursor: pointer; transition: background 0.15s;
+}
+.chip:hover { background: var(--chip-bg-hover); }
+.chip[aria-pressed="true"] {
+  background: var(--chip-active-bg); color: var(--chip-active-text);
+}
 
-        @media (min-width: 768px) {
-            .videos-grid.count-2 { grid-template-columns: repeat(2, 1fr); }
-            .videos-grid.count-3 { grid-template-columns: repeat(2, 1fr); }
-            .videos-grid.count-4 { grid-template-columns: repeat(2, 1fr); }
-        }
+kbd {
+  font-family: var(--mono); font-size: 11px;
+  background: var(--kbd-bg); color: var(--muted);
+  border-radius: 4px; padding: 2px 6px; white-space: nowrap;
+}
 
-        @media (min-width: 1024px) {
-            .videos-grid.count-3 { grid-template-columns: repeat(3, 1fr); }
-            .videos-grid.count-4 { grid-template-columns: repeat(2, 1fr); }
-            .videos-grid.count-5,
-            .videos-grid.count-6 { grid-template-columns: repeat(3, 1fr); }
-        }
+/* ---- Section ---- */
+.section-head {
+  display: flex; align-items: baseline; gap: 12px;
+  flex-wrap: wrap; margin: 0 2px 12px;
+}
+.section-head h2 { font-size: 15px; font-weight: 500; margin: 0; }
+.muted { color: var(--muted); font-size: 13px; margin: 0; }
 
-        .video-card {
-            background: white;
-            border-radius: 12px;
-            padding: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            position: relative;
-            animation: scaleIn 0.3s ease-out;
-        }
+/* ---- Grid video ---- */
+.videos-grid {
+  display: grid; gap: 16px; margin-bottom: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr));
+}
+.video-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  box-shadow: var(--shadow-sm);
+  display: flex; flex-direction: column; gap: 10px;
+  contain: content;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 460px;
+  transition: box-shadow 0.2s;
+}
+.video-card:hover { box-shadow: var(--shadow); }
+.video-card.card-enter { animation: cardIn 0.25s ease-out; }
+@keyframes cardIn { from { opacity: 0; transform: translateY(10px); } }
 
-        @keyframes scaleIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-        }
+.card-head { display: flex; align-items: center; gap: 8px; }
+/* Badge polos: teks + titik status, tanpa pil */
+.badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 600;
+  padding: 0; background: none; border: none;
+}
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #909090; flex-shrink: 0; }
+.dot.is-empty { background: #909090; }
+.dot.is-preview { background: var(--accent); }
+.dot.is-loading { background: var(--warn); animation: pulse 1s infinite; }
+.dot.is-ready { background: var(--success); }
+.dot.is-playing { background: var(--success); animation: pulse 1.4s infinite; }
+.dot.is-paused { background: var(--accent); }
+.dot.is-error { background: var(--danger); }
+.state-text { font-size: 12px; color: var(--muted); margin-right: auto; }
 
-        .video-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
+.mini-btn {
+  border: none; background: var(--btn-bg); color: var(--btn-text);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px; min-height: 34px;
+  font-family: var(--font);
+  font-size: 12.5px; font-weight: 500;
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  transition: background 0.15s, transform 0.1s;
+}
+.mini-btn:hover { background: var(--btn-bg-hover); }
+.mini-btn:active { transform: scale(0.95); }
+.mini-btn.primary { background: var(--accent-solid); color: var(--on-accent); }
+.mini-btn.primary:hover { background: var(--accent-solid-hover); }
+/* Hapus: ghost tenang, merah hanya saat hover */
+.mini-btn.danger {
+  margin-left: auto; background: transparent; color: var(--muted);
+  padding: 6px 8px; min-height: 32px;
+}
+.mini-btn.danger:hover { background: var(--danger-soft); color: var(--danger); }
+.mini-btn.muted-off { opacity: 0.4; }
+.mini-btn.muted-off .vol-waves { display: none; }
 
-        .video-number {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 12px;
-            font-weight: 600;
-        }
+/* ---- Input ---- */
+.field-error { color: var(--danger); font-size: 12px; margin: 6px 0 0; }
+.input-row { display: flex; gap: 6px; }
+.input-row input[type="text"] {
+  flex: 1; min-width: 0; height: 38px;
+  background: var(--input-bg); color: var(--text);
+  border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+  padding: 8px 12px; font-size: 13.5px; font-family: var(--font);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.input-row input[type="text"]::placeholder { color: var(--muted); opacity: 0.85; }
+.input-row input[type="text"]:focus {
+  outline: none; border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.input-row input[type="text"].invalid { border-color: var(--danger); }
+.input-row .mini-btn { flex-shrink: 0; }
 
-        .remove-video-btn {
-            background: var(--danger);
-            color: white;
-            border: none;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
+/* ---- Pratinjau: flat, tanpa garis-garis ---- */
+.preview {
+  position: relative; aspect-ratio: 16/9;
+  border-radius: var(--radius-sm);
+  background: #000; overflow: hidden;
+  border: 1px solid var(--border);
+}
+.placeholder {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; text-align: center; padding: 16px;
+  background: var(--placeholder-bg); color: var(--placeholder-fg);
+}
+.placeholder p { margin: 0; font-size: 13px; font-weight: 500; color: var(--muted); }
+.placeholder span { font-weight: 400; font-size: 12px; }
 
-        .remove-video-btn:active {
-            transform: scale(0.9);
-        }
+.thumb-btn {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  border: none; padding: 0; cursor: pointer; background: #000;
+}
+.thumb-btn img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb-overlay {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.05));
+}
+/* Tombol putar gaya YouTube: persegi membulat merah */
+.thumb-play {
+  width: 68px; height: 48px; border-radius: 12px;
+  background: var(--yt-red); color: #fff;
+  display: grid; place-items: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  transition: transform 0.15s;
+}
+.thumb-btn:hover .thumb-play { transform: scale(1.07); }
+.thumb-text {
+  color: #fff; font-size: 12px; font-weight: 500;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
 
-        .input-wrapper {
-            position: relative;
-            margin-bottom: 10px;
-        }
+.player-host { position: absolute; inset: 0; }
+.player-host > div, .player-host iframe {
+  position: absolute; inset: 0;
+  width: 100% !important; height: 100% !important; border: 0;
+}
+.loading {
+  position: absolute; inset: 0; z-index: 5;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex; align-items: center; justify-content: center;
+}
+.spinner {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.25); border-top-color: #fff;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.retry-btn {
+  position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%);
+  background: #fff; color: #0f0f0f; border: none; border-radius: 999px;
+  padding: 8px 16px; font-weight: 500; font-size: 12.5px;
+  font-family: var(--font); cursor: pointer; z-index: 6;
+  box-shadow: var(--shadow);
+}
 
-        .video-input {
-            width: 100%;
-            padding: 10px 35px 10px 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 13px;
-            transition: all 0.3s;
-        }
+/* ---- Kaki kartu ---- */
+.card-foot { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.vol { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 170px; }
+.vol input[type="range"] {
+  flex: 1; min-width: 60px; height: 22px; cursor: pointer;
+  accent-color: var(--accent);
+}
+.vol output {
+  font-size: 12px; font-weight: 500; min-width: 30px; text-align: right;
+  font-variant-numeric: tabular-nums; color: var(--muted);
+}
+.mini-controls { display: flex; gap: 6px; margin-left: auto; }
 
-        .video-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
+/* ---- Ruang napas bawah (pengganti footer) ---- */
+main.wrap { padding-bottom: 28px; }
 
-        .clear-input-btn {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: #e0e0e0;
-            border: none;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 14px;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
+/* ---- Toast gaya snackbar ---- */
+.toasts {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  z-index: 300; width: min(92vw, 440px); pointer-events: none;
+}
+.toast {
+  background: var(--toast-bg); color: var(--toast-text);
+  padding: 12px 16px; border-radius: 8px;
+  font-size: 13.5px; font-weight: 400;
+  box-shadow: var(--shadow-lg);
+  max-width: 100%;
+  animation: toastIn 0.25s ease-out;
+  display: flex; align-items: center; gap: 10px; text-align: left;
+}
+.toast::before {
+  content: ""; width: 8px; height: 8px; border-radius: 50%;
+  background: #9e9e9e; flex-shrink: 0;
+}
+.toast.success::before { background: #4caf50; }
+.toast.error::before { background: #f44336; }
+.toast.warn::before { background: #ff9800; }
+.toast.out { opacity: 0; transform: translateY(8px); transition: opacity 0.3s, transform 0.3s; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(12px); } }
 
-        .video-input:not(:placeholder-shown) ~ .clear-input-btn {
-            display: flex;
-        }
+/* ---- Dialog ---- */
+.shortcuts-dialog {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface); color: var(--text);
+  padding: 20px; width: min(92vw, 420px);
+  box-shadow: var(--shadow-lg);
+}
+.shortcuts-dialog::backdrop { background: rgba(0, 0, 0, 0.5); }
+.dialog-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-bottom: 12px;
+}
+.dialog-head h2 { margin: 0; font-size: 16px; font-weight: 500; }
+.shortcuts-dialog table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.shortcuts-dialog td { padding: 8px 4px; border-bottom: 1px solid var(--border); }
+.shortcuts-dialog td:first-child { width: 100px; }
 
-        .volume-control {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(102, 126, 234, 0.1);
-            padding: 4px 8px;
-            border-radius: 15px;
-            margin-bottom: 10px;
-        }
+/* ---- Responsif kecil ---- */
+@media (max-width: 520px) {
+  .btn-grid { grid-template-columns: 1fr 1fr; }
+  .btn { font-size: 12.5px; }
+  .btn kbd { display: none; }
+  .vol { min-width: 100%; }
+  .mini-controls { margin-left: 0; }
+}
 
-        .volume-control span {
-            font-size: 12px;
-        }
+/* ---- Scrollbar halus ---- */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
 
-        .volume-control input[type="range"] {
-            width: 100%;
-            height: 4px;
-            -webkit-appearance: none;
-            appearance: none;
-            background: var(--primary);
-            border-radius: 2px;
-            outline: none;
-        }
+/* ---- Pengatur kolom + mode fokus ---- */
+.section-head { align-items: center; }
+.section-title { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; min-width: 0; }
+.layout-switch {
+  margin-left: auto; display: flex; align-items: center; gap: 2px;
+  background: var(--surface-2); border-radius: 999px; padding: 3px;
+  flex-shrink: 0;
+}
+.layout-label { font-size: 12px; color: var(--muted); padding-left: 9px; }
+.seg {
+  border: none; background: transparent; color: var(--muted);
+  font-family: var(--font); font-size: 12.5px; font-weight: 500;
+  padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.seg:hover { color: var(--text); }
+.seg[aria-pressed="true"] {
+  background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm);
+}
+[data-theme="dark"] .seg[aria-pressed="true"] { background: var(--btn-bg-hover); }
+@media (max-width: 640px) {
+  .section-head { flex-direction: column; align-items: stretch; }
+  .layout-switch { margin-left: 0; align-self: flex-start; }
+}
 
-        .volume-control input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 12px;
-            height: 12px;
-            background: var(--primary);
-            border-radius: 50%;
-            cursor: pointer;
-        }
+/* Kolom paksa */
+.videos-grid.cols-1 { grid-template-columns: minmax(0, 860px); justify-content: center; }
+.videos-grid.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.videos-grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 900px) {
+  .videos-grid.cols-2, .videos-grid.cols-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .videos-grid.cols-1, .videos-grid.cols-2, .videos-grid.cols-3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 
-        .video-wrapper {
-            position: relative;
-            padding-bottom: 56.25%;
-            height: 0;
-            overflow: hidden;
-            border-radius: 8px;
-            background: #000;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
+/* Mode fokus: kartu melayang via CSS saja (tanpa pindah DOM -> iframe tidak reload) */
+body.no-scroll { overflow: hidden; }
+.focus-backdrop {
+  position: fixed; inset: 0; z-index: 150;
+  background: rgba(0, 0, 0, 0.62);
+}
+.video-card.focused {
+  position: fixed; z-index: 160;
+  top: 12px; left: 12px; right: 12px; bottom: 12px;
+  max-width: 1060px; margin: auto;
+  overflow-y: auto; overscroll-behavior: contain;
+  box-shadow: var(--shadow-lg);
+  content-visibility: visible;
+}
+@media (min-width: 720px) {
+  .video-card.focused { top: 28px; bottom: 28px; left: 24px; right: 24px; }
+}
+.video-card.focused .preview { border-radius: 10px; }
 
-        .video-wrapper iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
+/* ---- Kurangi gerak ---- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto; }
+}
 
-        .loading-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            z-index: 10;
-        }
-
-        .spinner {
-            width: 30px;
-            height: 30px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .controls-section {
-            background: rgba(102, 126, 234, 0.1);
-            padding: 15px;
-            border-radius: 12px;
-        }
-
-        .controls-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .btn {
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        .btn:active::before {
-            width: 300px;
-            height: 300px;
-        }
-
-        .btn-add {
-            background: linear-gradient(135deg, var(--success) 0%, #45a049 100%);
-            color: white;
-            grid-column: 1 / -1;
-        }
-
-        .btn-load {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-        }
-
-        .btn-play {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-        }
-
-        .btn-pause {
-            background: var(--warning);
-            color: white;
-        }
-
-        .btn-stop {
-            background: var(--danger);
-            color: white;
-        }
-
-        .btn-sync {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            grid-column: 1 / -1;
-        }
-
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin-top: 12px;
-        }
-
-        .quick-btn {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 8px 4px;
-            border-radius: 6px;
-            font-size: 11px;
-            color: var(--primary);
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: none;
-            font-weight: 600;
-        }
-
-        .quick-btn:active {
-            transform: scale(0.95);
-            background: rgba(255, 255, 255, 1);
-        }
-
-        .info-box {
-            background: rgba(102, 126, 234, 0.1);
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 12px;
-            color: var(--primary);
-            font-size: 12px;
-            line-height: 1.5;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: -100px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--dark);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 25px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            z-index: 1000;
-            transition: bottom 0.4s ease;
-            max-width: 90%;
-            text-align: center;
-            font-size: 14px;
-        }
-
-        .toast.show {
-            bottom: 20px;
-        }
-
-        .toast.success { background: var(--success); }
-        .toast.error { background: var(--danger); }
-        .toast.warning { background: var(--warning); }
-
-        @media (max-width: 480px) {
-            .header h1 { font-size: 20px; }
-            .controls-grid { grid-template-columns: 1fr; }
-            .quick-actions { grid-template-columns: repeat(2, 1fr); }
-        }
-    </style>
+  </style>
+  <script>
+    try {
+      var t = localStorage.getItem('multiyt:theme');
+      if (t !== 'light' && t !== 'dark') {
+        t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      }
+      document.documentElement.setAttribute('data-theme', t);
+      var m = document.getElementById('metaThemeColor');
+      if (m) m.setAttribute('content', t === 'light' ? '#f1f5f9' : '#0f172a');
+    } catch (e) {}
+  </script>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="header-controls">
-                <button class="icon-btn" onclick="toggleDarkMode()" title="Toggle Dark Mode">🌓</button>
-                <button class="icon-btn" onclick="toggleFullscreen()" title="Fullscreen">⛶</button>
-            </div>
-            <h1>🎬 Multi YouTube Player Pro</h1>
-            <p>Putar 3+ video YouTube secara bersamaan</p>
+  <a class="skip-link" href="#videoSection">Lewati ke daftar video</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <div class="brand">
+        <span class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="30" height="30"><rect width="32" height="32" rx="8" fill="#e11d48"/><path d="M13 10.5v11l9.5-5.5z" fill="#fff"/></svg>
+        </span>
+        <div class="brand-text">
+          <h1>Multi YouTube Player</h1>
         </div>
-
-        <div class="card">
-            <div class="controls-section">
-                <div class="controls-grid">
-                    <button class="btn btn-add" onclick="addVideo()">➕ Tambah Video</button>
-                    <button class="btn btn-load" onclick="loadAllVideos()">📥 Muat Semua</button>
-                    <button class="btn btn-play" onclick="playAllVideos()">▶ Putar</button>
-                    <button class="btn btn-pause" onclick="pauseAllVideos()">⏸ Jeda</button>
-                    <button class="btn btn-stop" onclick="stopAllVideos()">⏹ Stop</button>
-                    <button class="btn btn-sync" onclick="syncAllVideos()">🔄 Sinkronkan</button>
-                </div>
-
-                <div class="quick-actions">
-                    <button class="quick-btn" onclick="loadSample()">🎵 Sample</button>
-                    <button class="quick-btn" onclick="loadLast()">📋 Terakhir</button>
-                    <button class="quick-btn" onclick="clearAllInputs()">🗑️ Bersihkan</button>
-                    <button class="quick-btn" onclick="muteAll()">🔇 Mute</button>
-                </div>
-
-                <div class="info-box">
-                    💡 <strong>Tips:</strong> Klik "Tambah Video" untuk menambah player baru. Maksimal 8 video. Gunakan Space untuk play/pause!
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="videos-grid" id="videosContainer">
-                <!-- Videos will be added dynamically -->
-            </div>
-        </div>
+      </div>
+      <div class="header-actions" role="toolbar" aria-label="Pengaturan tampilan">
+        <button type="button" class="icon-btn" id="btnShortcuts" aria-label="Lihat pintasan keyboard" title="Pintasan keyboard (?)">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M18 13h.01M9 13h6"/></svg>
+        </button>
+        <button type="button" class="icon-btn" id="btnTheme" aria-label="Ganti tema gelap atau terang" title="Ganti tema">
+          <svg class="icon-sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+        </button>
+        <button type="button" class="icon-btn" id="btnFullscreen" aria-label="Layar penuh" title="Layar penuh (F)">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+        </button>
+      </div>
     </div>
+  </header>
 
-    <div class="toast" id="toast"></div>
+  <main class="wrap">
+    <section class="card toolbar" aria-label="Kontrol semua video">
+      <div class="toolbar-status">
+        <output id="videoCount" class="count-pill" aria-live="polite" title="Jumlah player aktif">2 / 8 video</output>
+        <span class="save-state" id="saveState" role="status">
+          <span class="save-dot" aria-hidden="true"></span><span id="saveText">Tersimpan otomatis</span>
+        </span>
+        <span class="ready-pill" id="readyPill" role="status">0 siap</span>
+      </div>
 
-    <script>
-        const MAX_VIDEOS = 8;
-        const MIN_VIDEOS = 2;
-        let videoCount = 0;
-        let players = {};
-        let playersReady = {};
-        const STORAGE_KEY = 'multiYoutubePlayer';
+      <div class="btn-grid" role="toolbar" aria-label="Aksi utama">
+        <button type="button" class="btn btn-success" id="btnAdd">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          <span>Tambah Video</span> <kbd>N</kbd>
+        </button>
+        <button type="button" class="btn btn-primary" id="btnLoadAll">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+          <span>Muat Semua</span> <kbd>L</kbd>
+        </button>
+        <button type="button" class="btn btn-play" id="btnPlayAll">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>
+          <span>Putar</span> <kbd>Spasi</kbd>
+        </button>
+        <button type="button" class="btn btn-warn" id="btnPauseAll">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+          <span>Jeda</span> <kbd>P</kbd>
+        </button>
+        <button type="button" class="btn btn-danger" id="btnStopAll">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+          <span>Stop</span>
+        </button>
+        <button type="button" class="btn btn-sync" id="btnSyncAll">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 3v6h-6"/></svg>
+          <span>Sinkronkan</span> <kbd>S</kbd>
+        </button>
+      </div>
 
-        // Load YouTube API
-        const tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        document.getElementsByTagName('script')[0].parentNode.insertBefore(tag, document.getElementsByTagName('script')[0]);
+      <div class="quick-grid" role="toolbar" aria-label="Aksi cepat">
+        <button type="button" class="chip" id="btnSample">Contoh</button>
+        <button type="button" class="chip" id="btnLast">Riwayat Terakhir</button>
+        <button type="button" class="chip" id="btnClear">Bersihkan</button>
+        <button type="button" class="chip" id="btnMuteAll" aria-pressed="false">Bisukan Semua (M)</button>
+        <button type="button" class="chip" id="btnUnloadAll" title="Hancurkan semua iframe untuk menghemat memori">Bongkar Player</button>
+      </div>
 
-        function onYouTubeIframeAPIReady() {
-            initializeVideos();
+    </section>
+
+    <section id="videoSection" aria-label="Daftar video">
+      <div class="section-head">
+        <div class="section-title">
+          <h2>Daftar Video</h2>
+          <p class="muted" id="gridHint">Klik pratinjau untuk memuat &bull; tombol Perbesar di tiap kartu untuk menonton besar.</p>
+        </div>
+        <div class="layout-switch" role="group" aria-label="Jumlah kolom tampilan">
+          <span class="layout-label" aria-hidden="true">Kolom:</span>
+          <button type="button" class="seg" data-cols="auto" aria-pressed="true">Otomatis</button>
+          <button type="button" class="seg" data-cols="1" aria-pressed="false">1</button>
+          <button type="button" class="seg" data-cols="2" aria-pressed="false">2</button>
+          <button type="button" class="seg" data-cols="3" aria-pressed="false">3</button>
+        </div>
+      </div>
+      <div class="videos-grid" id="videosGrid" role="list" aria-label="Player video"></div>
+    </section>
+
+  </main>
+
+  <template id="cardTemplate">
+    <article class="video-card" role="listitem">
+      <div class="card-head">
+        <span class="badge"><span class="dot" data-dot></span><span data-num>Video 1</span></span>
+        <span class="state-text" data-state role="status">Kosong</span>
+        <button type="button" class="mini-btn danger" data-action="remove" aria-label="Hapus video ini" title="Hapus video">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="field">
+        <label class="sr-only" data-label>Link atau ID YouTube</label>
+        <div class="input-row">
+          <input type="text" data-input inputmode="url" autocomplete="off" spellcheck="false" placeholder="Tempel link / ID YouTube..." aria-label="Link atau ID YouTube">
+          <button type="button" class="mini-btn" data-action="paste" title="Tempel dari clipboard" aria-label="Tempel dari clipboard">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>
+          </button>
+          <button type="button" class="mini-btn" data-action="clear-one" title="Hapus teks" aria-label="Hapus teks input">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+          <button type="button" class="mini-btn primary" data-action="load" title="Muat video ini" aria-label="Muat video ini">Muat</button>
+        </div>
+        <p class="field-error" data-error hidden></p>
+      </div>
+
+      <div class="preview" data-preview>
+        <div class="placeholder" data-placeholder>
+          <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="m10 9.5 5 2.5-5 2.5z" fill="currentColor" stroke="none"/></svg>
+          <p>Belum ada video.<br><span>Masukkan link untuk pratinjau.</span></p>
+        </div>
+        <button type="button" class="thumb-btn" data-thumbbtn hidden aria-label="Muat dan putar pratinjau video">
+          <img data-thumb alt="" loading="lazy" decoding="async" fetchpriority="low">
+          <span class="thumb-overlay" aria-hidden="true">
+            <span class="thumb-play">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>
+            </span>
+            <span class="thumb-text">Klik untuk memuat</span>
+          </span>
+        </button>
+        <div class="player-host" data-host hidden>
+          <div data-player></div>
+          <div class="loading" data-loading hidden>
+            <span class="spinner" aria-hidden="true"></span>
+            <span class="sr-only">Memuat video...</span>
+          </div>
+        </div>
+        <button type="button" class="retry-btn" data-retry hidden>Coba lagi</button>
+      </div>
+
+      <div class="card-foot">
+        <div class="vol">
+          <button type="button" class="mini-btn" data-action="mute-one" aria-label="Bisukan atau suarakan video ini" title="Bisukan / suarakan">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor" stroke="none"/><path class="vol-waves" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+          </button>
+          <input type="range" data-volume min="0" max="100" step="1" value="100" aria-label="Volume video ini">
+          <output data-volout aria-label="Level volume">100</output>
+        </div>
+        <div class="mini-controls">
+          <button type="button" class="mini-btn" data-action="focus" title="Perbesar video ini" aria-label="Perbesar video ini">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+          </button>
+          <button type="button" class="mini-btn" data-action="toggle-one" title="Putar / jeda video ini" aria-label="Putar atau jeda video ini">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+          </button>
+          <button type="button" class="mini-btn" data-action="solo" title="Solo: bisukan semua kecuali video ini" aria-label="Solo video ini">Solo</button>
+        </div>
+      </div>
+    </article>
+  </template>
+
+  <dialog class="shortcuts-dialog" id="shortcutsDialog" aria-labelledby="shortcutsTitle">
+    <div class="dialog-head">
+      <h2 id="shortcutsTitle">Pintasan keyboard</h2>
+      <button type="button" class="mini-btn" id="btnCloseDialog" aria-label="Tutup dialog">Tutup X</button>
+    </div>
+    <table>
+      <tbody>
+        <tr><td><kbd>Spasi</kbd></td><td>Putar / jeda semua (pintar)</td></tr>
+        <tr><td><kbd>P</kbd></td><td>Jeda semua</td></tr>
+        <tr><td><kbd>S</kbd></td><td>Sinkronkan semua ke video pertama</td></tr>
+        <tr><td><kbd>M</kbd></td><td>Bisukan / suarakan semua</td></tr>
+        <tr><td><kbd>L</kbd></td><td>Muat semua video</td></tr>
+        <tr><td><kbd>N</kbd></td><td>Tambah video baru</td></tr>
+        <tr><td><kbd>F</kbd></td><td>Layar penuh</td></tr>
+        <tr><td><kbd>?</kbd></td><td>Buka dialog ini</td></tr>
+        <tr><td><kbd>Esc</kbd></td><td>Tutup dialog / keluar layar penuh</td></tr>
+      </tbody>
+    </table>
+    <p class="muted">Pintasan nonaktif saat kamu mengetik di kolom input (kecuali Esc).</p>
+  </dialog>
+
+  <div class="focus-backdrop" id="focusBackdrop" hidden></div>
+  <div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
+
+  <script>
+/* Multi YouTube Player - app logic (facade + lazy API + hemat memori) */
+(function () {
+  'use strict';
+
+  var CONFIG = {
+    MAX: 8,
+    MIN: 1,
+    DEFAULT_COUNT: 2,
+    STORAGE_KEY: 'multiyt:v1',
+    LEGACY_KEY: 'multiYoutubePlayer',
+    THEME_KEY: 'multiyt:theme',
+    COLS_KEY: 'multiyt:cols',
+    SAVE_DEBOUNCE: 700,
+    INPUT_DEBOUNCE: 350,
+    STAGGER_MS: 220,
+    API_TIMEOUT: 12000,
+    TOAST_MS: 2600
+  };
+
+  var SAMPLES = ['dQw4w9WgXcQ', 'jNQXAC9IVRw', '9Deg7VrpHbM', 'kJQP7kiw5Fk', '9bZkp7q19f0', 'JGwWNGJdvx8', '60ItHLz5WEA', 'RgKAFK5djSk'];
+
+  var ID_RE = /^[a-zA-Z0-9_-]{11}$/;
+  var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function clamp(n, min, max) { n = Number(n); if (isNaN(n)) return min; return Math.min(max, Math.max(min, n)); }
+  function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  function debounce(fn, ms) {
+    var t = null;
+    return function () {
+      var args = arguments, self = this;
+      clearTimeout(t);
+      t = setTimeout(function () { fn.apply(self, args); }, ms);
+    };
+  }
+
+  /* ---------- Toast (stack, max 3, bersih otomatis) ---------- */
+  var toastsEl = null;
+  function toast(msg, type, ms) {
+    if (!toastsEl) toastsEl = document.getElementById('toasts');
+    if (!toastsEl) return;
+    type = type || 'info';
+    while (toastsEl.children.length >= 3) toastsEl.firstChild.remove();
+    var el = document.createElement('div');
+    el.className = 'toast ' + (type === 'success' ? 'success' : type === 'error' ? 'error' : type === 'warn' ? 'warn' : '');
+    el.textContent = msg;
+    toastsEl.appendChild(el);
+    var done = false;
+    function dismiss() {
+      if (done) return; done = true;
+      el.classList.add('out');
+      setTimeout(function () { el.remove(); }, 340);
+    }
+    setTimeout(dismiss, ms || CONFIG.TOAST_MS);
+  }
+
+  /* ---------- Storage (dengan migrasi format lama) ---------- */
+  function collectState() {
+    var out = [];
+    var cards = document.querySelectorAll('#videosGrid .video-card');
+    for (var i = 0; i < cards.length; i++) {
+      var uid = cards[i].getAttribute('data-uid');
+      var v = videos.get(uid);
+      var input = cards[i].querySelector('[data-input]');
+      out.push({
+        url: input ? input.value.trim() : '',
+        volume: v ? clamp(v.volume, 0, 100) : 100
+      });
+    }
+    return out;
+  }
+
+  function saveNow() {
+    setSaveState('saving');
+    try {
+      localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify({ v: 1, t: Date.now(), videos: collectState() }));
+      setSaveState('saved');
+    } catch (e) {
+      setSaveState('error');
+    }
+  }
+  var scheduleSave = debounce(saveNow, CONFIG.SAVE_DEBOUNCE);
+
+  function migrateLegacy() {
+    try {
+      var raw = localStorage.getItem(CONFIG.LEGACY_KEY);
+      if (!raw) return null;
+      var data = JSON.parse(raw);
+      if (!data || !Array.isArray(data.videos)) return null;
+      return {
+        videos: data.videos.slice(0, CONFIG.MAX).map(function (it) {
+          return { url: String((it && it.videoId) || ''), volume: clamp(it && it.volume != null ? it.volume : 100, 0, 100) };
+        })
+      };
+    } catch (e) { return null; }
+  }
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(CONFIG.STORAGE_KEY);
+      if (raw) {
+        var data = JSON.parse(raw);
+        if (data && Array.isArray(data.videos)) return data;
+      }
+    } catch (e) {}
+    return migrateLegacy();
+  }
+
+  var saveStateEl = null, saveTextEl = null, saveTimer = null;
+  function setSaveState(s) {
+    if (!saveStateEl) {
+      saveStateEl = document.getElementById('saveState');
+      saveTextEl = document.getElementById('saveText');
+    }
+    if (!saveStateEl) return;
+    clearTimeout(saveTimer);
+    if (s === 'saving') {
+      saveStateEl.classList.add('saving');
+      if (saveTextEl) saveTextEl.textContent = 'Menyimpanâ€¦';
+    } else if (s === 'saved') {
+      saveStateEl.classList.remove('saving');
+      if (saveTextEl) {
+        var d = new Date();
+        var hh = String(d.getHours()).padStart(2, '0'), mm = String(d.getMinutes()).padStart(2, '0');
+        saveTextEl.textContent = 'Tersimpan ' + hh + ':' + mm;
+      }
+    } else {
+      saveStateEl.classList.remove('saving');
+      if (saveTextEl) saveTextEl.textContent = 'Gagal menyimpan';
+    }
+  }
+
+  /* ---------- YouTube helpers ---------- */
+  function extractVideoId(input) {
+    if (!input) return null;
+    input = String(input).trim();
+    if (!input) return null;
+    if (ID_RE.test(input)) return input;
+    try {
+      var hasScheme = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(input);
+      var url = new URL(hasScheme ? input : 'https://' + input);
+      var host = url.hostname.toLowerCase().replace(/^(www\.|m\.|music\.|gaming\.)/, '');
+      if (host === 'youtu.be') {
+        var id = url.pathname.slice(1).split(/[/?#]/)[0];
+        if (ID_RE.test(id)) return id;
+      }
+      if (host === 'youtube.com' || host.endsWith('.youtube.com') || host === 'youtube-nocookie.com' || host.endsWith('.youtube-nocookie.com') || host === 'youtubeeducation.com') {
+        var v = url.searchParams.get('v');
+        if (v && ID_RE.test(v)) return v;
+        var m = url.pathname.match(/\/(shorts|live|embed|v|watch)\/([a-zA-Z0-9_-]{11})/);
+        if (m) return m[2];
+        var parts = url.pathname.split('/');
+        for (var i = 0; i < parts.length; i++) {
+          if (ID_RE.test(parts[i])) return parts[i];
         }
+      }
+    } catch (e) {}
+    if (input.indexOf('youtu') !== -1 || input.length <= 30) {
+      var m2 = input.match(/([a-zA-Z0-9_-]{11})/);
+      if (m2) return m2[1];
+    }
+    return null;
+  }
 
-        function initializeVideos() {
-            const stored = loadFromStorage();
-            const initialCount = stored ? stored.videos.length : 2;
-            
-            for (let i = 0; i < initialCount; i++) {
-                addVideo(stored ? stored.videos[i] : null);
+  function thumbUrl(id, q) {
+    return 'https://i.ytimg.com/vi/' + id + '/' + (q || 'hqdefault') + '.jpg';
+  }
+
+  var apiPromise = null;
+  function ensureAPI() {
+    if (window.YT && window.YT.Player) return Promise.resolve(window.YT);
+    if (apiPromise) return apiPromise;
+    apiPromise = new Promise(function (resolve, reject) {
+      var settled = false;
+      var timer = setTimeout(function () {
+        if (settled) return; settled = true;
+        apiPromise = null;
+        reject(new Error('timeout'));
+      }, CONFIG.API_TIMEOUT);
+      var prev = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = function () {
+        if (prev) { try { prev(); } catch (e) {} }
+        if (settled) return; settled = true;
+        clearTimeout(timer);
+        resolve(window.YT);
+      };
+      var s = document.createElement('script');
+      s.src = 'https://www.youtube.com/iframe_api';
+      s.async = true;
+      s.onerror = function () {
+        if (settled) return; settled = true;
+        clearTimeout(timer);
+        apiPromise = null;
+        reject(new Error('load-failed'));
+      };
+      document.head.appendChild(s);
+    });
+    return apiPromise;
+  }
+
+  function playerState() {
+    if (window.YT && window.YT.PlayerState) return window.YT.PlayerState;
+    return { UNSTARTED: -1, ENDED: 0, PLAYING: 1, PAUSED: 2, BUFFERING: 3, CUED: 5 };
+  }
+
+  /* ---------- State ---------- */
+  var videos = new Map();   // uid -> {uid, els, volume, prevVolume, videoId, loadedId, previewId, inputTimer, autoplayOnce}
+  var players = new Map();  // uid -> YT.Player
+  var ready = new Set();    // uid siap
+  var playing = new Set();  // uid sedang playing
+  var loading = new Set();  // uid sedang membuat player
+  var uidCounter = 0;
+  var focusedUid = null;
+
+  var grid = null, tpl = null, countEl = null, readyPill = null;
+  var btnAdd = null, btnLoadAll = null;
+
+  var ICON_PLAY = '<path d="M8 5.5v13l11-6.5z"/>';
+  var ICON_PAUSE = '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>';
+  var ICON_EXPAND = '<path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/>';
+  var ICON_COMPRESS = '<polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/>';
+
+  /* ---------- UI builders ---------- */
+  function renumber() {
+    if (!grid) return;
+    var cards = grid.children;
+    for (var i = 0; i < cards.length; i++) {
+      var n = i + 1;
+      var num = cards[i].querySelector('[data-num]');
+      if (num) num.textContent = 'Video ' + n;
+      var input = cards[i].querySelector('[data-input]');
+      if (input) input.setAttribute('aria-label', 'Link atau ID YouTube video ' + n);
+      var vol = cards[i].querySelector('[data-volume]');
+      if (vol) vol.setAttribute('aria-label', 'Volume video ' + n);
+    }
+  }
+
+  function updateCounts() {
+    var n = videos.size;
+    if (countEl) countEl.textContent = n + ' / ' + CONFIG.MAX + ' video';
+    if (btnAdd) btnAdd.disabled = n >= CONFIG.MAX;
+    if (readyPill) readyPill.innerHTML = '';
+    if (readyPill) {
+      var b = document.createElement('b');
+      b.textContent = String(ready.size);
+      readyPill.appendChild(b);
+      readyPill.appendChild(document.createTextNode(' / ' + n + ' siap'));
+    }
+    var canRemove = n > CONFIG.MIN;
+    videos.forEach(function (v) {
+      var btn = v.els.card.querySelector('[data-action="remove"]');
+      if (btn) {
+        btn.disabled = !canRemove;
+        btn.style.opacity = canRemove ? '1' : '.35';
+        btn.style.pointerEvents = canRemove ? 'auto' : 'none';
+      }
+    });
+  }
+
+  function setStatus(uid, st, label) {
+    var v = videos.get(uid);
+    if (!v) return;
+    var dot = v.els.dot, txt = v.els.state;
+    if (dot) dot.className = 'dot is-' + st;
+    if (txt && label != null) txt.textContent = label;
+  }
+
+  function showPlaceholder(uid) {
+    var v = videos.get(uid); if (!v) return;
+    v.els.placeholder.hidden = false;
+    v.els.thumbBtn.hidden = true;
+    v.els.host.hidden = true;
+    v.els.retry.hidden = true;
+    v.previewId = null;
+  }
+
+  function showThumb(uid, id) {
+    var v = videos.get(uid); if (!v) return;
+    if (v.previewId === id && !v.els.thumbBtn.hidden) return;
+    v.previewId = id;
+    v.els.placeholder.hidden = true;
+    v.els.host.hidden = true;
+    v.els.retry.hidden = true;
+    v.els.thumbBtn.hidden = false;
+    var img = v.els.thumb;
+    img.alt = '';
+    img.dataset.fb = '0';
+    img.src = thumbUrl(id, 'hqdefault');
+  }
+
+  function showHost(uid, withLoading) {
+    var v = videos.get(uid); if (!v) return;
+    v.els.placeholder.hidden = true;
+    v.els.thumbBtn.hidden = true;
+    v.els.host.hidden = false;
+    v.els.retry.hidden = true;
+    v.els.loading.hidden = !withLoading;
+  }
+
+  function showRetry(uid, msg) {
+    var v = videos.get(uid); if (!v) return;
+    v.els.loading.hidden = true;
+    v.els.retry.hidden = false;
+    if (msg) v.els.retry.textContent = msg + ' â€” Coba lagi';
+    else v.els.retry.textContent = 'Coba lagi';
+  }
+
+  function setFieldError(uid, msg) {
+    var v = videos.get(uid); if (!v) return;
+    if (!msg) {
+      v.els.error.hidden = true;
+      v.els.error.textContent = '';
+      v.els.input.classList.remove('invalid');
+      v.els.input.removeAttribute('aria-invalid');
+    } else {
+      v.els.error.hidden = false;
+      v.els.error.textContent = msg;
+      v.els.input.classList.add('invalid');
+      v.els.input.setAttribute('aria-invalid', 'true');
+    }
+  }
+
+  function markInvalidWhileTyping(uid, invalid) {
+    var v = videos.get(uid); if (!v) return;
+    v.els.input.classList.toggle('invalid', !!invalid);
+    if (!invalid) { v.els.error.hidden = true; }
+  }
+
+  function updateToggleIcon(uid) {
+    var v = videos.get(uid); if (!v) return;
+    var btn = v.els.card.querySelector('[data-action="toggle-one"] svg');
+    if (!btn) return;
+    var isPlaying = playing.has(uid);
+    btn.innerHTML = isPlaying ? ICON_PAUSE : ICON_PLAY;
+  }
+
+  function updateMuteBtn(uid) {
+    var v = videos.get(uid); if (!v) return;
+    var btn = v.els.card.querySelector('[data-action="mute-one"]');
+    if (btn) btn.classList.toggle('muted-off', v.volume === 0);
+  }
+
+  function updateMuteAllBtn() {
+    var btn = document.getElementById('btnMuteAll');
+    if (!btn) return;
+    var anyAudible = false;
+    videos.forEach(function (v) { if (v.volume > 0) anyAudible = true; });
+    btn.setAttribute('aria-pressed', anyAudible ? 'false' : 'true');
+    btn.textContent = anyAudible ? 'Bisukan Semua (M)' : 'Suarakan Semua (M)';
+  }
+
+  function addVideo(url, volume, opts) {
+    opts = opts || {};
+    if (videos.size >= CONFIG.MAX) {
+      toast('Maksimal ' + CONFIG.MAX + ' video.', 'warn');
+      return null;
+    }
+    uidCounter += 1;
+    var uid = 'u' + uidCounter + Date.now().toString(36);
+
+    var node = tpl.content.firstElementChild.cloneNode(true);
+    node.setAttribute('data-uid', uid);
+    if (opts.animate !== false && !reducedMotion) node.classList.add('card-enter');
+
+    var input = node.querySelector('[data-input]');
+    var label = node.querySelector('[data-label]');
+    var inputId = 'in-' + uid;
+    input.id = inputId;
+    if (label) label.setAttribute('for', inputId);
+    input.value = url || '';
+
+    var volInput = node.querySelector('[data-volume]');
+    var volOut = node.querySelector('[data-volout]');
+    var vol = clamp(volume != null ? volume : 100, 0, 100);
+    volInput.value = String(vol);
+    volInput.id = 'vol-' + uid;
+    if (volOut) volOut.textContent = String(vol);
+    if (volOut) volOut.setAttribute('for', volInput.id);
+
+    var playerDiv = node.querySelector('[data-player]');
+    playerDiv.id = 'yt-' + uid;
+
+    var v = {
+      uid: uid,
+      els: {
+        card: node,
+        input: input,
+        error: node.querySelector('[data-error]'),
+        dot: node.querySelector('[data-dot]'),
+        state: node.querySelector('[data-state]'),
+        placeholder: node.querySelector('[data-placeholder]'),
+        thumbBtn: node.querySelector('[data-thumbbtn]'),
+        thumb: node.querySelector('[data-thumb]'),
+        host: node.querySelector('[data-host]'),
+        player: playerDiv,
+        loading: node.querySelector('[data-loading]'),
+        retry: node.querySelector('[data-retry]'),
+        volume: volInput,
+        volout: volOut
+      },
+      volume: vol,
+      prevVolume: vol > 0 ? vol : 100,
+      videoId: null,
+      loadedId: null,
+      previewId: null,
+      inputTimer: null,
+      autoplayOnce: false
+    };
+    videos.set(uid, v);
+
+    var img = v.els.thumb;
+    img.addEventListener('error', function () {
+      if (!videos.has(uid)) return;
+      var fb = img.dataset.fb || '0';
+      if (fb === '0' && v.previewId) {
+        img.dataset.fb = '1';
+        img.src = thumbUrl(v.previewId, 'mqdefault');
+      } else {
+        showPlaceholder(uid);
+        setStatus(uid, 'error', 'Thumb gagal');
+      }
+    });
+
+    grid.appendChild(node);
+    renumber();
+    updateCounts();
+    updateMuteBtn(uid);
+    setStatus(uid, 'empty', 'Kosong');
+
+    if (url) handleInputIdle(uid);
+    if (opts.focus) input.focus();
+    if (opts.save !== false) scheduleSave();
+    return uid;
+  }
+
+  /* ---------- Player lifecycle (anti bocor memori) ---------- */
+  function freshPlayerEl(uid) {
+    var v = videos.get(uid); if (!v) return null;
+    var host = v.els.host;
+    var kids = host.querySelectorAll('iframe, div:not([data-loading])');
+    for (var i = 0; i < kids.length; i++) kids[i].remove();
+    var d = document.createElement('div');
+    d.id = 'yt-' + uid;
+    d.setAttribute('data-player', '');
+    host.insertBefore(d, v.els.loading);
+    v.els.player = d;
+    return d;
+  }
+
+  function destroyPlayer(uid) {
+    var p = players.get(uid);
+    if (p) {
+      try { p.destroy(); } catch (e) {}
+      players.delete(uid);
+    }
+    ready.delete(uid);
+    playing.delete(uid);
+    loading.delete(uid);
+    var v = videos.get(uid);
+    if (v) {
+      v.loadedId = null;
+      try {
+        var host = v.els.host;
+        var frames = host.querySelectorAll('iframe');
+        for (var i = 0; i < frames.length; i++) frames[i].remove();
+      } catch (e) {}
+      updateToggleIcon(uid);
+    }
+    updateCounts();
+  }
+
+  function unloadOne(uid, silent) {
+    destroyPlayer(uid);
+    var v = videos.get(uid);
+    if (!v) return;
+    var val = v.els.input.value.trim();
+    var id = extractVideoId(val);
+    if (id) { showThumb(uid, id); setStatus(uid, 'preview', 'Pratinjau'); }
+    else if (!val) { showPlaceholder(uid); setStatus(uid, 'empty', 'Kosong'); }
+    else { showPlaceholder(uid); setStatus(uid, 'empty', 'Kosong'); }
+    if (!silent) updateCounts();
+  }
+
+  function onPlayerReady(uid, id, event) {
+    if (!videos.has(uid)) return;
+    loading.delete(uid);
+    ready.add(uid);
+    var v = videos.get(uid);
+    v.loadedId = id;
+    v.els.loading.hidden = true;
+    try { event.target.setVolume(clamp(v.volume, 0, 100)); } catch (e) {}
+    setStatus(uid, 'ready', 'Siap');
+    updateToggleIcon(uid);
+    updateCounts();
+    scheduleSave();
+    if (v.autoplayOnce) {
+      v.autoplayOnce = false;
+      try { event.target.playVideo(); } catch (e) {}
+    }
+  }
+
+  function onPlayerState(uid, event) {
+    if (!videos.has(uid)) return;
+    // Sabuk + suspender: player sudah memberi state apa pun -> loading wajib hilang.
+    var vs = videos.get(uid);
+    if (vs) vs.els.loading.hidden = true;
+    var ST = playerState();
+    var s = event.data;
+    if (s === ST.PLAYING) {
+      playing.add(uid);
+      setStatus(uid, 'playing', 'Putar');
+    } else if (s === ST.PAUSED) {
+      playing.delete(uid);
+      setStatus(uid, 'paused', 'Jeda');
+    } else if (s === ST.BUFFERING) {
+      setStatus(uid, 'loading', 'Bufferâ€¦');
+    } else if (s === ST.ENDED) {
+      playing.delete(uid);
+      setStatus(uid, 'ready', 'Selesai');
+    } else if (s === ST.CUED) {
+      setStatus(uid, 'ready', 'Siap');
+    }
+    updateToggleIcon(uid);
+  }
+
+  function onPlayerError(uid) {
+    if (!videos.has(uid)) return;
+    loading.delete(uid);
+    ready.delete(uid);
+    playing.delete(uid);
+    updateToggleIcon(uid);
+    updateCounts();
+    setStatus(uid, 'error', 'Error');
+    showRetry(uid, 'Video tidak bisa diputar (privat / blokir embed / ID salah)');
+    toast('Ada video yang gagal dimuat (privat / blokir embed).', 'error');
+  }
+
+  function loadSingle(uid, opts) {
+    opts = opts || {};
+    var v = videos.get(uid);
+    if (!v) return Promise.resolve(false);
+    var raw = v.els.input.value.trim();
+    if (!raw) {
+      setFieldError(uid, 'Isi link atau ID YouTube dulu.');
+      setStatus(uid, 'empty', 'Kosong');
+      if (!opts.quiet) toast('Ada kartu yang masih kosong.', 'warn');
+      return Promise.resolve(false);
+    }
+    var id = extractVideoId(raw);
+    if (!id) {
+      setFieldError(uid, 'Link / ID tidak valid. Contoh: dQw4w9WgXcQ atau https://youtu.be/â€¦');
+      setStatus(uid, 'error', 'Tidak valid');
+      if (!opts.quiet) toast('Ada link yang tidak valid.', 'error');
+      return Promise.resolve(false);
+    }
+    setFieldError(uid, null);
+
+    if (players.has(uid) && v.loadedId === id && ready.has(uid)) {
+      showHost(uid, false);
+      setStatus(uid, playing.has(uid) ? 'playing' : 'ready', playing.has(uid) ? 'Putar' : 'Siap');
+      return Promise.resolve(true);
+    }
+
+    if (opts.autoplay) v.autoplayOnce = true;
+    v.videoId = id;
+    setStatus(uid, 'loading', 'Memuatâ€¦');
+    showHost(uid, true);
+
+    return ensureAPI().then(function (YT) {
+      if (!videos.has(uid)) return false;
+      destroyPlayer(uid);
+      var vv = videos.get(uid);
+      if (!vv) return false;
+      vv.videoId = id;
+      if (opts.autoplay) vv.autoplayOnce = true;
+      showHost(uid, true);
+      setStatus(uid, 'loading', 'Memuatâ€¦');
+      freshPlayerEl(uid);
+      loading.add(uid);
+      // Pengaman macet: jika 25 dtk tidak ready/error, tawarkan retry.
+      (function (watchUid, watchId) {
+        setTimeout(function () {
+          if (!videos.has(watchUid)) return;
+          if (loading.has(watchUid) && !ready.has(watchUid)) {
+            var wv = videos.get(watchUid);
+            if (wv && wv.videoId === watchId) {
+              setStatus(watchUid, 'error', 'Macet');
+              showRetry(watchUid, 'Pemuatan macet');
+              toast('Ada video yang macet dimuat. Klik Coba lagi.', 'warn');
             }
-            
-            if (stored) {
-                stored.videos.forEach((data, index) => {
-                    if (data.videoId) {
-                        document.getElementById(`input-${index + 1}`).value = data.videoId;
-                    }
-                });
-                setTimeout(() => loadAllVideos(), 500);
-            }
-        }
-
-        function addVideo(data = null) {
-            if (videoCount >= MAX_VIDEOS) {
-                showToast(`Maksimal ${MAX_VIDEOS} video!`, 'warning');
-                return;
-            }
-
-            videoCount++;
-            const videoId = videoCount;
-            const container = document.getElementById('videosContainer');
-            
-            const videoCard = document.createElement('div');
-            videoCard.className = 'video-card';
-            videoCard.id = `video-card-${videoId}`;
-            videoCard.innerHTML = `
-                <div class="video-card-header">
-                    <div class="video-number">Video ${videoId}</div>
-                    ${videoCount > MIN_VIDEOS ? `<button class="remove-video-btn" onclick="removeVideo(${videoId})">×</button>` : ''}
-                </div>
-                <div class="input-wrapper">
-                    <input type="text" 
-                           class="video-input" 
-                           id="input-${videoId}" 
-                           placeholder="Link atau ID YouTube..."
-                           value="${data?.videoId || ''}">
-                    <button class="clear-input-btn" onclick="clearInput(${videoId})">×</button>
-                </div>
-                <div class="volume-control">
-                    <span>🔊</span>
-                    <input type="range" 
-                           min="0" 
-                           max="100" 
-                           value="${data?.volume || 100}" 
-                           id="volume-${videoId}"
-                           oninput="setVolume(${videoId}, this.value)">
-                </div>
-                <div class="video-wrapper" id="wrapper-${videoId}">
-                    <div id="player-${videoId}"></div>
-                    <div class="loading-overlay" id="loading-${videoId}">
-                        <div class="spinner"></div>
-                    </div>
-                </div>
-            `;
-            
-            container.appendChild(videoCard);
-            updateGridClass();
-            
-            if (data?.videoId) {
-                setTimeout(() => loadSingleVideo(videoId), 300);
-            }
-        }
-
-        function removeVideo(id) {
-            if (videoCount <= MIN_VIDEOS) {
-                showToast(`Minimal ${MIN_VIDEOS} video!`, 'warning');
-                return;
-            }
-
-            if (players[id]) {
-                players[id].destroy();
-                delete players[id];
-                delete playersReady[id];
-            }
-
-            const card = document.getElementById(`video-card-${id}`);
-            card.style.animation = 'scaleIn 0.3s ease-out reverse';
-            setTimeout(() => {
-                card.remove();
-                renumberVideos();
-            }, 300);
-
-            showToast('Video dihapus! 🗑️', 'success');
-        }
-
-        function renumberVideos() {
-            const cards = document.querySelectorAll('.video-card');
-            const newPlayers = {};
-            const newPlayersReady = {};
-            
-            cards.forEach((card, index) => {
-                const newId = index + 1;
-                const oldId = parseInt(card.id.split('-')[2]);
-                
-                // Update IDs
-                card.id = `video-card-${newId}`;
-                card.querySelector('.video-number').textContent = `Video ${newId}`;
-                card.querySelector('.video-input').id = `input-${newId}`;
-                card.querySelector('.volume-control input').id = `volume-${newId}`;
-                card.querySelector('.volume-control input').setAttribute('oninput', `setVolume(${newId}, this.value)`);
-                card.querySelector('.video-wrapper').id = `wrapper-${newId}`;
-                card.querySelector('[id^="player-"]').id = `player-${newId}`;
-                card.querySelector('[id^="loading-"]').id = `loading-${newId}`;
-                
-                const removeBtn = card.querySelector('.remove-video-btn');
-                if (removeBtn) {
-                    removeBtn.setAttribute('onclick', `removeVideo(${newId})`);
-                }
-                
-                card.querySelector('.clear-input-btn').setAttribute('onclick', `clearInput(${newId})`);
-                
-                // Migrate players
-                if (players[oldId]) {
-                    newPlayers[newId] = players[oldId];
-                    newPlayersReady[newId] = playersReady[oldId];
-                }
-            });
-            
-            players = newPlayers;
-            playersReady = newPlayersReady;
-            videoCount = cards.length;
-            updateGridClass();
-        }
-
-        function loadSingleVideo(id) {
-            const input = document.getElementById(`input-${id}`);
-            const url = input.value.trim();
-            
-            if (!url) return;
-            
-            const videoId = extractVideoId(url);
-            if (!videoId) {
-                showToast(`Video ${id}: Link tidak valid!`, 'error');
-                return;
-            }
-
-            showLoading(id);
-
-            if (players[id]) {
-                players[id].destroy();
-            }
-
-            players[id] = new YT.Player(`player-${id}`, {
-                videoId: videoId,
-                playerVars: {
-                    'playsinline': 1,
-                    'controls': 1,
-                    'modestbranding': 1,
-                    'rel': 0
-                },
-                events: {
-                    'onReady': (e) => {
-                        playersReady[id] = true;
-                        hideLoading(id);
-                        e.target.setVolume(document.getElementById(`volume-${id}`).value);
-                    },
-                    'onError': () => {
-                        hideLoading(id);
-                        showToast(`Video ${id}: Error loading!`, 'error');
-                        playersReady[id] = false;
-                    }
-                }
-            });
-        }
-
-        function loadAllVideos() {
-            let loaded = 0;
-            for (let i = 1; i <= videoCount; i++) {
-                const input = document.getElementById(`input-${i}`);
-                if (input && input.value.trim()) {
-                    loadSingleVideo(i);
-                    loaded++;
-                }
-            }
-            
-            if (loaded > 0) {
-                showToast(`${loaded} video dimuat! 🎉`, 'success');
-                saveToStorage();
-            } else {
-                showToast('Masukkan minimal 1 link video!', 'warning');
-            }
-        }
-
-        function playAllVideos() {
-            let played = 0;
-            Object.keys(players).forEach(id => {
-                if (playersReady[id] && players[id].playVideo) {
-                    players[id].playVideo();
-                    played++;
-                }
-            });
-            
-            if (played > 0) {
-                showToast(`${played} video diputar ▶`, 'success');
-            }
-        }
-
-        function pauseAllVideos() {
-            let paused = 0;
-            Object.keys(players).forEach(id => {
-                if (playersReady[id] && players[id].pauseVideo) {
-                    players[id].pauseVideo();
-                    paused++;
-                }
-            });
-            
-            if (paused > 0) {
-                showToast(`${paused} video dijeda ⏸`, 'warning');
-            }
-        }
-
-        function stopAllVideos() {
-            let stopped = 0;
-            Object.keys(players).forEach(id => {
-                if (playersReady[id] && players[id].stopVideo) {
-                    players[id].stopVideo();
-                    stopped++;
-                }
-            });
-            
-            if (stopped > 0) {
-                showToast(`${stopped} video dihentikan ⏹`, 'error');
-            }
-        }
-
-        function syncAllVideos() {
-            const ids = Object.keys(players).filter(id => playersReady[id]);
-            if (ids.length < 2) {
-                showToast('Minimal 2 video harus siap!', 'warning');
-                return;
-            }
-
-            const firstTime = players[ids[0]].getCurrentTime();
-            ids.slice(1).forEach(id => {
-                players[id].seekTo(firstTime, true);
-            });
-            
-            showToast(`${ids.length} video disinkronkan! 🔄`, 'success');
-        }
-
-        function setVolume(id, volume) {
-            if (playersReady[id] && players[id].setVolume) {
-                players[id].setVolume(volume);
-            }
-        }
-
-        function muteAll() {
-            Object.keys(players).forEach(id => {
-                if (playersReady[id]) {
-                    const currentVolume = players[id].getVolume();
-                    if (currentVolume > 0) {
-                        players[id].setVolume(0);
-                        document.getElementById(`volume-${id}`).value = 0;
-                    } else {
-                        players[id].setVolume(100);
-                        document.getElementById(`volume-${id}`).value = 100;
-                    }
-                }
-            });
-            showToast('Volume toggle! 🔇', 'success');
-        }
-
-        function extractVideoId(url) {
-            if (!url) return null;
-            url = url.trim();
-            
-            if (!url.includes('youtube.com') && !url.includes('youtu.be') && url.length === 11) {
-                return url;
-            }
-
-            let videoId = '';
-            if (url.includes('youtube.com/watch?v=')) {
-                videoId = url.split('v=')[1];
-                const ampersand = videoId.indexOf('&');
-                if (ampersand !== -1) videoId = videoId.substring(0, ampersand);
-            } else if (url.includes('youtu.be/')) {
-                videoId = url.split('youtu.be/')[1];
-                const question = videoId.indexOf('?');
-                if (question !== -1) videoId = videoId.substring(0, question);
-            } else if (url.includes('youtube.com/embed/')) {
-                videoId = url.split('embed/')[1];
-                const question = videoId.indexOf('?');
-                if (question !== -1) videoId = videoId.substring(0, question);
-            }
-            return videoId || null;
-        }
-
-        function showLoading(id) {
-            const loading = document.getElementById(`loading-${id}`);
-            if (loading) loading.style.display = 'flex';
-        }
-
-        function hideLoading(id) {
-            const loading = document.getElementById(`loading-${id}`);
-            if (loading) loading.style.display = 'none';
-        }
-
-        function clearInput(id) {
-            document.getElementById(`input-${id}`).value = '';
-        }
-
-        function clearAllInputs() {
-            for (let i = 1; i <= videoCount; i++) {
-                const input = document.getElementById(`input-${i}`);
-                if (input) input.value = '';
-            }
-            showToast('Semua input dibersihkan! 🗑️', 'success');
-        }
-
-        function updateGridClass() {
-            const container = document.getElementById('videosContainer');
-            container.className = `videos-grid count-${videoCount}`;
-        }
-
-        function saveToStorage() {
-            const videos = [];
-            for (let i = 1; i <= videoCount; i++) {
-                const input = document.getElementById(`input-${i}`);
-                const volume = document.getElementById(`volume-${i}`);
-                if (input) {
-                    videos.push({
-                        videoId: input.value.trim(),
-                        volume: volume ? volume.value : 100
-                    });
-                }
-            }
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({ videos }));
-        }
-
-        function loadFromStorage() {
-            const stored = localStorage.getItem(STORAGE_KEY);
-            return stored ? JSON.parse(stored) : null;
-        }
-
-        function loadLast() {
-            const stored = loadFromStorage();
-            if (stored && stored.videos.length > 0) {
-                // Clear current
-                while (videoCount > 0) {
-                    const firstCard = document.querySelector('.video-card');
-                    if (firstCard) firstCard.remove();
-                    videoCount--;
-                }
-                
-                players = {};
-                playersReady = {};
-                
-                // Load stored
-                initializeVideos();
-                showToast('Video terakhir dimuat! 📋', 'success');
-            } else {
-                showToast('Tidak ada data tersimpan!', 'warning');
-            }
-        }
-
-        function loadSample() {
-            const samples = ['dQw4w9WgXcQ', 'jNQXAC9IVRw', '9Deg7VrpHbM', 'kJQP7kiw5Fk'];
-            for (let i = 1; i <= Math.min(videoCount, samples.length); i++) {
-                document.getElementById(`input-${i}`).value = samples[i - 1];
-            }
-            showToast('Sample dimuat! Klik "Muat Semua"', 'success');
-        }
-
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = `toast ${type} show`;
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            localStorage.setItem('darkMode', isDark);
-            showToast(isDark ? 'Dark mode aktif 🌙' : 'Light mode aktif ☀️', 'success');
-        }
-
-        function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen();
-                showToast('Mode fullscreen ⛶', 'success');
-            } else {
-                document.exitFullscreen();
-            }
-        }
-
-        // Load dark mode preference
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark-mode');
-        }
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            if (e.target.tagName === 'INPUT') return;
-            
-            if (e.code === 'Space') {
-                e.preventDefault();
-                playAllVideos();
-            } else if (e.code === 'KeyP') {
-                e.preventDefault();
-                pauseAllVideos();
-            } else if (e.code === 'KeyS') {
-                e.preventDefault();
-                syncAllVideos();
-            } else if (e.code === 'KeyA' && e.ctrlKey) {
-                e.preventDefault();
-                addVideo();
-            } else if (e.code === 'KeyM') {
-                e.preventDefault();
-                muteAll();
-            }
+          }
+        }, 25000);
+      })(uid, id);
+      var elId = 'yt-' + uid;
+      try {
+        var player = new YT.Player(elId, {
+          videoId: id,
+          width: '100%',
+          height: '100%',
+          playerVars: { playsinline: 1, rel: 0, modestbranding: 1, controls: 1 },
+          events: {
+            onReady: function (e) { onPlayerReady(uid, id, e); },
+            onStateChange: function (e) { onPlayerState(uid, e); },
+            onError: function () { onPlayerError(uid); }
+          }
         });
+        players.set(uid, player);
+      } catch (e) {
+        loading.delete(uid);
+        setStatus(uid, 'error', 'Gagal');
+        showRetry(uid, null);
+        return false;
+      }
+      return true;
+    }).catch(function () {
+      if (!videos.has(uid)) return false;
+      loading.delete(uid);
+      setStatus(uid, 'error', 'API gagal');
+      showRetry(uid, 'API YouTube gagal dimuat');
+      if (!opts.quiet) toast('API YouTube gagal dimuat. Cek koneksi / pemblokir iklan.', 'error');
+      return false;
+    });
+  }
 
-        // Auto save
-        setInterval(() => {
-            if (Object.keys(playersReady).length > 0) {
-                saveToStorage();
-            }
-        }, 30000);
-    </script>
+  function loadAll() {
+    var uids = [];
+    videos.forEach(function (v, uid) {
+      if (v.els.input.value.trim()) uids.push(uid);
+    });
+    if (!uids.length) {
+      toast('Masukkan minimal 1 link video dulu.', 'warn');
+      return;
+    }
+    btnLoadAll.disabled = true;
+    toast('Memuat ' + uids.length + ' videoâ€¦', 'info', 1500);
+    ensureAPI().then(function () {
+      var chain = Promise.resolve();
+      uids.forEach(function (uid, idx) {
+        chain = chain.then(function () {
+          if (!videos.has(uid)) return null;
+          return loadSingle(uid, { quiet: true }).then(function () {
+            if (idx < uids.length - 1) return sleep(CONFIG.STAGGER_MS);
+            return null;
+          });
+        });
+      });
+      return chain;
+    }).catch(function () {
+      toast('API YouTube gagal dimuat. Cek koneksi lalu coba lagi.', 'error');
+    }).then(function () {
+      btnLoadAll.disabled = false;
+      scheduleSave();
+      var ok = ready.size;
+      if (ok > 0) toast(ok + ' player dibuat. Klik Putar untuk mulai.', 'success');
+      else toast('Belum ada player yang siap. Cek link lalu Coba lagi.', 'warn');
+    });
+  }
+
+  /* ---------- Global transport ---------- */
+  function eachReady(fn) {
+    var n = 0;
+    ready.forEach(function (uid) {
+      var p = players.get(uid);
+      if (!p) return;
+      try { fn(p, uid); n += 1; } catch (e) {}
+    });
+    return n;
+  }
+
+  function playAll() {
+    var n = eachReady(function (p) { p.playVideo(); });
+    if (n > 0) toast(n + ' video diputar.', 'success', 1500);
+    else toast('Belum ada video siap. Klik Muat Semua dulu.', 'warn');
+  }
+
+  function pauseAll() {
+    var n = eachReady(function (p) { p.pauseVideo(); });
+    if (n > 0) toast(n + ' video dijeda.', 'info', 1500);
+    else toast('Belum ada video siap.', 'warn');
+  }
+
+  function togglePlayAll() {
+    if (playing.size > 0) pauseAll();
+    else playAll();
+  }
+
+  function stopAll() {
+    var n = eachReady(function (p) { p.stopVideo(); });
+    playing.clear();
+    videos.forEach(function (v, uid) { if (ready.has(uid)) { setStatus(uid, 'ready', 'Stop'); updateToggleIcon(uid); } });
+    if (n > 0) toast(n + ' video dihentikan.', 'info', 1500);
+    else toast('Belum ada video siap.', 'warn');
+  }
+
+  function syncAll() {
+    var ids = Array.from(ready);
+    if (ids.length < 2) {
+      toast('Butuh minimal 2 video yang siap untuk sinkron.', 'warn');
+      return;
+    }
+    var refUid = null;
+    for (var i = 0; i < ids.length; i++) {
+      if (playing.has(ids[i])) { refUid = ids[i]; break; }
+    }
+    if (!refUid) refUid = ids[0];
+    var ref = players.get(refUid);
+    if (!ref) return;
+    var t = 0, wasPlaying = playing.has(refUid);
+    try { t = ref.getCurrentTime() || 0; } catch (e) {}
+    var n = 0;
+    for (var j = 0; j < ids.length; j++) {
+      var uid = ids[j];
+      if (uid === refUid) continue;
+      var p = players.get(uid);
+      if (!p) continue;
+      try {
+        p.seekTo(t, true);
+        if (wasPlaying) p.playVideo();
+        n += 1;
+      } catch (e) {}
+    }
+    toast((n + 1) + ' video disinkronkan ke detik ' + Math.round(t) + '.', 'success');
+  }
+
+  /* ---------- Volume ---------- */
+  function applyVolume(uid, val, save) {
+    var v = videos.get(uid); if (!v) return;
+    val = clamp(val, 0, 100);
+    v.volume = val;
+    if (val > 0) v.prevVolume = val;
+    v.els.volume.value = String(val);
+    if (v.els.volout) v.els.volout.textContent = String(val);
+    updateMuteBtn(uid);
+    if (ready.has(uid)) {
+      var p = players.get(uid);
+      if (p) { try { p.setVolume(val); } catch (e) {} }
+    }
+    if (save !== false) scheduleSave();
+    updateMuteAllBtn();
+  }
+
+  function toggleMuteOne(uid) {
+    var v = videos.get(uid); if (!v) return;
+    if (v.volume > 0) {
+      v.prevVolume = v.volume;
+      applyVolume(uid, 0);
+    } else {
+      applyVolume(uid, v.prevVolume > 0 ? v.prevVolume : 100);
+    }
+  }
+
+  function toggleMuteAll() {
+    if (!videos.size) return;
+    var anyAudible = false;
+    videos.forEach(function (v) { if (v.volume > 0) anyAudible = true; });
+    videos.forEach(function (v, uid) {
+      if (anyAudible) {
+        if (v.volume > 0) v.prevVolume = v.volume;
+        applyVolume(uid, 0, false);
+      } else {
+        applyVolume(uid, v.prevVolume > 0 ? v.prevVolume : 100, false);
+      }
+    });
+    scheduleSave();
+    toast(anyAudible ? 'Semua video dibisukan.' : 'Semua video disuarakan.', 'success', 1500);
+  }
+
+  function soloOne(uid) {
+    if (!videos.has(uid)) return;
+    videos.forEach(function (v, id) {
+      if (id === uid) {
+        if (v.volume === 0) applyVolume(id, v.prevVolume > 0 ? v.prevVolume : 100, false);
+      } else {
+        if (v.volume > 0) v.prevVolume = v.volume;
+        applyVolume(id, 0, false);
+      }
+    });
+    scheduleSave();
+    toast('Mode solo: hanya video ini yang bersuara.', 'success', 1800);
+  }
+
+  function toggleOne(uid) {
+    var v = videos.get(uid); if (!v) return;
+    if (!ready.has(uid)) {
+      var id = extractVideoId(v.els.input.value.trim());
+      if (!id) { toast('Isi link valid dulu untuk video ini.', 'warn'); return; }
+      loadSingle(uid, { autoplay: true });
+      return;
+    }
+    var p = players.get(uid);
+    if (!p) return;
+    try {
+      var ST = playerState();
+      var s = p.getPlayerState();
+      if (s === ST.PLAYING || s === ST.BUFFERING) p.pauseVideo();
+      else p.playVideo();
+    } catch (e) {}
+  }
+
+  /* ---------- Kolom layout + mode fokus ---------- */
+  function setCols(mode) {
+    if (!grid) return;
+    if (mode !== '1' && mode !== '2' && mode !== '3') mode = 'auto';
+    grid.classList.remove('cols-1', 'cols-2', 'cols-3');
+    if (mode !== 'auto') grid.classList.add('cols-' + mode);
+    var btns = document.querySelectorAll('.layout-switch .seg');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].setAttribute('aria-pressed', btns[i].getAttribute('data-cols') === mode ? 'true' : 'false');
+    }
+    try { localStorage.setItem(CONFIG.COLS_KEY, mode); } catch (e) {}
+  }
+
+  function updateFocusIcon(uid) {
+    var v = videos.get(uid); if (!v) return;
+    var btn = v.els.card.querySelector('[data-action="focus"]');
+    if (!btn) return;
+    var svg = btn.querySelector('svg');
+    var on = focusedUid === uid;
+    if (svg) svg.innerHTML = on ? ICON_COMPRESS : ICON_EXPAND;
+    btn.setAttribute('aria-label', on ? 'Kecilkan video ini' : 'Perbesar video ini');
+    btn.setAttribute('title', on ? 'Kecilkan (Esc)' : 'Perbesar video ini');
+  }
+
+  function focusOne(uid) {
+    if (!videos.has(uid)) return;
+    unfocusAll();
+    focusedUid = uid;
+    videos.get(uid).els.card.classList.add('focused');
+    var bd = document.getElementById('focusBackdrop');
+    if (bd) bd.hidden = false;
+    document.body.classList.add('no-scroll');
+    updateFocusIcon(uid);
+  }
+
+  function unfocusAll() {
+    if (!focusedUid) return;
+    var v = videos.get(focusedUid);
+    if (v) {
+      v.els.card.classList.remove('focused');
+      updateFocusIcon(focusedUid);
+    }
+    focusedUid = null;
+    var bd = document.getElementById('focusBackdrop');
+    if (bd) bd.hidden = true;
+    document.body.classList.remove('no-scroll');
+  }
+
+  function toggleFocus(uid) {
+    if (focusedUid === uid) unfocusAll();
+    else focusOne(uid);
+  }
+
+  /* ---------- Input preview (facade) ---------- */
+  function handleInputIdle(uid) {
+    var v = videos.get(uid); if (!v) return;
+    var raw = v.els.input.value.trim();
+    if (!raw) {
+      setFieldError(uid, null);
+      markInvalidWhileTyping(uid, false);
+      if (!players.has(uid)) { showPlaceholder(uid); setStatus(uid, 'empty', 'Kosong'); }
+      scheduleSave();
+      return;
+    }
+    var id = extractVideoId(raw);
+    if (id) {
+      setFieldError(uid, null);
+      markInvalidWhileTyping(uid, false);
+      v.videoId = id;
+      if (players.has(uid) && v.loadedId === id) {
+        showHost(uid, false);
+      } else if (!players.has(uid)) {
+        showThumb(uid, id);
+        setStatus(uid, 'preview', 'Pratinjau');
+      } else if (v.loadedId !== id) {
+        // Player lama tetap tampil sampai user klik Muat (hemat memori + tidak membingungkan).
+        // Simpan id baru sebagai kandidat; pratinjau diganti saat loadSingle dipanggil.
+        showHost(uid, false);
+        setStatus(uid, 'preview', 'Berubah â€” klik Muat');
+      }
+    } else {
+      markInvalidWhileTyping(uid, true);
+      if (!players.has(uid)) { showPlaceholder(uid); setStatus(uid, 'empty', 'Kosong'); }
+    }
+    scheduleSave();
+  }
+
+  function onInput(uid) {
+    var v = videos.get(uid); if (!v) return;
+    clearTimeout(v.inputTimer);
+    v.inputTimer = setTimeout(function () { handleInputIdle(uid); }, CONFIG.INPUT_DEBOUNCE);
+  }
+
+  /* ---------- Card actions ---------- */
+  function removeVideo(uid) {
+    if (!videos.has(uid)) return;
+    if (focusedUid === uid) unfocusAll();
+    if (videos.size <= CONFIG.MIN) {
+      toast('Minimal ' + CONFIG.MIN + ' video.', 'warn');
+      return;
+    }
+    destroyPlayer(uid);
+    var v = videos.get(uid);
+    var card = v ? v.els.card : null;
+    videos.delete(uid);
+    function finish() {
+      if (card && card.parentNode) card.remove();
+      renumber();
+      updateCounts();
+      updateMuteAllBtn();
+      scheduleSave();
+    }
+    if (card && card.animate && !reducedMotion) {
+      try {
+        var anim = card.animate(
+          [{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(.93)' }],
+          { duration: 170, easing: 'ease-out' }
+        );
+        anim.onfinish = finish;
+        setTimeout(finish, 220);
+      } catch (e) { finish(); }
+    } else {
+      finish();
+    }
+    toast('Video dihapus.', 'success', 1500);
+  }
+
+  function clearAll() {
+    unfocusAll();
+    videos.forEach(function (v, uid) {
+      destroyPlayer(uid);
+      v.els.input.value = '';
+      setFieldError(uid, null);
+      showPlaceholder(uid);
+      setStatus(uid, 'empty', 'Kosong');
+    });
+    updateCounts();
+    scheduleSave();
+    toast('Semua input dibersihkan & player dibongkar.', 'success');
+  }
+
+  function unloadAll() {
+    if (!players.size) { toast('Tidak ada player aktif.', 'info', 1500); return; }
+    videos.forEach(function (v, uid) { unloadOne(uid, true); });
+    updateCounts();
+    toast('Semua iframe dibongkar. Memori dibebaskan.', 'success');
+  }
+
+  function fillSamples() {
+    var need = Math.min(4, CONFIG.MAX);
+    while (videos.size < need) {
+      var created = addVideo('', 100, { animate: true, save: false });
+      if (!created) break;
+    }
+    var uids = Array.from(videos.keys()).slice(0, SAMPLES.length);
+    for (var i = 0; i < uids.length; i++) {
+      var v = videos.get(uids[i]);
+      if (!v) continue;
+      // Bongkar player lama agar contoh benar-benar segar & hemat memori.
+      if (players.has(uids[i])) unloadOne(uids[i], true);
+      v.els.input.value = SAMPLES[i % SAMPLES.length];
+      handleInputIdle(uids[i]);
+    }
+    updateCounts();
+    scheduleSave();
+    toast('Contoh dimuat. Klik Muat Semua untuk memutar.', 'success');
+  }
+
+  function restoreLast() {
+    unfocusAll();
+    var data = loadState();
+    if (!data || !data.videos || !data.videos.length) {
+      toast('Tidak ada data tersimpan.', 'warn');
+      return;
+    }
+    var list = data.videos.slice(0, CONFIG.MAX);
+    Array.from(videos.keys()).forEach(function (uid) {
+      destroyPlayer(uid);
+      var v = videos.get(uid);
+      if (v && v.els.card.parentNode) v.els.card.remove();
+      videos.delete(uid);
+    });
+    list.forEach(function (it) {
+      addVideo(it.url || '', it.volume != null ? it.volume : 100, { animate: false, save: false });
+    });
+    while (videos.size < CONFIG.DEFAULT_COUNT) addVideo('', 100, { animate: false, save: false });
+    renumber();
+    updateCounts();
+    updateMuteAllBtn();
+    scheduleSave();
+    toast('Riwayat terakhir dipulihkan sebagai pratinjau. Klik Muat Semua.', 'success');
+  }
+
+  /* ---------- Theme & fullscreen ---------- */
+  function getTheme() {
+    return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  }
+  function setTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    try { localStorage.setItem(CONFIG.THEME_KEY, t); } catch (e) {}
+    var m = document.getElementById('metaThemeColor');
+    if (m) m.setAttribute('content', t === 'light' ? '#f1f5f9' : '#0f172a');
+  }
+  function toggleTheme() {
+    setTheme(getTheme() === 'light' ? 'dark' : 'light');
+  }
+
+  function toggleFullscreen() {
+    try {
+      if (!document.fullscreenElement) {
+        var el = document.documentElement;
+        if (el.requestFullscreen) el.requestFullscreen();
+      } else if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    } catch (e) {
+      toast('Fullscreen tidak didukung di browser ini.', 'warn');
+    }
+  }
+
+  async function pasteInto(uid) {
+    var v = videos.get(uid); if (!v) return;
+    try {
+      var txt = await navigator.clipboard.readText();
+      if (txt) {
+        v.els.input.value = txt.trim();
+        handleInputIdle(uid);
+        v.els.input.focus();
+        return;
+      }
+    } catch (e) {}
+    v.els.input.focus();
+    toast('Clipboard diblokir. Tempel manual dengan Ctrl+V.', 'warn');
+  }
+
+  /* ---------- Dialog ---------- */
+  function openDialog() {
+    var d = document.getElementById('shortcutsDialog');
+    if (!d) return;
+    if (typeof d.showModal === 'function') d.showModal();
+  }
+  function closeDialog() {
+    var d = document.getElementById('shortcutsDialog');
+    if (d && d.open) d.close();
+  }
+
+  /* ---------- Events ---------- */
+  function bind() {
+    document.getElementById('btnAdd').addEventListener('click', function () {
+      var uid = addVideo('', 100, { focus: true });
+      if (uid) toast('Player baru ditambahkan.', 'success', 1300);
+    });
+    btnLoadAll.addEventListener('click', loadAll);
+    document.getElementById('btnPlayAll').addEventListener('click', playAll);
+    document.getElementById('btnPauseAll').addEventListener('click', pauseAll);
+    document.getElementById('btnStopAll').addEventListener('click', stopAll);
+    document.getElementById('btnSyncAll').addEventListener('click', syncAll);
+    document.getElementById('btnSample').addEventListener('click', fillSamples);
+    document.getElementById('btnLast').addEventListener('click', restoreLast);
+    document.getElementById('btnClear').addEventListener('click', clearAll);
+    document.getElementById('btnMuteAll').addEventListener('click', toggleMuteAll);
+    document.getElementById('btnUnloadAll').addEventListener('click', unloadAll);
+    document.getElementById('btnTheme').addEventListener('click', toggleTheme);
+    document.getElementById('btnFullscreen').addEventListener('click', toggleFullscreen);
+    document.getElementById('btnShortcuts').addEventListener('click', openDialog);
+    document.getElementById('btnCloseDialog').addEventListener('click', closeDialog);
+    var backdrop = document.getElementById('focusBackdrop');
+    if (backdrop) backdrop.addEventListener('click', function () { unfocusAll(); });
+    var segBtns = document.querySelectorAll('.layout-switch .seg');
+    for (var i = 0; i < segBtns.length; i++) {
+      (function (b) {
+        b.addEventListener('click', function () { setCols(b.getAttribute('data-cols')); });
+      })(segBtns[i]);
+    }
+
+    var dialog = document.getElementById('shortcutsDialog');
+    if (dialog) {
+      dialog.addEventListener('click', function (e) {
+        if (e.target === dialog) closeDialog();
+      });
+    }
+
+    grid.addEventListener('click', function (e) {
+      var card = e.target.closest('.video-card');
+      if (!card) return;
+      var uid = card.getAttribute('data-uid');
+      if (!uid || !videos.has(uid)) return;
+
+      var thumbBtn = e.target.closest('[data-thumbbtn]');
+      if (thumbBtn) {
+        loadSingle(uid, { autoplay: true });
+        return;
+      }
+      var retry = e.target.closest('[data-retry]');
+      if (retry) {
+        loadSingle(uid, {});
+        return;
+      }
+      var btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      var act = btn.getAttribute('data-action');
+      if (act === 'remove') removeVideo(uid);
+      else if (act === 'focus') toggleFocus(uid);
+      else if (act === 'load') loadSingle(uid, {});
+      else if (act === 'clear-one') {
+        var v = videos.get(uid);
+        v.els.input.value = '';
+        setFieldError(uid, null);
+        if (!players.has(uid)) { showPlaceholder(uid); setStatus(uid, 'empty', 'Kosong'); }
+        else handleInputIdle(uid);
+        v.els.input.focus();
+        scheduleSave();
+      }
+      else if (act === 'paste') pasteInto(uid);
+      else if (act === 'mute-one') toggleMuteOne(uid);
+      else if (act === 'toggle-one') toggleOne(uid);
+      else if (act === 'solo') soloOne(uid);
+    });
+
+    grid.addEventListener('input', function (e) {
+      var card = e.target.closest('.video-card');
+      if (!card) return;
+      var uid = card.getAttribute('data-uid');
+      if (!uid || !videos.has(uid)) return;
+      if (e.target.hasAttribute('data-input')) onInput(uid);
+      else if (e.target.hasAttribute('data-volume')) applyVolume(uid, e.target.value);
+    });
+
+    grid.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && e.target && e.target.hasAttribute && e.target.hasAttribute('data-input')) {
+        e.preventDefault();
+        var card = e.target.closest('.video-card');
+        if (card) loadSingle(card.getAttribute('data-uid'), {});
+      }
+    });
+
+    document.addEventListener('keydown', function (e) {
+      var t = e.target;
+      var typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+      if (e.key === 'Escape') { if (focusedUid) unfocusAll(); closeDialog(); return; }
+      if (typing) return;
+      var onButton = t && (t.tagName === 'BUTTON' || (t.closest && t.closest('button')));
+      if (onButton && (e.code === 'Space' || e.code === 'Enter')) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      var dialogOpen = dialog && dialog.open;
+      if (dialogOpen) return;
+      if (e.code === 'Space') { e.preventDefault(); togglePlayAll(); }
+      else if (e.code === 'KeyP') { e.preventDefault(); pauseAll(); }
+      else if (e.code === 'KeyS') { e.preventDefault(); syncAll(); }
+      else if (e.code === 'KeyM') { e.preventDefault(); toggleMuteAll(); }
+      else if (e.code === 'KeyL') { e.preventDefault(); loadAll(); }
+      else if (e.code === 'KeyN') { e.preventDefault(); var id = addVideo('', 100, { focus: true }); if (id) toast('Player baru ditambahkan.', 'success', 1300); }
+      else if (e.code === 'KeyF') { e.preventDefault(); toggleFullscreen(); }
+      else if (e.key === '?') { e.preventDefault(); openDialog(); }
+    });
+
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden') saveNow();
+    });
+    window.addEventListener('pagehide', saveNow);
+  }
+
+  /* ---------- Init ---------- */
+  function init() {
+    grid = document.getElementById('videosGrid');
+    tpl = document.getElementById('cardTemplate');
+    countEl = document.getElementById('videoCount');
+    readyPill = document.getElementById('readyPill');
+    btnAdd = document.getElementById('btnAdd');
+    btnLoadAll = document.getElementById('btnLoadAll');
+    toastsEl = document.getElementById('toasts');
+
+    bind();
+
+    var data = loadState();
+    var list = data && data.videos ? data.videos.slice(0, CONFIG.MAX) : [];
+    if (!list.length) {
+      for (var i = 0; i < CONFIG.DEFAULT_COUNT; i++) addVideo('', 100, { animate: false, save: false });
+    } else {
+      list.forEach(function (it) {
+        addVideo(it.url || '', it.volume != null ? it.volume : 100, { animate: false, save: false });
+      });
+      while (videos.size < CONFIG.DEFAULT_COUNT && videos.size < CONFIG.MAX) {
+        addVideo('', 100, { animate: false, save: false });
+      }
+    }
+    var savedCols = null;
+    try { savedCols = localStorage.getItem(CONFIG.COLS_KEY); } catch (e) {}
+    setCols(savedCols || 'auto');
+    renumber();
+    updateCounts();
+    updateMuteAllBtn();
+    setSaveState('saved');
+
+    if (list.some(function (it) { return it.url; })) {
+      setTimeout(function () {
+        toast('Pratinjau dipulihkan. Klik Muat Semua untuk memutar.', 'info', 3200);
+      }, 500);
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+
+  </script>
 </body>
 </html>
