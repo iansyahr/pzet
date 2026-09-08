@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>KaTeX PNG Converter â€” Ubah LaTeX Matematika jadi Gambar PNG</title>
+  <title>KaTeX PNG Converter - Ubah LaTeX Matematika jadi Gambar PNG</title>
   <meta name="description" content="Konverter KaTeX ke PNG gratis, cepat, dan 100% berjalan di browser. Tulis rumus LaTeX, pratinjau langsung, atur skala hingga 800%, latar transparan, lalu unduh sebagai PNG tajam." />
   <meta name="color-scheme" content="light dark" />
   <meta name="theme-color" id="metaTheme" content="#4f46e5" />
@@ -287,7 +287,7 @@
     </div>
     <div class="steps" aria-label="Langkah penggunaan">
       <div class="step"><span class="step-num">1</span><span><b>Tulis rumus</b> atau sisipkan simbol cepat</span></div>
-      <div class="step"><span class="step-num">2</span><span><b>Atur tampilan</b> â€” skala, warna, padding</span></div>
+      <div class="step"><span class="step-num">2</span><span><b>Atur tampilan</b> - skala, warna, padding</span></div>
       <div class="step"><span class="step-num">3</span><span><b>Generate dan unduh</b> PNG transparan</span></div>
     </div>
     <div class="layout">
@@ -327,7 +327,7 @@
             </div>
             <div id="contrastWarn" class="alert warn" role="status">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
-              <div>Kontras warna tinta dan latar terlalu rendah â€” hasil PNG mungkin sulit dibaca.</div>
+              <div>Kontras warna tinta dan latar terlalu rendah - hasil PNG mungkin sulit dibaca.</div>
             </div>
             <div class="settings">
               <div class="field">
@@ -339,20 +339,20 @@
                   <label><input type="radio" name="mode" value="inline" /><span>Inline</span></label>
                   <label><input type="radio" name="mode" value="display" checked /><span>Display</span></label>
                 </div>
-                <span class="hint">Display lebih besar dan rata tengah â€” ideal untuk gambar.</span>
+                <span class="hint">Display lebih besar dan rata tengah - ideal untuk gambar.</span>
               </div>
               <div class="field">
                 <label for="scaleSel">Skala PNG (resolusi)</label>
                 <select id="scaleSel">
-                  <option value="1">100% â€” web cepat</option>
-                  <option value="1.5">150% â€” standar</option>
-                  <option value="2" selected>200% â€” disarankan</option>
-                  <option value="3">300% â€” cetak</option>
-                  <option value="4">400% â€” publikasi</option>
-                  <option value="5">500% â€” ekstra tajam</option>
-                  <option value="8">800% â€” poster (file besar)</option>
+                  <option value="1">100% - web cepat</option>
+                  <option value="1.5">150% - standar</option>
+                  <option value="2" selected>200% - disarankan</option>
+                  <option value="3">300% - cetak</option>
+                  <option value="4">400% - publikasi</option>
+                  <option value="5">500% - ekstra tajam</option>
+                  <option value="8">800% - poster (file besar)</option>
                 </select>
-                <span class="hint" id="scaleHint">Ketajaman 2x â€” seimbang untuk dokumen dan slide.</span>
+                <span class="hint" id="scaleHint">Ketajaman 2x - seimbang untuk dokumen dan slide.</span>
               </div>
               <div class="field">
                 <label for="fontRange">Ukuran huruf: <output id="fontOut">24 px</output></label>
@@ -373,7 +373,7 @@
                   <input type="color" id="inkColor" value="#111827" aria-label="Warna tinta" />
                   <div class="swatches" id="inkSwatches" role="group" aria-label="Pilihan cepat warna tinta"></div>
                 </div>
-                <span class="hint">Warna ini yang diekspor â€” independen dari tema web.</span>
+                <span class="hint">Warna ini yang diekspor - independen dari tema web.</span>
               </div>
               <div class="field">
                 <span class="field-legend">
@@ -510,11 +510,11 @@
             <details class="help">
               <summary>Bantuan dan pintasan keyboard</summary>
               <div class="help-body">
-                <div><span class="kbd">Ctrl</span> + <span class="kbd">Enter</span> â€” Generate PNG</div>
-                <div><span class="kbd">Esc</span> â€” Bersihkan editor (saat fokus di editor)</div>
-                <div><span class="kbd">Ctrl</span> + <span class="kbd">J</span> â€” Ganti tema terang/gelap</div>
-                <div><span class="kbd">Ctrl</span> + <span class="kbd">S</span> â€” Unduh PNG (jika sudah ada hasil)</div>
-                <div style="margin-top:4px">Hasil buram? Naikkan <b>Skala PNG</b>. Error merah? Periksa kurung kurawal dan backslash â€” setiap perintah diawali satu backslash, misalnya \sqrt dengan satu garis miring.</div>
+                <div><span class="kbd">Ctrl</span> + <span class="kbd">Enter</span> - Generate PNG</div>
+                <div><span class="kbd">Esc</span> - Bersihkan editor (saat fokus di editor)</div>
+                <div><span class="kbd">Ctrl</span> + <span class="kbd">J</span> - Ganti tema terang/gelap</div>
+                <div><span class="kbd">Ctrl</span> + <span class="kbd">S</span> - Unduh PNG (jika sudah ada hasil)</div>
+                <div style="margin-top:4px">Hasil buram? Naikkan <b>Skala PNG</b>. Error merah? Periksa kurung kurawal dan backslash - setiap perintah diawali satu backslash, misalnya \sqrt dengan satu garis miring.</div>
               </div>
             </details>
           </div>
@@ -622,13 +622,13 @@
     var INK_SWATCHES = ["#111827", "#000000", "#ffffff", "#1d4ed8", "#dc2626", "#15803d"];
     var BG_SWATCHES = ["#ffffff", "#f8fafc", "#111827", "#000000", "#fef9c3", "#dbeafe"];
     var SCALE_HINTS = {
-      "1": "Resolusi 1x â€” tercepat, cukup untuk web.",
-      "1.5": "Ketajaman 1,5x â€” standar harian.",
-      "2": "Ketajaman 2x â€” seimbang untuk dokumen dan slide.",
-      "3": "Ketajaman 3x â€” tajam untuk cetak.",
-      "4": "Ketajaman 4x â€” sangat tajam, file lebih besar.",
-      "5": "Ketajaman 5x â€” untuk publikasi dan poster kecil.",
-      "8": "Ketajaman 8x â€” poster besar. File bisa sangat besar."
+      "1": "Resolusi 1x - tercepat, cukup untuk web.",
+      "1.5": "Ketajaman 1,5x - standar harian.",
+      "2": "Ketajaman 2x - seimbang untuk dokumen dan slide.",
+      "3": "Ketajaman 3x - tajam untuk cetak.",
+      "4": "Ketajaman 4x - sangat tajam, file lebih besar.",
+      "5": "Ketajaman 5x - untuk publikasi dan poster kecil.",
+      "8": "Ketajaman 8x - poster besar. File bisa sangat besar."
     };
     var ICONS = {
       success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 5-6"/></svg>',
