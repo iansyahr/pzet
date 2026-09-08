@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://i.ytimg.com">
   <link rel="preconnect" href="https://img.youtube.com">
   <style>
-/* Multi YouTube Player â€” tema minimalis ala YouTube Studio.
+/* Multi YouTube Player - tema minimalis ala YouTube Studio.
    Flat, satu warna aksen, hierarki netral. Struktur HTML/JS tidak diubah. */
 
 :root {
@@ -1063,7 +1063,7 @@ body.no-scroll { overflow: hidden; }
     var v = videos.get(uid); if (!v) return;
     v.els.loading.hidden = true;
     v.els.retry.hidden = false;
-    if (msg) v.els.retry.textContent = msg + ' â€” Coba lagi';
+    if (msg) v.els.retry.textContent = msg + ' - Coba lagi';
     else v.els.retry.textContent = 'Coba lagi';
   }
 
@@ -1637,7 +1637,7 @@ body.no-scroll { overflow: hidden; }
         // Player lama tetap tampil sampai user klik Muat (hemat memori + tidak membingungkan).
         // Simpan id baru sebagai kandidat; pratinjau diganti saat loadSingle dipanggil.
         showHost(uid, false);
-        setStatus(uid, 'preview', 'Berubah â€” klik Muat');
+        setStatus(uid, 'preview', 'Berubah - klik Muat');
       }
     } else {
       markInvalidWhileTyping(uid, true);
