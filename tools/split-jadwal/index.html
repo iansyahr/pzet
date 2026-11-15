@@ -237,11 +237,374 @@
   window.addEventListener('dragover', e => e.preventDefault());
   window.addEventListener('drop', e => e.preventDefault());
 
-  async function makePdf(srcDoc, indices) {
-    const out = await PDFLib.PDFDocument.create();
-    const pages = await out.copyPages(srcDoc, indices);
-    pages.forEach(p => out.addPage(p));
-    return out.save();
+  /* ===== CORE-BEGIN ===== */
+  // Halaman yang diambil untuk tiap file hasil (indeks mulai dari 0).
+  const PARTS = [[0, 1], [2]];
+  const MIN_PAGES = 3;
+
+  /*
+   * Pembaca PDF "malas" (lazy) di atas pdf-lib.
+   *
+   * PDFDocument.load() milik pdf-lib selalu mem-parse SEMUA objek di dalam file.
+   * PDF hasil ekspor Excel bisa berisi >100.000 objek (tag struktur/aksesibilitas),
+   * padahal 3 halaman pertama hanya butuh beberapa puluh objek.
+   *
+   * Di sini kita membaca tabel xref (daftar isi PDF) lalu mem-parse objek hanya
+   * ketika benar-benar diminta. Parser objek, penyalin halaman, dan penulis PDF
+   * tetap milik pdf-lib. Kalau ada yang tidak sesuai harapan, fungsi ini melempar
+   * error dan pemanggil kembali ke PDFDocument.load() biasa.
+   */
+  function openPdfLazy(bytes) {
+    const { PDFContext, PDFObjectParser, PDFRef, PDFName, PDFNumber, PDFDict,
+            PDFArray, PDFRawStream, PDFPageLeaf, PDFObjectCopier, PDFPage,
+            decodePDFRawStream } = PDFLib;
+    const N = s => PDFName.of(s);
+    const fail = m => { throw new Error('lazy: ' + m); };
+    const isWs = c => c === 0 || c === 9 || c === 10 || c === 12 || c === 13 || c === 32;
+    const isDigit = c => c >= 48 && c <= 57;
+    const startsWith = (p, s) => {
+      for (let i = 0; i < s.length; i++) if (bytes[p + i] !== s.charCodeAt(i)) return false;
+      return true;
+    };
+    const num = (v, what) => (v instanceof PDFNumber ? v.asNumber() : fail(what));
+
+    const ctx = PDFContext.create();
+    const parser = PDFObjectParser.forBytes(bytes, ctx);
+
+    // Parse "N G obj <objek>" pada offset tertentu.
+    function parseIndirectAt(off) {
+      if (!(off > 0 && off < bytes.length)) fail('offset di luar file');
+      parser.bytes.moveTo(off);
+      parser.skipWhitespaceAndComments();
+      const objNum = parser.parseRawInt();
+      parser.skipWhitespaceAndComments();
+      parser.parseRawInt();
+      parser.skipWhitespaceAndComments();
+      if (!parser.matchKeyword([111, 98, 106])) fail('kata kunci obj tidak ada'); // "obj"
+      parser.skipWhitespaceAndComments();
+      return { objNum, obj: parser.parseObject() };
+    }
+
+    // --- xref klasik: tiap entri tepat 20 byte, dibaca hanya saat dibutuhkan ---
+    function readTable(p) {
+      const subs = [];
+      for (;;) {
+        while (isWs(bytes[p])) p++;
+        if (startsWith(p, 'trailer')) break;
+        const pair = [0, 0];
+        for (let k = 0; k < 2; k++) {
+          if (!isDigit(bytes[p])) fail('xref rusak');
+          let v = 0;
+          while (isDigit(bytes[p])) v = v * 10 + bytes[p++] - 48;
+          pair[k] = v;
+          while (isWs(bytes[p])) p++;
+        }
+        subs.push({ start: pair[0], count: pair[1], pos: p });
+        p += pair[1] * 20;
+      }
+      parser.bytes.moveTo(p + 7);
+      parser.skipWhitespaceAndComments();
+      const dict = parser.parseObject();
+      if (!(dict instanceof PDFDict)) fail('trailer rusak');
+      return {
+        dict,
+        stm: null,
+        find(n) {
+          for (const s of subs) {
+            if (n < s.start || n >= s.start + s.count) continue;
+            const e = s.pos + (n - s.start) * 20;
+            let off = 0;
+            for (let i = 0; i < 10; i++) {
+              if (!isDigit(bytes[e + i])) fail('entri xref rusak');
+              off = off * 10 + bytes[e + i] - 48;
+            }
+            const t = bytes[e + 17];
+            if (bytes[e + 10] !== 32 || (t !== 110 && t !== 102)) fail('entri xref rusak');
+            return t === 110 ? { t: 1, a: off } : { t: 0 };
+          }
+          return null;
+        },
+      };
+    }
+
+    // --- xref stream (PDF 1.5+): di-decode saat pertama kali dibutuhkan ---
+    function unpredict(data, raw) {
+      let parms = raw.dict.lookup(N('DecodeParms'));
+      if (parms instanceof PDFArray) parms = parms.lookup(0);
+      if (!(parms instanceof PDFDict)) return data;
+      const opt = (k, d) => { const v = parms.lookup(N(k)); return v instanceof PDFNumber ? v.asNumber() : d; };
+      const predictor = opt('Predictor', 1);
+      if (predictor === 1) return data;
+      if (predictor < 10 || opt('Colors', 1) !== 1 || opt('BitsPerComponent', 8) !== 8) fail('predictor tidak didukung');
+      const cols = opt('Columns', 1);
+      const rows = Math.floor(data.length / (cols + 1));
+      const out = new Uint8Array(rows * cols);
+      for (let r = 0; r < rows; r++) {
+        const src = r * (cols + 1), cur = r * cols, prev = cur - cols;
+        const tag = data[src];
+        for (let i = 0; i < cols; i++) {
+          const x = data[src + 1 + i];
+          const a = i ? out[cur + i - 1] : 0;
+          const b = r ? out[prev + i] : 0;
+          const c = r && i ? out[prev + i - 1] : 0;
+          let v;
+          if (tag === 0) v = x;
+          else if (tag === 1) v = x + a;
+          else if (tag === 2) v = x + b;
+          else if (tag === 3) v = x + ((a + b) >> 1);
+          else if (tag === 4) {
+            const pa = Math.abs(b - c), pb = Math.abs(a - c), pc = Math.abs(a + b - 2 * c);
+            v = x + (pa <= pb && pa <= pc ? a : pb <= pc ? b : c);
+          } else fail('predictor tidak dikenal');
+          out[cur + i] = v & 255;
+        }
+      }
+      return out;
+    }
+
+    function xrefStream(raw) {
+      if (!(raw instanceof PDFRawStream)) fail('xref stream rusak');
+      let data = null, w, rowLen, subs;
+      function init() {
+        const W = raw.dict.lookup(N('W'));
+        if (!(W instanceof PDFArray) || W.size() < 3) fail('W tidak ada');
+        w = [0, 1, 2].map(i => num(W.lookup(i), 'W'));
+        rowLen = w[0] + w[1] + w[2];
+        if (rowLen <= 0) fail('W rusak');
+        const Index = raw.dict.lookup(N('Index'));
+        const idx = Index instanceof PDFArray
+          ? Index.asArray().map(v => num(v, 'Index'))
+          : [0, num(raw.dict.lookup(N('Size')), 'Size')];
+        subs = [];
+        let row = 0;
+        for (let i = 0; i + 1 < idx.length; i += 2) {
+          subs.push({ start: idx[i], count: idx[i + 1], row });
+          row += idx[i + 1];
+        }
+        data = unpredict(decodePDFRawStream(raw).decode(), raw);
+      }
+      return {
+        dict: raw.dict,
+        stm: null,
+        find(n) {
+          if (!data) init();
+          for (const s of subs) {
+            if (n < s.start || n >= s.start + s.count) continue;
+            let p = (s.row + n - s.start) * rowLen;
+            if (p + rowLen > data.length) fail('xref stream terpotong');
+            const f = [0, 0, 0];
+            for (let k = 0; k < 3; k++) for (let i = 0; i < w[k]; i++) f[k] = f[k] * 256 + data[p++];
+            const t = w[0] ? f[0] : 1;
+            return t === 1 ? { t: 1, a: f[1] } : t === 2 ? { t: 2, a: f[1], b: f[2] } : { t: 0 };
+          }
+          return null;
+        },
+      };
+    }
+
+    // --- cari "startxref" lalu ikuti rantai /Prev (terbaru lebih dulu) ---
+    let start = -1;
+    for (let i = bytes.length - 9, min = Math.max(0, bytes.length - 2048); i >= min; i--) {
+      if (startsWith(i, 'startxref')) {
+        let p = i + 9, v = 0;
+        while (isWs(bytes[p])) p++;
+        if (!isDigit(bytes[p])) fail('startxref rusak');
+        while (isDigit(bytes[p])) v = v * 10 + bytes[p++] - 48;
+        start = v;
+        break;
+      }
+    }
+    if (start < 0) fail('startxref tidak ada');
+
+    const sections = [];
+    let hybrid = false;
+    const seen = new Set();
+    for (let off = start; off != null && !seen.has(off); ) {
+      if (sections.length > 4096) fail('rantai xref terlalu panjang');
+      seen.add(off);
+      let p = off;
+      while (isWs(bytes[p])) p++;
+      let sec;
+      if (startsWith(p, 'xref')) {
+        sec = readTable(p + 4);
+        const xs = sec.dict.get(N('XRefStm'));
+        if (xs instanceof PDFNumber) {
+          hybrid = true;
+          sec.stm = xrefStream(parseIndirectAt(xs.asNumber()).obj);
+        }
+      } else {
+        sec = xrefStream(parseIndirectAt(off).obj);
+      }
+      sections.push(sec);
+      const prev = sec.dict.get(N('Prev'));
+      off = prev instanceof PDFNumber ? prev.asNumber() : null;
+    }
+
+    const trailer = sections[0].dict;
+    if (trailer.get(N('Encrypt'))) fail('terenkripsi');
+
+    function findEntry(n) {
+      for (const s of sections) {
+        const e = s.find(n);
+        if (e && e.t) return e;
+        if (s.stm) {
+          const e2 = s.stm.find(n);
+          if (e2 && e2.t) return e2;
+        }
+        if (e && !hybrid) return null; // objek sudah dihapus
+      }
+      return null;
+    }
+
+    // --- object stream: di-decode sekali, lalu hanya objek yang diminta yang di-parse ---
+    const objStms = new Map();
+    function fromObjStm(stmNum, n, idx) {
+      let os = objStms.get(stmNum);
+      if (!os) {
+        const e = findEntry(stmNum);
+        if (!e || e.t !== 1) fail('object stream tidak ditemukan');
+        const r = parseIndirectAt(e.a);
+        if (r.objNum !== stmNum || !(r.obj instanceof PDFRawStream)) fail('object stream rusak');
+        const count = num(r.obj.dict.lookup(N('N')), 'N');
+        const first = num(r.obj.dict.lookup(N('First')), 'First');
+        const p = PDFObjectParser.forBytes(decodePDFRawStream(r.obj).decode(), ctx);
+        const nums = new Array(count), offs = new Array(count);
+        for (let i = 0; i < count; i++) {
+          p.skipWhitespaceAndComments(); nums[i] = p.parseRawInt();
+          p.skipWhitespaceAndComments(); offs[i] = p.parseRawInt();
+        }
+        os = { p, nums, offs, first };
+        objStms.set(stmNum, os);
+      }
+      if (os.nums[idx] !== n) idx = os.nums.indexOf(n);
+      if (idx < 0) fail('objek tidak ada di object stream');
+      os.p.bytes.moveTo(os.first + os.offs[idx]);
+      os.p.skipWhitespaceAndComments();
+      return os.p.parseObject();
+    }
+
+    function loadObject(n) {
+      const e = findEntry(n);
+      if (!e) return undefined;
+      if (e.t === 2) return fromObjStm(e.a, n, e.b);
+      const r = parseIndirectAt(e.a);
+      if (r.objNum !== n) fail('nomor objek tidak cocok');
+      return r.obj;
+    }
+
+    // Setiap context.lookup(ref) pdf-lib berakhir di Map ini → muat saat diminta.
+    const store = ctx.indirectObjects;
+    const rawGet = store.get.bind(store);
+    store.get = ref => {
+      if (store.has(ref)) return rawGet(ref);
+      const obj = loadObject(ref.objectNumber);
+      store.set(ref, obj);
+      return obj;
+    };
+
+    const catalog = ctx.lookup(trailer.get(N('Root')));
+    if (!(catalog instanceof PDFDict)) fail('katalog tidak ada');
+    const root = catalog.lookup(N('Pages'));
+    if (!(root instanceof PDFDict)) fail('pohon halaman tidak ada');
+    const total = num(root.lookup(N('Count')), 'Count');
+
+    // Turun di pohon halaman memakai /Count, tanpa menyentuh halaman lain.
+    function pageAt(index) {
+      let node = root;
+      for (let depth = 0; depth < 64; depth++) {
+        const kids = node.lookup(N('Kids'));
+        if (!(kids instanceof PDFArray)) fail('Kids tidak ada');
+        let next = null;
+        for (let i = 0; i < kids.size(); i++) {
+          const kid = kids.lookup(i);
+          if (!(kid instanceof PDFDict)) fail('anak halaman rusak');
+          if (kid.get(N('Kids'))) {
+            const c = num(kid.lookup(N('Count')), 'Count');
+            if (index < c) { next = kid; break; }
+            index -= c;
+          } else {
+            if (index === 0) {
+              if (!(kid instanceof PDFPageLeaf)) fail('bukan objek halaman');
+              return kid;
+            }
+            index--;
+          }
+        }
+        if (!next) fail('halaman tidak ditemukan');
+        node = next;
+      }
+      fail('pohon halaman terlalu dalam');
+    }
+
+    return {
+      total,
+      // Sama seperti PDFDocument.copyPages() + addPage().
+      copyInto(outDoc, indices) {
+        const copier = PDFObjectCopier.for(ctx, outDoc.context);
+        for (const i of indices) {
+          const node = copier.copy(pageAt(i));
+          outDoc.addPage(PDFPage.of(node, outDoc.context.register(node), outDoc));
+        }
+      },
+    };
+  }
+
+  // objectsPerTick: Infinity → simpan tanpa jeda setTimeout berulang.
+  const SAVE_OPTS = { objectsPerTick: Infinity };
+
+  // Jalur cepat: hanya objek milik halaman yang diambil yang dibaca.
+  async function splitFast(bytes) {
+    const src = openPdfLazy(bytes);
+    if (!(src.total >= MIN_PAGES)) throw new Error('lazy: jumlah halaman perlu dicek ulang');
+    const files = [];
+    for (const indices of PARTS) {
+      const out = await PDFLib.PDFDocument.create();
+      src.copyInto(out, indices);
+      files.push(await out.save(SAVE_OPTS));
+    }
+    return { total: src.total, files };
+  }
+
+  // Jalur cadangan: muat seluruh PDF dengan pdf-lib (lebih lambat, lebih toleran).
+  async function splitFull(bytes) {
+    let src;
+    try {
+      // ParseSpeeds.Fastest: tanpa jeda setTimeout tiap 100 objek.
+      src = await PDFLib.PDFDocument.load(bytes, {
+        ignoreEncryption: true,
+        parseSpeed: PDFLib.ParseSpeeds.Fastest,
+        updateMetadata: false,
+      });
+    } catch (err) {
+      throw new Error('PDF tidak dapat dibaca. File mungkin rusak atau dilindungi kata sandi.');
+    }
+    const total = src.getPageCount();
+    if (total < MIN_PAGES) {
+      throw new Error('PDF ini hanya memiliki ' + total + ' halaman. Dibutuhkan minimal 3 halaman untuk dipecah.');
+    }
+    const files = [];
+    for (const indices of PARTS) {
+      const out = await PDFLib.PDFDocument.create();
+      (await out.copyPages(src, indices)).forEach(p => out.addPage(p));
+      files.push(await out.save(SAVE_OPTS));
+    }
+    return { total, files };
+  }
+
+  async function splitPdf(bytes) {
+    try {
+      return Object.assign(await splitFast(bytes), { mode: 'cepat' });
+    } catch (err) {
+      console.warn('Jalur cepat gagal, memakai jalur biasa:', err);
+      return Object.assign(await splitFull(bytes), { mode: 'biasa' });
+    }
+  }
+  /* ===== CORE-END ===== */
+
+  // Beri kesempatan browser menggambar ulang UI (mis. teks "Memproses...")
+  // sebelum pekerjaan berat yang berjalan sinkron.
+  function nextFrame() {
+    return new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
   }
 
   function setDownload(el, bytes, filename, label) {
@@ -271,22 +634,13 @@
     splitBtn.textContent = 'Memproses...';
 
     try {
-      const bytes = await currentFile.arrayBuffer();
-      let src;
-      try {
-        src = await PDFLib.PDFDocument.load(bytes, { ignoreEncryption: true });
-      } catch (err) {
-        throw new Error('PDF tidak dapat dibaca. File mungkin rusak atau dilindungi kata sandi.');
-      }
-
-      const total = src.getPageCount();
-      if (total < 3) {
-        throw new Error('PDF ini hanya memiliki ' + total + ' halaman. Dibutuhkan minimal 3 halaman untuk dipecah.');
-      }
+      await nextFrame();
+      const bytes = new Uint8Array(await currentFile.arrayBuffer());
+      const t0 = performance.now();
+      const { total, files: [pdf1, pdf2], mode } = await splitPdf(bytes);
+      console.log('Split selesai dalam ' + Math.round(performance.now() - t0) + ' ms (jalur ' + mode + ')');
 
       const baseName = currentFile.name.replace(/\.pdf$/i, '');
-      const pdf1 = await makePdf(src, [0, 1]);
-      const pdf2 = await makePdf(src, [2]);
 
       setDownload(dl1, pdf1, baseName + ' - UNJ.pdf', 'Halaman 1–2');
       setDownload(dl2, pdf2, baseName + ' - Balai Pustaka.pdf', 'Halaman 3');
