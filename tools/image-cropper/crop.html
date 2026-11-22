@@ -1,0 +1,1871 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="icon" type="image/avif" href="https://pzet.pages.dev/tools/image-cropper/icon.avif" />
+  <title>Image Cropper &amp; Rotator</title>
+
+  <!-- Cropper.js CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
+
+  <style>
+    :root{
+      /* palette (light) */
+      --bg: #f1f5f9;
+      --panel: #ffffff;
+      --panel-soft: #f8fafc;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --accent: #2563eb;
+      --accent-2: #1d4ed8;
+      --accent-soft: rgba(37, 99, 235, 0.12);
+      --danger: #dc2626;
+      --stage-bg: #e2e8f0;
+      --checker-a: #f8fafc;
+      --checker-b: #e2e8f0;
+
+      /* palette (dark) */
+      --bg-dark: #090f1d;
+      --panel-dark: #0f172a;
+      --panel-soft-dark: #162033;
+      --text-dark: #f1f5f9;
+      --muted-dark: #94a3b8;
+      --border-dark: #1e293b;
+      --accent-dark: #3b82f6;
+      --accent-2-dark: #2563eb;
+      --accent-soft-dark: rgba(59, 130, 246, 0.18);
+      --stage-bg-dark: #060b16;
+      --checker-a-dark: #0f172a;
+      --checker-b-dark: #162033;
+
+      /* misc */
+      --radius: 14px;
+      --radius-sm: 10px;
+      --shadow: 0 4px 16px rgba(15, 23, 42, .06);
+      --shadow-strong: 0 12px 32px rgba(15, 23, 42, .10);
+      --sidebar-w: 356px;
+      --toolbar-h: 52px;
+      --tap-min: 44px;
+    }
+
+    html[data-theme="dark"]{
+      --bg: var(--bg-dark);
+      --panel: var(--panel-dark);
+      --panel-soft: var(--panel-soft-dark);
+      --text: var(--text-dark);
+      --muted: var(--muted-dark);
+      --border: var(--border-dark);
+      --accent: var(--accent-dark);
+      --accent-2: var(--accent-2-dark);
+      --accent-soft: var(--accent-soft-dark);
+      --stage-bg: var(--stage-bg-dark);
+      --checker-a: var(--checker-a-dark);
+      --checker-b: var(--checker-b-dark);
+      --shadow: 0 6px 20px rgba(0, 0, 0, .28);
+      --shadow-strong: 0 16px 40px rgba(0, 0, 0, .42);
+    }
+
+    *, *::before, *::after{ box-sizing: border-box; }
+    html, body{ height: 100%; margin: 0; }
+    body{
+      font-family: "Inter", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    button, input, select{ font: inherit; color: inherit; }
+    button{ touch-action: manipulation; }
+
+    /* Mobile / Tablet top bar (hidden on desktop where brand lives in sidebar) */
+    .topbar{
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 14px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+    }
+    .topbar-left{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .topbar-title{
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .topbar-actions{
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* App layout - Desktop default (side-by-side) */
+    .app{
+      display: grid;
+      grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+      min-height: 100dvh;
+      gap: 16px;
+      padding: 16px;
+      align-items: start;
+    }
+
+    .sidebar{
+      width: 100%;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      padding: 18px;
+      gap: 14px;
+      max-height: calc(100dvh - 32px);
+      overflow-y: auto;
+      position: sticky;
+      top: 16px;
+    }
+
+    .brand{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .brand-title{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .brand-icon{
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .brand h1{
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: -.01em;
+    }
+    .subtitle{
+      margin: 0;
+      font-size: .85rem;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+
+    .icon-btn{
+      border: 1px solid var(--border);
+      background: var(--panel-soft);
+      color: var(--text);
+      height: 38px;
+      min-width: 38px;
+      padding: 0 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: .88rem;
+      font-weight: 600;
+      transition: background .18s ease, border-color .18s ease, transform .06s ease;
+    }
+    .icon-btn:hover{ border-color: var(--accent); }
+    .icon-btn:active{ transform: scale(.97); }
+    .muted{ color: var(--muted); }
+
+    /* Mobile section tabs (hidden on desktop/tablet) */
+    .mobile-tabs{
+      display: none;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      background: var(--panel-soft);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 4px;
+    }
+    .mobile-tab{
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      min-height: 40px;
+      border-radius: 9px;
+      font-size: .88rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background .18s ease, color .18s ease;
+    }
+    .mobile-tab[aria-selected="true"]{
+      background: var(--panel);
+      color: var(--accent);
+      box-shadow: 0 1px 4px rgba(15, 23, 42, .08);
+    }
+
+    /* Dropzone */
+    .dropzone{
+      border: 1.5px dashed var(--border);
+      border-radius: var(--radius);
+      background: var(--panel-soft);
+      padding: 16px 14px;
+      text-align: center;
+      transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
+    }
+    .dropzone.dragover{
+      border-color: var(--accent);
+      box-shadow: inset 0 0 0 2px var(--accent-soft);
+      background: var(--accent-soft);
+    }
+    .dz-title{
+      font-size: .92rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .dz-sub{
+      font-size: .8rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .dz-actions{
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .dz-actions .full-span{
+      grid-column: 1 / -1;
+    }
+
+    /* Buttons */
+    .btn{
+      appearance: none;
+      -webkit-appearance: none;
+      border: 1px solid var(--border);
+      background: var(--panel-soft);
+      color: var(--text);
+      min-height: var(--tap-min);
+      padding: 9px 12px;
+      font-size: .88rem;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      text-decoration: none;
+      transition: transform .06s ease, background .18s ease, border-color .18s ease, color .18s ease;
+      white-space: nowrap;
+    }
+    .btn:hover{ border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); }
+    .btn:active{ transform: scale(.98); }
+    .btn:disabled{ opacity: .5; cursor: not-allowed; }
+    .btn.primary{
+      background: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
+    }
+    .btn.primary:hover{ background: var(--accent-2); border-color: var(--accent-2); }
+    .btn.camera{
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+    }
+    .btn.camera:hover{
+      background: color-mix(in srgb, var(--accent) 20%, transparent);
+    }
+    .btn.block{ width: 100%; }
+    .btn.ghost{ background: transparent; }
+
+    /* Controls sections */
+    .controls{
+      display: grid;
+      gap: 12px;
+    }
+    .section{
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--panel);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .section-head{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .section h3{
+      margin: 0;
+      font-size: .92rem;
+      font-weight: 700;
+    }
+    .field-label{
+      display: block;
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+    .grid-2{
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .row{
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .row > .btn{ flex: 1; }
+
+    .select, .input{
+      width: 100%;
+      min-height: var(--tap-min);
+      border: 1px solid var(--border);
+      background: var(--panel-soft);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: .9rem;
+    }
+    .select:focus, .input:focus{
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+    .range{
+      width: 100%;
+      height: 36px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    .angle-pill{
+      min-width: 56px;
+      height: 34px;
+      border: 1px solid var(--border);
+      background: var(--panel-soft);
+      border-radius: 8px;
+      font-size: .84rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .angle-pill:hover{ border-color: var(--accent); }
+
+    .kbd{
+      display: inline-block;
+      border: 1px solid var(--border);
+      border-bottom-width: 2px;
+      background: var(--panel-soft);
+      padding: 0 5px;
+      border-radius: 5px;
+      font-weight: 700;
+      font-size: .76rem;
+    }
+
+    /* Stage / Canvas area */
+    .stage{
+      position: relative;
+      background-color: var(--stage-bg);
+      background-image:
+        linear-gradient(45deg, var(--checker-b) 25%, transparent 25%),
+        linear-gradient(-45deg, var(--checker-b) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--checker-b) 75%),
+        linear-gradient(-45deg, transparent 75%, var(--checker-b) 75%);
+      background-size: 24px 24px;
+      background-position: 0 0, 0 12px, 12px -12px, -12px 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-strong);
+      overflow: hidden;
+      height: calc(100dvh - 32px);
+      min-height: 460px;
+    }
+    .stage-inner{
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+    }
+    .placeholder{
+      text-align: center;
+      color: var(--muted);
+      background: color-mix(in srgb, var(--panel) 92%, transparent);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 22px;
+      max-width: min(380px, calc(100% - 28px));
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 10px;
+      justify-items: center;
+    }
+    .placeholder-icon{
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      display: grid;
+      place-items: center;
+    }
+    .placeholder-actions{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 4px;
+      width: 100%;
+    }
+    .placeholder-actions .btn{ flex: 1 1 130px; }
+
+    .cropper-wrap{
+      display: none;
+      width: 100%;
+      height: 100%;
+      padding-bottom: 68px;
+    }
+    #image{
+      display: block;
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    /* Live crop dimension badge */
+    .stage-badge{
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 12;
+      background: color-mix(in srgb, var(--panel) 86%, transparent);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      box-shadow: var(--shadow);
+    }
+    .stage-badge.visible{ display: inline-flex; }
+
+    /* Floating toolbar */
+    .toolbar-wrap{
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      z-index: 12;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .toolbar{
+      max-width: 100%;
+      height: var(--toolbar-h);
+      background: color-mix(in srgb, var(--panel) 88%, transparent);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 6px;
+      box-shadow: var(--shadow);
+      pointer-events: auto;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .toolbar::-webkit-scrollbar{ display: none; }
+    .tool{
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text);
+      border-radius: 999px;
+      height: 40px;
+      min-width: 40px;
+      padding: 0 11px;
+      font-size: .84rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background .15s ease, border-color .15s ease, color .15s ease;
+    }
+    .tool:hover{
+      background: var(--panel-soft);
+      border-color: var(--border);
+    }
+    .tool[data-active="true"]{
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+    }
+    .divider{
+      width: 1px;
+      height: 24px;
+      background: var(--border);
+      margin: 0 2px;
+      flex-shrink: 0;
+    }
+    .zoom-display{
+      min-width: 48px;
+      text-align: center;
+      font-size: .82rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--muted);
+      padding: 0 4px;
+      flex-shrink: 0;
+    }
+
+    /* Status bar */
+    .statusbar{
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      border-top: 1px dashed var(--border);
+      padding-top: 12px;
+      font-size: .82rem;
+      color: var(--muted);
+    }
+    .chip{
+      border: 1px solid var(--border);
+      background: var(--panel-soft);
+      padding: 7px 10px;
+      border-radius: 10px;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+    .tip-touch{ display: none; }
+
+    /* Camera Modal */
+    .modal-backdrop{
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      background: rgba(2, 6, 23, .78);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-backdrop.open{ display: flex; }
+    .camera-modal{
+      width: min(640px, 100%);
+      max-height: calc(100dvh - 32px);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow-strong);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .camera-head{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .camera-head h2{
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .camera-viewport{
+      position: relative;
+      background: #020617;
+      aspect-ratio: 4 / 3;
+      max-height: 58dvh;
+      width: 100%;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+    #cameraVideo{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    #cameraVideo.mirrored{ transform: scaleX(-1); }
+    .camera-guide{
+      position: absolute;
+      inset: 12%;
+      border: 1px dashed rgba(255, 255, 255, .35);
+      border-radius: 10px;
+      pointer-events: none;
+    }
+    .camera-flash{
+      position: absolute;
+      inset: 0;
+      background: #ffffff;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .22s ease;
+    }
+    .camera-flash.active{ opacity: .85; transition: none; }
+    .camera-timer-overlay{
+      position: absolute;
+      inset: 0;
+      display: none;
+      place-items: center;
+      background: rgba(2, 6, 23, .35);
+      color: #ffffff;
+      font-size: 4.5rem;
+      font-weight: 800;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, .5);
+      pointer-events: none;
+    }
+    .camera-timer-overlay.active{ display: grid; }
+    .camera-status{
+      position: absolute;
+      inset: 16px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 10px;
+      color: #e2e8f0;
+      background: rgba(15, 23, 42, .85);
+      border-radius: 12px;
+      padding: 18px;
+      font-size: .9rem;
+      line-height: 1.5;
+    }
+    .camera-status.visible{ display: flex; }
+
+    .camera-controls{
+      padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 12px;
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+    }
+    .camera-controls-left{
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 8px;
+    }
+    .camera-controls-right{
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .shutter-btn{
+      width: 64px;
+      height: 64px;
+      border-radius: 999px;
+      border: 4px solid var(--accent);
+      background: var(--panel);
+      padding: 4px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: transform .1s ease, opacity .2s ease;
+    }
+    .shutter-btn::after{
+      content: "";
+      width: 100%;
+      height: 100%;
+      border-radius: 999px;
+      background: var(--accent);
+      transition: transform .1s ease;
+    }
+    .shutter-btn:active{ transform: scale(.94); }
+    .shutter-btn:disabled{ opacity: .45; cursor: not-allowed; }
+    .camera-footer-fallback{
+      padding: 0 16px 14px;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* Toast */
+    .toast{
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 95;
+      display: grid;
+      gap: 8px;
+      width: min(340px, calc(100vw - 32px));
+      pointer-events: none;
+    }
+    .toast .item{
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-size: .88rem;
+      font-weight: 500;
+      box-shadow: var(--shadow-strong);
+      animation: pop .2s ease;
+      transition: opacity .22s ease, transform .22s ease;
+    }
+    @keyframes pop{
+      from{ transform: translateY(8px); opacity: 0; }
+      to{ transform: translateY(0); opacity: 1; }
+    }
+
+    /* ================= TABLET (640px - 1023px) ================= */
+    @media (max-width: 1023px){
+      .topbar{ display: flex; }
+      .sidebar .brand,
+      .sidebar .subtitle{ display: none; }
+
+      .app{
+        grid-template-columns: 1fr;
+        min-height: calc(100dvh - 59px);
+        gap: 14px;
+        padding: 14px;
+      }
+
+      /* Stage on top so users immediately see the canvas */
+      .stage{
+        order: 1;
+        height: 52dvh;
+        min-height: 340px;
+        max-height: 560px;
+      }
+
+      .sidebar{
+        order: 2;
+        position: static;
+        max-height: none;
+        overflow: visible;
+        padding: 16px;
+      }
+
+      .controls{
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: start;
+      }
+      .statusbar{
+        grid-column: 1 / -1;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+      }
+      .dz-actions{
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .dz-actions .full-span{
+        grid-column: auto;
+      }
+      .tip-desktop{ display: none; }
+      .tip-touch{ display: block; }
+    }
+
+    /* ================= SMARTPHONE (< 640px) ================= */
+    @media (max-width: 639px){
+      .app{
+        padding: 10px 10px calc(16px + env(safe-area-inset-bottom));
+        gap: 10px;
+      }
+
+      .stage{
+        height: 46dvh;
+        min-height: 280px;
+        max-height: 430px;
+        border-radius: 12px;
+      }
+      .cropper-wrap{ padding-bottom: 60px; }
+
+      .sidebar{
+        padding: 12px;
+        gap: 12px;
+        border-radius: 12px;
+      }
+
+      /* Show compact tab switcher on mobile so controls stay close to canvas */
+      .mobile-tabs{ display: grid; }
+      .controls{ grid-template-columns: 1fr; }
+      .mobile-panel{ display: none; }
+      .mobile-panel.mobile-active{ display: flex; flex-direction: column; }
+      .dropzone.mobile-panel.mobile-active{ display: block; }
+
+      .dz-actions{
+        grid-template-columns: 1fr 1fr;
+      }
+      .dz-actions .full-span{
+        grid-column: 1 / -1;
+      }
+
+      .toolbar-wrap{
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+      }
+      .toolbar{
+        height: 48px;
+        padding: 4px 5px;
+      }
+      .tool{
+        height: 38px;
+        min-width: 38px;
+        padding: 0 9px;
+        font-size: .8rem;
+      }
+      .tool .tool-label-hide-sm{ display: none; }
+
+      .statusbar{
+        flex-direction: column;
+        padding-top: 8px;
+      }
+
+      /* Fullscreen-like camera modal on smartphone */
+      .modal-backdrop{ padding: 0; }
+      .camera-modal{
+        width: 100%;
+        height: 100dvh;
+        max-height: 100dvh;
+        border-radius: 0;
+        border: none;
+      }
+      .camera-viewport{
+        flex: 1;
+        aspect-ratio: auto;
+        max-height: none;
+      }
+
+      .toast{
+        right: 12px;
+        left: 12px;
+        bottom: calc(12px + env(safe-area-inset-bottom));
+        width: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Compact Top Bar for Tablet & Smartphone -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="brand-icon" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>
+        </svg>
+      </div>
+      <h1 class="topbar-title">Image Cropper <span class="muted">/ Rotator</span></h1>
+    </div>
+    <div class="topbar-actions">
+      <button id="topCameraBtn" class="icon-btn" type="button" title="Ambil foto dari kamera">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+        <span>Kamera</span>
+      </button>
+      <button id="themeBtnMobile" class="icon-btn" type="button" title="Ganti tema" aria-label="Ganti tema">🌗</button>
+    </div>
+  </header>
+
+  <div class="app">
+    <!-- Sidebar / Bottom Controls -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-title">
+          <div class="brand-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>
+            </svg>
+          </div>
+          <h1>Image Cropper <span class="muted">/ Rotator</span></h1>
+        </div>
+        <button id="themeBtn" class="icon-btn" type="button" title="Toggle tema (Alt+T)" aria-label="Toggle tema">🌗</button>
+      </div>
+
+      <p class="subtitle">Muat gambar lewat <span class="kbd">Drag &amp; Drop</span>, <span class="kbd">Ctrl / ⌘ + V</span>, pilih file, atau ambil langsung dari kamera.</p>
+
+      <!-- Mobile Tab Navigation -->
+      <nav class="mobile-tabs" role="tablist" aria-label="Panel kontrol">
+        <button class="mobile-tab" type="button" role="tab" data-tab="source" aria-selected="true">Sumber</button>
+        <button class="mobile-tab" type="button" role="tab" data-tab="edit" aria-selected="false">Edit</button>
+        <button class="mobile-tab" type="button" role="tab" data-tab="export" aria-selected="false">Ekspor</button>
+      </nav>
+
+      <!-- Dropzone / Source -->
+      <div class="dropzone mobile-panel mobile-active" id="dropzone" data-panel="source" aria-label="Dropzone">
+        <div class="dz-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+          <span>Muat atau Ambil Gambar</span>
+        </div>
+        <div class="dz-sub">Tarik &amp; lepas file ke sini, atau pilih opsi di bawah</div>
+        <div class="dz-actions">
+          <label class="btn primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+            <span>Pilih File</span>
+            <input id="fileInput" type="file" accept="image/*" hidden>
+          </label>
+          <button id="openCameraBtn" class="btn camera" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+            <span>Kamera</span>
+          </button>
+          <button id="pasteBtn" class="btn full-span" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+            <span>Paste Clipboard</span>
+          </button>
+        </div>
+        <!-- Native device camera fallback input -->
+        <input id="nativeCameraInput" type="file" accept="image/*" capture="environment" hidden>
+      </div>
+
+      <div class="controls">
+        <!-- Edit Section -->
+        <div class="section mobile-panel" data-panel="edit">
+          <div class="section-head">
+            <h3>Rasio &amp; Rotasi</h3>
+          </div>
+          <div>
+            <label class="field-label" for="ratio">Rasio Aspek</label>
+            <select id="ratio" class="select" title="Rasio">
+              <option value="free">Bebas</option>
+              <option value="1">1 : 1 (Square)</option>
+              <option value="4/3">4 : 3 (Landscape)</option>
+              <option value="3/4">3 : 4 (Portrait)</option>
+              <option value="16/9">16 : 9 (Widescreen)</option>
+              <option value="9/16">9 : 16 (Story / Reels)</option>
+              <option value="3/2">3 : 2 (Foto)</option>
+              <option value="21/9">21 : 9 (Ultrawide)</option>
+            </select>
+          </div>
+
+          <div class="row">
+            <button id="rotL" class="btn" type="button" title="Putar kiri 90°">↶ 90°</button>
+            <button id="rotR" class="btn" type="button" title="Putar kanan 90°">↷ 90°</button>
+          </div>
+
+          <div class="row">
+            <input id="rotRange" class="range" type="range" min="-180" max="180" value="0" step="1" aria-label="Sudut rotasi" />
+            <button id="rotVal" class="angle-pill" type="button" title="Klik untuk reset sudut ke 0°">0°</button>
+          </div>
+
+          <div class="row">
+            <button id="flipH" class="btn" type="button">⇋ Flip H</button>
+            <button id="flipV" class="btn" type="button">⇅ Flip V</button>
+          </div>
+        </div>
+
+        <!-- Export Section -->
+        <div class="section mobile-panel" data-panel="export">
+          <div class="section-head">
+            <h3>Ekspor</h3>
+          </div>
+          <div class="grid-2">
+            <div>
+              <label class="field-label" for="format">Format</label>
+              <select id="format" class="select">
+                <option value="png">PNG</option>
+                <option value="jpeg">JPEG (90%)</option>
+                <option value="webp">WEBP (90%)</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label" for="filename">Nama File</label>
+              <input id="filename" class="input" placeholder="image" value="image" />
+            </div>
+          </div>
+          <button id="downloadBtn" class="btn primary block" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+            <span>Download Gambar</span>
+          </button>
+          <div class="grid-2">
+            <button id="copyBtn" class="btn" type="button">Copy Clipboard</button>
+            <button id="resetBtn" class="btn ghost" type="button">Ganti Gambar</button>
+          </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="statusbar">
+          <div class="chip" id="metaInfo">Belum ada gambar</div>
+          <div class="chip tip-desktop">Tips: <span class="kbd">Alt</span> + <span class="kbd">Wheel</span> untuk zoom, <span class="kbd">Spasi</span> untuk geser</div>
+          <div class="chip tip-touch">Tips: Cubit layar untuk zoom, atau ketuk mode <strong>Geser</strong> di toolbar bawah.</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Stage -->
+    <main class="stage" aria-live="polite">
+      <div class="stage-badge" id="cropSizeInfo">Crop: 0 × 0 px</div>
+      <div class="stage-inner">
+        <div id="placeholder" class="placeholder">
+          <div class="placeholder-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+          </div>
+          <div>
+            <strong>Preview akan muncul di sini</strong>
+            <div class="muted" style="font-size:.84rem;margin-top:4px">Pilih gambar dari perangkat atau langsung ambil foto dengan kamera.</div>
+          </div>
+          <div class="placeholder-actions">
+            <button id="placeholderFileBtn" class="btn primary" type="button">Pilih Gambar</button>
+            <button id="placeholderCameraBtn" class="btn camera" type="button">Buka Kamera</button>
+          </div>
+        </div>
+
+        <div class="cropper-wrap" id="cropWrap">
+          <img id="image" alt="Gambar untuk di-crop">
+        </div>
+
+        <!-- Floating toolbar (horizontally scrollable on narrow screens) -->
+        <div class="toolbar-wrap">
+          <div class="toolbar" role="toolbar" aria-label="Canvas tools">
+            <button class="tool" id="modeCropBtn" type="button" data-active="true" title="Mode Crop">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>
+              <span class="tool-label-hide-sm">Crop</span>
+            </button>
+            <button class="tool" id="modeMoveBtn" type="button" data-active="false" title="Mode Geser Kanvas">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l-3 3 3 3"/><path d="M9 5l3-3 3 3"/><path d="M15 19l-3 3-3-3"/><path d="M19 9l3 3-3 3"/><line x1="2" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="22"/></svg>
+              <span class="tool-label-hide-sm">Geser</span>
+            </button>
+            <div class="divider"></div>
+            <button class="tool" id="fitBtn" type="button" title="Fit (Alt+0)">Fit</button>
+            <button class="tool" id="fillBtn" type="button" title="Fill (Alt+Shift+0)">Fill</button>
+            <div class="divider"></div>
+            <button class="tool" id="zoomOut" type="button" title="Zoom out (Alt+–)" aria-label="Zoom out">−</button>
+            <span id="zoomVal" class="zoom-display">100%</span>
+            <button class="tool" id="zoomIn" type="button" title="Zoom in (Alt+=)" aria-label="Zoom in">+</button>
+            <div class="divider"></div>
+            <button class="tool" id="centerBtn" type="button" title="Center canvas">Center</button>
+            <button class="tool" id="resetView" type="button" title="Reset view">Reset</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Live Camera Modal -->
+  <div class="modal-backdrop" id="cameraModal" role="dialog" aria-modal="true" aria-labelledby="cameraModalTitle">
+    <div class="camera-modal">
+      <div class="camera-head">
+        <h2 id="cameraModalTitle">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+          <span>Ambil Foto dari Kamera</span>
+        </h2>
+        <button id="closeCameraBtn" class="icon-btn" type="button" aria-label="Tutup kamera">✕</button>
+      </div>
+
+      <div class="camera-viewport">
+        <video id="cameraVideo" autoplay playsinline muted></video>
+        <canvas id="cameraCanvas" hidden></canvas>
+        <div class="camera-guide" aria-hidden="true"></div>
+        <div class="camera-flash" id="cameraFlash"></div>
+        <div class="camera-timer-overlay" id="cameraTimerOverlay">3</div>
+        <div class="camera-status" id="cameraStatus">
+          <div id="cameraStatusText">Menghubungkan ke kamera...</div>
+          <button id="retryCameraBtn" class="btn primary" type="button" style="display:none">Coba Lagi</button>
+        </div>
+      </div>
+
+      <div class="camera-controls">
+        <div class="camera-controls-left">
+          <button id="timerToggleBtn" class="icon-btn" type="button" title="Timer 3 detik">⏱️ Off</button>
+        </div>
+        <button id="captureBtn" class="shutter-btn" type="button" title="Ambil Foto" aria-label="Ambil Foto" disabled></button>
+        <div class="camera-controls-right">
+          <button id="switchCameraBtn" class="icon-btn" type="button" title="Ganti kamera depan/belakang">🔄 Balik</button>
+        </div>
+      </div>
+
+      <div class="camera-footer-fallback">
+        <button id="fallbackNativeCamBtn" class="btn ghost" type="button" style="font-size:.82rem;min-height:38px">
+          Atau gunakan kamera bawaan perangkat
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" aria-live="polite"></div>
+
+  <!-- Cropper.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+
+  <script>
+    (function(){
+      const $ = (s, root=document) => root.querySelector(s);
+      const $$ = (s, root=document) => Array.from(root.querySelectorAll(s));
+
+      // Safe localStorage helpers
+      function getStored(key){
+        try { return localStorage.getItem(key); } catch(_) { return null; }
+      }
+      function setStored(key, val){
+        try { localStorage.setItem(key, val); } catch(_) {}
+      }
+
+      // Theme
+      const themeBtn = $('#themeBtn');
+      const themeBtnMobile = $('#themeBtnMobile');
+      const themeKey = 'imgcrop-theme';
+      function setTheme(mode){
+        document.documentElement.setAttribute('data-theme', mode);
+        setStored(themeKey, mode);
+      }
+      function toggleTheme(){
+        const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        setTheme(next);
+      }
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setTheme(getStored(themeKey) || (prefersDark ? 'dark' : 'light'));
+      themeBtn.addEventListener('click', toggleTheme);
+      themeBtnMobile.addEventListener('click', toggleTheme);
+      window.addEventListener('keydown', (e)=>{
+        if(e.altKey && (e.key === 't' || e.key === 'T')){
+          e.preventDefault();
+          toggleTheme();
+        }
+      });
+
+      // Mobile Tab Switcher
+      const mobileTabs = $$('.mobile-tab');
+      const mobilePanels = $$('.mobile-panel');
+      function switchMobileTab(tabName){
+        mobileTabs.forEach(t => t.setAttribute('aria-selected', t.dataset.tab === tabName ? 'true' : 'false'));
+        mobilePanels.forEach(p => p.classList.toggle('mobile-active', p.dataset.panel === tabName));
+      }
+      mobileTabs.forEach(tab => {
+        tab.addEventListener('click', () => switchMobileTab(tab.dataset.tab));
+      });
+
+      // Elements
+      const dropzone = $('#dropzone');
+      const fileInput = $('#fileInput');
+      const nativeCameraInput = $('#nativeCameraInput');
+      const openCameraBtn = $('#openCameraBtn');
+      const topCameraBtn = $('#topCameraBtn');
+      const placeholderFileBtn = $('#placeholderFileBtn');
+      const placeholderCameraBtn = $('#placeholderCameraBtn');
+      const pasteBtn = $('#pasteBtn');
+
+      const ratioSel = $('#ratio');
+      const rotL = $('#rotL');
+      const rotR = $('#rotR');
+      const rotRange = $('#rotRange');
+      const rotVal = $('#rotVal');
+      const flipH = $('#flipH');
+      const flipV = $('#flipV');
+
+      const formatSel = $('#format');
+      const filenameInp = $('#filename');
+      const downloadBtn = $('#downloadBtn');
+      const copyBtn = $('#copyBtn');
+      const resetBtn = $('#resetBtn');
+
+      const imageEl = $('#image');
+      const cropWrap = $('#cropWrap');
+      const placeholder = $('#placeholder');
+      const metaInfo = $('#metaInfo');
+      const cropSizeInfo = $('#cropSizeInfo');
+
+      const modeCropBtn = $('#modeCropBtn');
+      const modeMoveBtn = $('#modeMoveBtn');
+      const fitBtn = $('#fitBtn');
+      const fillBtn = $('#fillBtn');
+      const zoomInBtn = $('#zoomIn');
+      const zoomOutBtn = $('#zoomOut');
+      const zoomVal = $('#zoomVal');
+      const centerBtn = $('#centerBtn');
+      const resetViewBtn = $('#resetView');
+
+      // Camera Modal Elements
+      const cameraModal = $('#cameraModal');
+      const cameraVideo = $('#cameraVideo');
+      const cameraCanvas = $('#cameraCanvas');
+      const cameraFlash = $('#cameraFlash');
+      const cameraStatus = $('#cameraStatus');
+      const cameraStatusText = $('#cameraStatusText');
+      const retryCameraBtn = $('#retryCameraBtn');
+      const cameraTimerOverlay = $('#cameraTimerOverlay');
+      const closeCameraBtn = $('#closeCameraBtn');
+      const switchCameraBtn = $('#switchCameraBtn');
+      const captureBtn = $('#captureBtn');
+      const timerToggleBtn = $('#timerToggleBtn');
+      const fallbackNativeCamBtn = $('#fallbackNativeCamBtn');
+
+      const toastBox = $('#toast');
+      function toast(msg, timeout=2200){
+        const item = document.createElement('div');
+        item.className = 'item';
+        item.textContent = msg;
+        toastBox.appendChild(item);
+        setTimeout(()=>{
+          item.style.opacity = '0';
+          item.style.transform = 'translateY(6px)';
+          setTimeout(()=> item.remove(), 250);
+        }, timeout);
+      }
+
+      let cropper = null;
+      let scaleX = 1, scaleY = 1;
+      let currentDragMode = 'crop';
+
+      const RATIO_MAP = {
+        'free': NaN,
+        '1': 1,
+        '4/3': 4 / 3,
+        '3/4': 3 / 4,
+        '16/9': 16 / 9,
+        '9/16': 9 / 16,
+        '3/2': 3 / 2,
+        '21/9': 21 / 9
+      };
+
+      function setDragModeUI(mode){
+        currentDragMode = mode;
+        modeCropBtn.setAttribute('data-active', mode === 'crop' ? 'true' : 'false');
+        modeMoveBtn.setAttribute('data-active', mode === 'move' ? 'true' : 'false');
+        if(cropper) cropper.setDragMode(mode);
+      }
+
+      function setUICropping(on){
+        placeholder.style.display = on ? 'none' : 'grid';
+        cropWrap.style.display = on ? 'block' : 'none';
+        cropSizeInfo.classList.toggle('visible', on);
+      }
+
+      function normalizeAngle(deg){
+        let a = Math.round(deg) % 360;
+        if(a > 180) a -= 360;
+        if(a < -180) a += 360;
+        return a;
+      }
+
+      function syncRotationUI(deg){
+        const norm = normalizeAngle(deg);
+        rotRange.value = String(norm);
+        rotVal.textContent = norm + '°';
+      }
+
+      function resetTransformUI(){
+        syncRotationUI(0);
+        scaleX = 1;
+        scaleY = 1;
+        ratioSel.value = 'free';
+        setDragModeUI('crop');
+        updateZoomDisplay();
+      }
+
+      function updateMeta(fileLike){
+        if(!fileLike){
+          metaInfo.textContent = 'Belum ada gambar';
+          return;
+        }
+        const { name, type, width, height, size } = fileLike;
+        const sizeKB = size ? (size >= 1048576 ? (size / 1048576).toFixed(2) + ' MB' : (size / 1024).toFixed(1) + ' KB') : '';
+        const wh = width && height ? `${width}×${height}px` : '';
+        metaInfo.textContent = [name || 'Gambar', type || '', wh, sizeKB].filter(Boolean).join(' • ');
+      }
+
+      function initCropper(dataURL, fileMeta){
+        if(cropper){ cropper.destroy(); cropper = null; }
+        imageEl.src = dataURL;
+        setUICropping(true);
+        resetTransformUI();
+
+        cropper = new Cropper(imageEl, {
+          viewMode: 1,
+          dragMode: 'crop',
+          aspectRatio: NaN,
+          background: false,
+          autoCropArea: 0.85,
+          responsive: true,
+          modal: true,
+          checkCrossOrigin: true,
+          movable: true,
+          zoomOnTouch: true,
+          zoomOnWheel: false,
+          ready(){
+            const imgData = cropper.getImageData();
+            updateMeta({
+              ...fileMeta,
+              width: Math.round(imgData.naturalWidth),
+              height: Math.round(imgData.naturalHeight)
+            });
+            centerCanvas();
+            updateZoomDisplay();
+            if(window.innerWidth < 640){
+              switchMobileTab('edit');
+            }
+          },
+          crop(e){
+            updateZoomDisplay();
+            const w = Math.max(0, Math.round(e.detail.width || 0));
+            const h = Math.max(0, Math.round(e.detail.height || 0));
+            cropSizeInfo.textContent = `Crop: ${w} × ${h} px`;
+          }
+        });
+      }
+
+      // Load helpers
+      function readFileToDataURL(file){
+        return new Promise((resolve, reject)=>{
+          const r = new FileReader();
+          r.onload = e => resolve(e.target.result);
+          r.onerror = reject;
+          r.readAsDataURL(file);
+        });
+      }
+
+      async function handleFile(file){
+        if(!file || !file.type.startsWith('image/')){
+          toast('File yang dipilih bukan gambar');
+          return;
+        }
+        try{
+          const dataURL = await readFileToDataURL(file);
+          const baseName = (file.name || 'image').replace(/\.[^.]+$/, '');
+          if(baseName) filenameInp.value = baseName;
+          initCropper(dataURL, { name: file.name, type: file.type, size: file.size });
+        }catch(_){
+          toast('Gagal membaca file gambar');
+        }
+      }
+
+      function handleBlobImage(blob, name='clipboard.png'){
+        const reader = new FileReader();
+        reader.onload = e => {
+          const baseName = name.replace(/\.[^.]+$/, '');
+          if(baseName) filenameInp.value = baseName;
+          initCropper(e.target.result, { name, type: blob.type, size: blob.size });
+        };
+        reader.readAsDataURL(blob);
+      }
+
+      // File Inputs
+      fileInput.addEventListener('change', async e => {
+        const file = e.target.files?.[0];
+        if(file) await handleFile(file);
+        e.target.value = '';
+      });
+
+      nativeCameraInput.addEventListener('change', async e => {
+        const file = e.target.files?.[0];
+        if(file){
+          closeCameraModal();
+          await handleFile(file);
+          toast('Foto dari kamera dimuat');
+        }
+        e.target.value = '';
+      });
+
+      placeholderFileBtn.addEventListener('click', () => fileInput.click());
+
+      // Drag & Drop
+      ['dragenter', 'dragover'].forEach(evt => {
+        dropzone.addEventListener(evt, e => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'copy';
+          dropzone.classList.add('dragover');
+        });
+      });
+      ['dragleave', 'drop'].forEach(evt => {
+        dropzone.addEventListener(evt, e => {
+          e.preventDefault();
+          dropzone.classList.remove('dragover');
+        });
+      });
+      dropzone.addEventListener('drop', async e => {
+        const file = e.dataTransfer.files?.[0];
+        if(file) await handleFile(file);
+      });
+
+      // Paste (button)
+      pasteBtn.addEventListener('click', async () => {
+        if(!navigator.clipboard?.read){
+          toast('Browser tidak mendukung baca clipboard otomatis. Gunakan Ctrl/⌘+V.');
+          return;
+        }
+        try{
+          const items = await navigator.clipboard.read();
+          for(const it of items){
+            const type = it.types.find(t => t.startsWith('image/'));
+            if(type){
+              const blob = await it.getType(type);
+              handleBlobImage(blob, 'clipboard.' + (type.split('/')[1] || 'png'));
+              toast('Gambar ditempel dari clipboard');
+              return;
+            }
+          }
+          toast('Tidak ada gambar di clipboard');
+        }catch(_){
+          toast('Gagal mengakses clipboard');
+        }
+      });
+
+      // Global paste (Ctrl/⌘+V)
+      document.addEventListener('paste', e => {
+        const items = e.clipboardData?.items || [];
+        for(const it of items){
+          if(it.type.startsWith('image/')){
+            const blob = it.getAsFile();
+            if(blob){
+              handleBlobImage(blob, 'clipboard.' + (blob.type.split('/')[1] || 'png'));
+              toast('Gambar ditempel dari clipboard');
+              e.preventDefault();
+              break;
+            }
+          }
+        }
+      });
+
+      // ================= LIVE CAMERA FEATURE =================
+      let cameraStream = null;
+      let facingMode = 'environment'; // default back camera on smartphone/tablet
+      let timerSeconds = 0; // 0 or 3
+      let countdownTimer = null;
+
+      function stopCameraStream(){
+        if(countdownTimer){
+          clearInterval(countdownTimer);
+          countdownTimer = null;
+        }
+        cameraTimerOverlay.classList.remove('active');
+        if(cameraStream){
+          cameraStream.getTracks().forEach(track => track.stop());
+          cameraStream = null;
+        }
+        cameraVideo.srcObject = null;
+      }
+
+      function showCameraStatus(msg, showRetry=false){
+        cameraStatusText.textContent = msg;
+        retryCameraBtn.style.display = showRetry ? 'inline-flex' : 'none';
+        cameraStatus.classList.add('visible');
+        captureBtn.disabled = true;
+      }
+
+      function hideCameraStatus(){
+        cameraStatus.classList.remove('visible');
+        captureBtn.disabled = false;
+      }
+
+      async function startCamera(){
+        stopCameraStream();
+        showCameraStatus('Menghubungkan ke kamera...', false);
+
+        if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+          showCameraStatus('Browser ini tidak mendukung pratinjau kamera langsung. Gunakan tombol "kamera bawaan perangkat" di bawah.', false);
+          return;
+        }
+
+        const constraintsList = [
+          { video: { facingMode: { ideal: facingMode }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false },
+          { video: { facingMode: facingMode }, audio: false },
+          { video: true, audio: false }
+        ];
+
+        let stream = null;
+        let lastErr = null;
+        for(const c of constraintsList){
+          try{
+            stream = await navigator.mediaDevices.getUserMedia(c);
+            break;
+          }catch(err){
+            lastErr = err;
+            if(err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')){
+              break;
+            }
+          }
+        }
+
+        if(!stream){
+          const isDenied = lastErr && (lastErr.name === 'NotAllowedError' || lastErr.name === 'PermissionDeniedError');
+          const msg = isDenied
+            ? 'Izin kamera ditolak. Izinkan akses kamera di pengaturan browser, atau gunakan kamera bawaan perangkat di bawah.'
+            : 'Kamera tidak ditemukan atau sedang dipakai aplikasi lain. Anda bisa mencoba lagi atau memakai kamera bawaan perangkat.';
+          showCameraStatus(msg, true);
+          return;
+        }
+
+        cameraStream = stream;
+        cameraVideo.srcObject = stream;
+        cameraVideo.classList.toggle('mirrored', facingMode === 'user');
+
+        try{
+          await cameraVideo.play();
+          hideCameraStatus();
+        }catch(_){
+          showCameraStatus('Gagal memulai pratinjau kamera. Coba lagi atau gunakan kamera bawaan perangkat.', true);
+        }
+      }
+
+      function openCameraModal(){
+        cameraModal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        startCamera();
+      }
+
+      function closeCameraModal(){
+        stopCameraStream();
+        cameraModal.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+
+      function performSnap(){
+        if(!cameraStream || !cameraVideo.videoWidth || !cameraVideo.videoHeight){
+          toast('Kamera belum siap');
+          return;
+        }
+        // Shutter flash effect
+        cameraFlash.classList.add('active');
+        setTimeout(() => cameraFlash.classList.remove('active'), 120);
+
+        const vw = cameraVideo.videoWidth;
+        const vh = cameraVideo.videoHeight;
+        cameraCanvas.width = vw;
+        cameraCanvas.height = vh;
+        const ctx = cameraCanvas.getContext('2d');
+        ctx.save();
+        if(facingMode === 'user'){
+          ctx.translate(vw, 0);
+          ctx.scale(-1, 1);
+        }
+        ctx.drawImage(cameraVideo, 0, 0, vw, vh);
+        ctx.restore();
+
+        const now = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        const stamp = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+        const photoName = `kamera-${stamp}.jpg`;
+
+        cameraCanvas.toBlob(blob => {
+          if(blob){
+            closeCameraModal();
+            handleBlobImage(blob, photoName);
+            toast('Foto berhasil diambil');
+          }else{
+            const dataURL = cameraCanvas.toDataURL('image/jpeg', 0.92);
+            closeCameraModal();
+            filenameInp.value = photoName.replace(/\.jpg$/, '');
+            initCropper(dataURL, { name: photoName, type: 'image/jpeg', size: 0 });
+            toast('Foto berhasil diambil');
+          }
+        }, 'image/jpeg', 0.92);
+      }
+
+      function handleCaptureClick(){
+        if(captureBtn.disabled) return;
+        if(timerSeconds === 0){
+          performSnap();
+          return;
+        }
+        if(countdownTimer) return;
+        let remaining = timerSeconds;
+        cameraTimerOverlay.textContent = String(remaining);
+        cameraTimerOverlay.classList.add('active');
+        captureBtn.disabled = true;
+
+        countdownTimer = setInterval(() => {
+          remaining -= 1;
+          if(remaining <= 0){
+            clearInterval(countdownTimer);
+            countdownTimer = null;
+            cameraTimerOverlay.classList.remove('active');
+            captureBtn.disabled = false;
+            performSnap();
+          }else{
+            cameraTimerOverlay.textContent = String(remaining);
+          }
+        }, 1000);
+      }
+
+      openCameraBtn.addEventListener('click', openCameraModal);
+      topCameraBtn.addEventListener('click', openCameraModal);
+      placeholderCameraBtn.addEventListener('click', openCameraModal);
+      closeCameraBtn.addEventListener('click', closeCameraModal);
+      retryCameraBtn.addEventListener('click', startCamera);
+      captureBtn.addEventListener('click', handleCaptureClick);
+
+      switchCameraBtn.addEventListener('click', () => {
+        facingMode = facingMode === 'environment' ? 'user' : 'environment';
+        startCamera();
+      });
+
+      timerToggleBtn.addEventListener('click', () => {
+        timerSeconds = timerSeconds === 0 ? 3 : 0;
+        timerToggleBtn.textContent = timerSeconds === 0 ? '⏱️ Off' : '⏱️ 3s';
+      });
+
+      fallbackNativeCamBtn.addEventListener('click', () => {
+        nativeCameraInput.click();
+      });
+
+      cameraModal.addEventListener('click', e => {
+        if(e.target === cameraModal) closeCameraModal();
+      });
+
+      // ================= CROPPER CONTROLS =================
+      ratioSel.addEventListener('change', () => {
+        if(!cropper) return;
+        const val = RATIO_MAP[ratioSel.value];
+        cropper.setAspectRatio(typeof val === 'number' ? val : NaN);
+      });
+
+      rotL.addEventListener('click', () => {
+        if(!cropper) return;
+        cropper.rotate(-90);
+        const data = cropper.getData();
+        syncRotationUI(data.rotate || 0);
+      });
+      rotR.addEventListener('click', () => {
+        if(!cropper) return;
+        cropper.rotate(90);
+        const data = cropper.getData();
+        syncRotationUI(data.rotate || 0);
+      });
+      rotRange.addEventListener('input', e => {
+        const val = Number(e.target.value);
+        rotVal.textContent = val + '°';
+        if(cropper) cropper.rotateTo(val);
+      });
+      rotVal.addEventListener('click', () => {
+        syncRotationUI(0);
+        if(cropper) cropper.rotateTo(0);
+      });
+
+      flipH.addEventListener('click', () => {
+        if(!cropper) return;
+        scaleX = scaleX * -1;
+        cropper.scaleX(scaleX);
+      });
+      flipV.addEventListener('click', () => {
+        if(!cropper) return;
+        scaleY = scaleY * -1;
+        cropper.scaleY(scaleY);
+      });
+
+      // Drag mode buttons
+      modeCropBtn.addEventListener('click', () => setDragModeUI('crop'));
+      modeMoveBtn.addEventListener('click', () => setDragModeUI('move'));
+
+      // Zoom & view
+      function updateZoomDisplay(){
+        if(!cropper){ zoomVal.textContent = '100%'; return; }
+        const data = cropper.getImageData();
+        const ratio = data.naturalWidth ? (data.width / data.naturalWidth) : 1;
+        zoomVal.textContent = Math.round(ratio * 100) + '%';
+      }
+      function zoom(delta){
+        if(cropper){
+          cropper.zoom(delta);
+          updateZoomDisplay();
+        }
+      }
+      function fit(){
+        if(!cropper) return;
+        cropper.reset();
+        syncRotationUI(0);
+        scaleX = 1; scaleY = 1;
+        centerCanvas();
+        updateZoomDisplay();
+      }
+      function fill(){
+        if(!cropper) return;
+        const c = cropper.getContainerData();
+        const i = cropper.getImageData();
+        if(!i.naturalWidth || !i.naturalHeight) return;
+        const z = Math.max(c.width / i.naturalWidth, c.height / i.naturalHeight);
+        cropper.zoomTo(z * 1.02, { x: c.width / 2, y: c.height / 2 });
+        updateZoomDisplay();
+      }
+      function centerCanvas(){
+        if(!cropper) return;
+        const c = cropper.getCanvasData();
+        const con = cropper.getContainerData();
+        cropper.setCanvasData({
+          left: (con.width - c.width) / 2,
+          top: (con.height - c.height) / 2,
+          width: c.width,
+          height: c.height
+        });
+      }
+
+      fitBtn.addEventListener('click', fit);
+      fillBtn.addEventListener('click', fill);
+      zoomInBtn.addEventListener('click', () => zoom(0.1));
+      zoomOutBtn.addEventListener('click', () => zoom(-0.1));
+      centerBtn.addEventListener('click', centerCanvas);
+      resetViewBtn.addEventListener('click', () => {
+        if(!cropper) return;
+        const r = Number(rotRange.value);
+        cropper.reset();
+        cropper.rotateTo(r);
+        cropper.scaleX(scaleX);
+        cropper.scaleY(scaleY);
+        centerCanvas();
+        updateZoomDisplay();
+      });
+
+      // Alt+wheel zoom
+      window.addEventListener('wheel', (e) => {
+        if(!cropper) return;
+        if(e.altKey){
+          e.preventDefault();
+          const delta = -Math.sign(e.deltaY) * 0.12;
+          cropper.zoom(delta, { x: e.clientX, y: e.clientY });
+          updateZoomDisplay();
+        }
+      }, { passive: false });
+
+      // Keyboard shortcuts
+      let spacePanning = false;
+      function isTypingTarget(el){
+        return el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable);
+      }
+
+      window.addEventListener('keydown', e => {
+        if(e.key === 'Escape' && cameraModal.classList.contains('open')){
+          closeCameraModal();
+          return;
+        }
+        if(isTypingTarget(document.activeElement)) return;
+
+        if(e.code === 'Space' && !spacePanning && cropper){
+          spacePanning = true;
+          document.body.style.cursor = 'grabbing';
+          cropper.setDragMode('move');
+          e.preventDefault();
+        }
+        if(e.altKey && e.key === '0'){ e.preventDefault(); fitBtn.click(); }
+        if(e.altKey && e.shiftKey && e.key === '0'){ e.preventDefault(); fillBtn.click(); }
+        if(e.altKey && (e.key === '=' || e.key === '+')){ e.preventDefault(); zoomInBtn.click(); }
+        if(e.altKey && (e.key === '-' || e.key === '_')){ e.preventDefault(); zoomOutBtn.click(); }
+      });
+
+      window.addEventListener('keyup', e => {
+        if(e.code === 'Space' && spacePanning){
+          spacePanning = false;
+          document.body.style.cursor = '';
+          if(cropper) cropper.setDragMode(currentDragMode);
+        }
+      });
+
+      // Export helpers
+      function getCanvas(){
+        if(!cropper){
+          toast('Muat atau ambil gambar terlebih dahulu');
+          return null;
+        }
+        return cropper.getCroppedCanvas({
+          maxWidth: 4096,
+          maxHeight: 4096,
+          imageSmoothingQuality: 'high'
+        });
+      }
+
+      function mimeFromFormat(fmt){
+        if(fmt === 'jpeg') return 'image/jpeg';
+        if(fmt === 'webp') return 'image/webp';
+        return 'image/png';
+      }
+
+      downloadBtn.addEventListener('click', () => {
+        const cvs = getCanvas();
+        if(!cvs) return;
+        const fmt = formatSel.value;
+        const mime = mimeFromFormat(fmt);
+        const safeName = (filenameInp.value.trim() || 'image') + '.' + fmt;
+
+        if(fmt === 'jpeg' || fmt === 'webp'){
+          cvs.toBlob(b => {
+            if(!b){ toast('Gagal membuat file gambar'); return; }
+            const a = document.createElement('a');
+            const url = URL.createObjectURL(b);
+            a.href = url;
+            a.download = safeName;
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+          }, mime, 0.9);
+        }else{
+          const a = document.createElement('a');
+          a.href = cvs.toDataURL(mime);
+          a.download = safeName;
+          a.click();
+        }
+        toast('Gambar diunduh: ' + safeName);
+      });
+
+      copyBtn.addEventListener('click', () => {
+        const cvs = getCanvas();
+        if(!cvs) return;
+        cvs.toBlob(async (blob) => {
+          if(!blob){ toast('Gagal menyalin gambar'); return; }
+          try{
+            await navigator.clipboard.write([ new ClipboardItem({ [blob.type]: blob }) ]);
+            toast('Gambar tersalin ke clipboard');
+          }catch(_){
+            toast('Browser tidak mengizinkan salin gambar ke clipboard');
+          }
+        }, 'image/png');
+      });
+
+      resetBtn.addEventListener('click', () => {
+        if(cropper){ cropper.destroy(); cropper = null; }
+        imageEl.src = '';
+        setUICropping(false);
+        updateMeta(null);
+        resetTransformUI();
+        if(window.innerWidth < 640){
+          switchMobileTab('source');
+        }
+      });
+
+      // Init
+      setUICropping(false);
+    })();
+  </script>
+</body>
+</html>
